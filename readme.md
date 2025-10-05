@@ -1,3 +1,5 @@
+---
+
 # Game Timers Dashboard
 
 [English](#english) | [Español](#español)
@@ -6,7 +8,7 @@
 
 ## English
 
-A clean, single-file web dashboard to track important in-game timers, such as daily resets, boss spawns, and special tickets. It features customizable desktop and sound notifications to ensure you never miss an event. All settings are saved locally in your browser.
+A clean, single-file web dashboard to track important in-game timers, such as daily resets, boss spawns, and special tickets. It features customizable desktop and sound notifications to ensure you never miss an event. All settings are saved locally in your browser's cookies.
 
 ---
 
@@ -18,11 +20,10 @@ The easiest way to use this tool is through the live version. The repository is 
 
 ---
 
-
 ### Features
 
 -   **Daily Reset Timer:** A prominent countdown to the main daily server reset.
--   **Showdown Ticket Timer:** Tracks when your next Showdown ticket will be available.
+-   **Showdown Ticket Timer:** Tracks when your next Showdown ticket will be available, with an option to sync it manually.
 -   **Optional Boss Timers:** A toggleable secondary panel to track multiple boss spawn times.
 -   **Customizable Notifications:**
     -   Enable or disable desktop and sound alerts.
@@ -31,7 +32,7 @@ The easiest way to use this tool is through the live version. The repository is 
 -   **Timezone & Language Support:**
     -   Display all times in your preferred timezone.
     -   Switch between English and Spanish interfaces.
--   **Persistent Settings:** Your configuration is automatically saved in your browser's local storage.
+-   **Persistent Settings:** Your configuration is automatically saved in your browser's **cookies**.
 -   **Responsive Design:** The layout adapts, showing a single panel or a dual-panel view depending on your settings.
 
 ### How to Use
@@ -52,13 +53,22 @@ The easiest way to use this tool is through the live version. The repository is 
 -   **No frameworks or external libraries**, making it extremely lightweight and fast.
 -   Contained within a single HTML file and a single JS file for simplicity.
 
+### 🤝 Contact & Support
+
+If you find this tool useful and would like to show your support, or if you need help, you can find me on the official **BNS Heroes** Discord server.
+
+-   **My Discord:** `@olivo28`
+-   **BNS Heroes Discord:** [Join Here](https://discord.gg/4eKe49CkVS)
+
+Donations are welcome but never required! Your feedback is the best support.
+
 ---
 
 ## Español
 
-Un dashboard web limpio y de un solo archivo para seguir temporizadores importantes dentro de un juego, como el reinicio diario, la aparición de jefes y tickets especiales. Incluye notificaciones de escritorio y sonido personalizables para asegurar que nunca te pierdas un evento. Toda la configuración se guarda localmente en tu navegador.
----
+Un dashboard web limpio y de un solo archivo para seguir temporizadores importantes dentro de un juego, como el reinicio diario, la aparición de jefes y tickets especiales. Incluye notificaciones de escritorio y sonido personalizables para asegurar que nunca te pierdas un evento. Toda la configuración se guarda localmente en las cookies de tu navegador.
 
+---
 
 ### ✨ Demo en Vivo
 
@@ -71,7 +81,7 @@ La forma más fácil de usar esta herramienta es a través de la versión en viv
 ### Características
 
 -   **Temporizador de Reset Diario:** Una cuenta regresiva principal para el reinicio diario del servidor.
--   **Temporizador de Ticket de Showdown:** Rastrea cuándo estará disponible tu próximo ticket de Showdown.
+-   **Temporizador de Ticket de Showdown:** Rastrea cuándo estará disponible tu próximo ticket, con opción de sincronizarlo manualmente.
 -   **Temporizadores de Jefes (Opcionales):** Un panel secundario que se puede activar para seguir múltiples horarios de aparición de jefes.
 -   **Notificaciones Personalizables:**
     -   Activa o desactiva las alertas de escritorio y de sonido.
@@ -80,7 +90,7 @@ La forma más fácil de usar esta herramienta es a través de la versión en viv
 -   **Soporte de Zona Horaria e Idioma:**
     -   Muestra todas las horas en tu zona horaria preferida.
     -   Cambia la interfaz entre Inglés y Español.
--   **Configuración Persistente:** Tu configuración se guarda automáticamente en el almacenamiento local de tu navegador.
+-   **Configuración Persistente:** Tu configuración se guarda automáticamente en las **cookies** de tu navegador.
 -   **Diseño Adaptable:** La interfaz se adapta, mostrando un solo panel o una vista de doble panel según tus ajustes.
 
 ### Cómo Usar
@@ -100,3 +110,12 @@ La forma más fácil de usar esta herramienta es a través de la versión en viv
 -   Construido enteramente con **JavaScript (Vanilla JS)**, **HTML** y **CSS**.
 -   **Sin frameworks o librerías externas**, lo que lo hace extremadamente ligero y rápido.
 -   Contenido en un único archivo HTML y un único archivo JS para mayor simplicidad.
+
+### 🤝 Contacto y Soporte
+
+Si encuentras útil esta herramienta y te gustaría mostrar tu apoyo, o si necesitas ayuda, puedes encontrarme en el servidor oficial de Discord de **BNS Heroes**.
+
+-   **Mi Discord:** `@olivo28`
+-   **Discord de BNS Heroes:** [Únete Aquí](https://discord.gg/4eKe49CkVS)
+
+Las donaciones son bienvenidas, ¡pero nunca obligatorias! Tu feedback es el mejor apoyo.
