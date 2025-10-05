@@ -85,10 +85,11 @@
 
     // --- CONFIGURATION ---
     const defaultConfig = {
-        dailyResetTime: '18:30',
+        dailyResetTime: '18:30', // This time should be in UTC
         dailyResetImageUrl: 'style/bnsheroes.webp',
         showdownTicketImageUrl: 'style/ticket-icon.png',
         showBossTimers: false,
+        // These times are now treated as UTC
         boss: { name: "Stalker Jiangshi", imageUrl: "style/Stalker-Jiangshi.png", location: "Everdusk", spawnTimes: ['13:00', '19:00', '23:00', '02:00', '05:00', '10:00'], alerts: { '13:00': true, '19:00': true, '23:00': true, '02:00': true, '05:00': true, '10:00': true } },
         displayTimezone: getSystemTimezoneOffset(),
         preAlertMinutes: [15, 5, 1],
@@ -111,22 +112,28 @@
         updateLanguage();
         const now = new Date();
         
-        // Actualizar reloj de hora actual
         const currentTimeString = formatDateToTimezoneString(now, config.displayTimezone, true);
         const tzString = `UTC${config.displayTimezone.replace(':00','')}`;
         dom.currentTime.innerHTML = `${currentTimeString} <span class="timezone-abbr">${tzString}</span>`;
 
         checkAndPerformDailyReset(now);
         const dailyResetTimer = getDailyResetTimer(now);
-        const lastReset = new Date(dailyResetTimer.targetDate.getTime() - 86400000);
+        const lastReset = new Date(dailyResetTimer.targetDate.getTime() - (24 * 60 * 60 * 1000));
         const showdownTicketTimer = getShowdownTicketTimer(now, lastReset);
-        checkAndTriggerAlerts(now, [], dailyResetTimer, showdownTicketTimer);
+        
         const primaryTimers = [dailyResetTimer];
         if (config.showBossTimers) {
             dom.mainWrapper.style.width = '830px'; dom.secondaryPanel.style.opacity = '1'; dom.secondaryPanel.style.width = '450px'; dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
-            const bossTimers = config.boss.spawnTimes.map(time => { const targetDate = getAbsoluteDateFromLocalTime(time); return { type: 'boss', ...config.boss, time, targetDate, isAlertEnabled: !!config.boss.alerts[time], secondsLeft: Math.floor((targetDate - now) / 1000) }; }).filter(t => t.secondsLeft > -300);
+            
+            // --- CAMBIO: Se usa la función UTC para calcular la fecha del jefe ---
+            const bossTimers = config.boss.spawnTimes.map(time => {
+                const targetDate = getAbsoluteDateFromUTCTime(time);
+                return { type: 'boss', ...config.boss, time, targetDate, isAlertEnabled: !!config.boss.alerts[time], secondsLeft: Math.floor((targetDate - now) / 1000) };
+            }).filter(t => t.secondsLeft > -300);
+
             const nextActiveBoss = bossTimers.filter(s => s.isAlertEnabled && s.secondsLeft >= 0).sort((a, b) => a.secondsLeft - b.secondsLeft)[0];
             if (nextActiveBoss) primaryTimers.push(nextActiveBoss);
+            
             renderPrimaryPanel(primaryTimers);
             bossTimers.sort((a, b) => { if (a.isAlertEnabled !== b.isAlertEnabled) return a.isAlertEnabled ? -1 : 1; return a.secondsLeft - b.secondsLeft; });
             renderSecondaryPanel([showdownTicketTimer, ...bossTimers]);
@@ -151,15 +158,36 @@
             const color = getCountdownColor(timer.secondsLeft, timer.type); const time = formatTime(timer.secondsLeft); const displayTime = formatDateToTimezoneString(timer.targetDate, config.displayTimezone); if (timer.type === 'boss') { const tzString = `UTC${config.displayTimezone.replace(':00', '')}`; const bellIcon = timer.isAlertEnabled ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.17 3.17l17.66 17.66" /></svg>`; return `<div class="spawn-item ${!timer.isAlertEnabled ? 'disabled' : ''}"><div class="spawn-item-info"><p class="spawn-item-name spawn-item-name-boss">${timer.name}</p><p class="spawn-item-time">${displayTime} (${tzString})</p></div><span class="countdown-timer" style="color: ${color};">${time}</span><div class="alert-toggle ${timer.isAlertEnabled ? 'enabled' : 'disabled'}" data-time="${timer.time}">${bellIcon}</div></div>`; } const icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>`; const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`; const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`; const nameContent = `<div class="spawn-item-name-container"><p class="spawn-item-name spawn-item-name-ticket">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`; const countdownContent = `<div class="countdown-container"><span class="countdown-timer" style="color: ${color};">${time}</span><div class="sync-button">${syncIconSVG}</div></div>`; return `<div class="spawn-item ticket-item"><div class="item-icon">${icon}</div><div class="spawn-item-info">${nameContent}<p class="spawn-item-time">${timer.description} - ${displayTime}</p></div>${countdownContent}</div>`;
         }).join('');
     }
-    function getAbsoluteDateFromLocalTime(timeString) { const now = new Date(); const [h, m] = timeString.split(':'); let d = new Date(); d.setHours(h, m, 0, 0); if (d < now) d.setDate(d.getDate() + 1); return d; }
-    function getDailyResetTimer(now) { const t = getAbsoluteDateFromLocalTime(config.dailyResetTime); return { type: 'reset', name: i18n[config.currentLanguage].dailyResetName, description: i18n[config.currentLanguage].dailyResetDesc, imageUrl: config.dailyResetImageUrl, targetDate: t, secondsLeft: Math.floor((t - now) / 1000) }; }
+    
+    // --- CAMBIO DEFINITIVO: Nueva función que interpreta el tiempo como UTC ---
+    function getAbsoluteDateFromUTCTime(timeString) {
+        const now = new Date();
+        const [h, m] = timeString.split(':').map(Number);
+        
+        // Crea una fecha objetivo para hoy en UTC
+        let targetDate = new Date();
+        targetDate.setUTCHours(h, m, 0, 0);
+
+        // Si la hora UTC ya pasó hoy, la mueve para mañana
+        if (targetDate < now) {
+            targetDate.setUTCDate(targetDate.getUTCDate() + 1);
+        }
+        return targetDate;
+    }
+
+    function getDailyResetTimer(now) {
+        // --- CAMBIO: Usa la función UTC para el reset diario ---
+        const t = getAbsoluteDateFromUTCTime(config.dailyResetTime);
+        return { type: 'reset', name: i18n[config.currentLanguage].dailyResetName, description: i18n[config.currentLanguage].dailyResetDesc, imageUrl: config.dailyResetImageUrl, targetDate: t, secondsLeft: Math.floor((t - now) / 1000) };
+    }
+
     function getShowdownTicketTimer(now, lastReset) { const intervalMs = config.showdownTicketIntervalHours * 3600000; let nextTime; if (config.showdownTicketSync && config.showdownTicketSync > lastReset.getTime()) { const syncAnchor = config.showdownTicketSync; const msSinceSync = now.getTime() - syncAnchor; if (msSinceSync > 0) { const intervalsPassed = Math.floor(msSinceSync / intervalMs); nextTime = new Date(syncAnchor + (intervalsPassed + 1) * intervalMs); } else { nextTime = new Date(syncAnchor); } } else { const msSinceReset = now.getTime() - lastReset.getTime(); const intervalsSinceReset = Math.floor(msSinceReset / intervalMs); nextTime = new Date(lastReset.getTime() + (intervalsSinceReset + 1) * intervalMs); } return { type: 'ticket', name: i18n[config.currentLanguage].showdownName, description: i18n[config.currentLanguage].showdownDesc, targetDate: nextTime, secondsLeft: Math.floor((nextTime - now) / 1000), imageUrl: config.showdownTicketImageUrl }; }
     function loadSettings() { let tempConfig = JSON.parse(JSON.stringify(defaultConfig)); const savedJSON = getCookie('timersDashboardConfig'); if (savedJSON) { try { const savedConfig = JSON.parse(savedJSON); tempConfig = { ...tempConfig, ...savedConfig }; tempConfig.boss = { ...defaultConfig.boss, ...(savedConfig.boss || {}) }; tempConfig.notificationTypes = { ...defaultConfig.notificationTypes, ...(savedConfig.notificationTypes || {}) }; } catch (e) { console.error("Error al cargar la configuración de la cookie.", e); } } config = tempConfig; config.boss.spawnTimes = defaultConfig.boss.spawnTimes; }
     function saveConfigToCookie() { setCookie('timersDashboardConfig', JSON.stringify(config), 365); }
     function saveSettings() { config.showBossTimers = dom.bossTimersToggle.checked; const alerts = dom.preAlertInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0); config.preAlertMinutes = alerts.length ? alerts.sort((a, b) => b - a) : defaultConfig.preAlertMinutes; config.notificationTypes = { sound: dom.soundToggle.checked, desktop: dom.desktopToggle.checked }; config.displayTimezone = dom.timezoneSelect.value; config.currentLanguage = dom.languageSelect.value; saveConfigToCookie(); closeModal(); }
     function toggleAlertState(time) { if (config.boss.alerts[time] !== undefined) { config.boss.alerts[time] = !config.boss.alerts[time]; saveConfigToCookie(); updateUI(); } }
     function saveSyncData() { const h = parseInt(dom.syncHours.value) || 0; const m = parseInt(dom.syncMinutes.value) || 0; const s = parseInt(dom.syncSeconds.value) || 0; const remainingSeconds = (h * 3600) + (m * 60) + s; const now = new Date().getTime(); config.showdownTicketSync = now + (remainingSeconds * 1000); saveConfigToCookie(); closeSyncModal(); updateUI(); }
-    function checkAndPerformDailyReset(now) { const t = getAbsoluteDateFromLocalTime(config.dailyResetTime); const r = new Date(t); if (now >= r) r.setDate(r.getDate() - 1); const d = r.getDate(); if (lastResetCycleDay !== null && lastResetCycleDay !== d) { alertsShownToday = {}; if (config.showdownTicketSync) { config.showdownTicketSync = null; saveConfigToCookie(); } } lastResetCycleDay = d; }
+    function checkAndPerformDailyReset(now) { const t = getAbsoluteDateFromUTCTime(config.dailyResetTime); const r = new Date(t); if (now >= r) { r.setUTCDate(r.getUTCDate() - 1); } const d = r.getUTCDate(); if (lastResetCycleDay !== null && lastResetCycleDay !== d) { alertsShownToday = {}; if (config.showdownTicketSync) { config.showdownTicketSync = null; saveConfigToCookie(); } } lastResetCycleDay = d; }
     function openModal() { dom.bossTimersToggle.checked = config.showBossTimers; dom.preAlertInput.value = config.preAlertMinutes.join(', '); dom.soundToggle.checked = config.notificationTypes.sound; dom.desktopToggle.checked = config.notificationTypes.desktop; dom.timezoneSelect.value = config.displayTimezone; dom.languageSelect.value = config.currentLanguage; dom.modalOverlay.classList.add('visible'); }
     function closeModal() { dom.modalOverlay.classList.remove('visible'); updateUI(); }
     function openInfoModal() { const lang = i18n[config.currentLanguage]; dom.infoModalTitle.textContent = lang.infoModalTitle; dom.infoModalBody1.innerHTML = lang.infoModalBody1; dom.infoModalBody2.innerHTML = lang.infoModalBody2; dom.closeInfoBtn.textContent = lang.infoModalClose; dom.infoModalOverlay.classList.add('visible'); }
@@ -196,7 +224,6 @@
     }
 
     function formatTime(s) { if (s<0||isNaN(s)) s=0; const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = s%60; return [h,m,sec].map(v => String(v).padStart(2,'0')).join(':'); }
-    // --- CAMBIO: Se ajusta el color del contador del ticket ---
     function getCountdownColor(s, type) { if (type === 'boss') { const u = (Math.min(...config.preAlertMinutes) || 5) * 60; const w = (Math.max(...config.preAlertMinutes) || 15) * 60; if (s <= u) return 'var(--color-urgent)'; if (s <= w) return 'var(--color-warning)'; } else if (type === 'ticket') { return 'var(--color-primary)'; } return 'var(--color-normal)'; }
     function setCookie(name, value, days) { let expires = ""; if (days) { const date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax"; }
     function getCookie(name) { const nameEQ = name + "="; const ca = document.cookie.split(';'); for(let i = 0; i < ca.length; i++) { let c = ca[i]; while (c.charAt(0) === ' ') c = c.substring(1, c.length); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length); } return null; }
