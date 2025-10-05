@@ -4,118 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Timers</title>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-    :root {
-        --bg-color: #1a1a1a;
-        --box-bg-color: #242424;
-        --border-color: #3a3a3a;
-        --text-color: #e0e0e0;
-        --text-muted-color: #888;
-        --color-urgent: #ff5252;
-        --color-warning: #ffd740;
-        --color-normal: #40c4ff;
-        --color-primary: #bb86fc;
-    }
+        :root {
+            --bg-color: #1a1a1a;
+            --box-bg-color: #242424;
+            --border-color: #3a3a3a;
+            --text-color: #e0e0e0;
+            --text-muted-color: #888;
+            --color-urgent: #ff5252;
+            --color-warning: #ffd740;
+            --color-normal: #40c4ff;
+            --color-primary: #bb86fc;
+        }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        overflow: hidden;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
 
-    .main-wrapper { display: flex; background-color: var(--box-bg-color); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden; height: 550px; transition: width 0.3s ease; }
-    .primary-panel { width: 380px; padding: 50px 30px; position: relative; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-    .secondary-panel { width: 450px; border-left: 1px solid var(--border-color); transition: opacity 0.3s ease, width 0.3s ease; }
-    #spawn-list-container { height: 100%; overflow-y: auto; }
-    #status-bar { padding: 10px; background-color: #1f1f1f; text-align: center; font-size: 0.8em; color: var(--text-muted-color); position: absolute; bottom: 0; left: 0; right: 0; border-radius: 0 0 0 15px; }
+        .main-wrapper { display: flex; background-color: var(--box-bg-color); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden; height: 550px; transition: width 0.3s ease; }
+        .primary-panel { width: 380px; padding: 25px 30px; position: relative; text-align: center; display: flex; flex-direction: column; }
+        .secondary-panel { width: 450px; border-left: 1px solid var(--border-color); transition: opacity 0.3s ease, width 0.3s ease; }
+        #spawn-list-container { height: 100%; overflow-y: auto; }
+        #status-bar { padding: 10px; background-color: #1f1f1f; text-align: center; font-size: 0.8em; color: var(--text-muted-color); position: absolute; bottom: 0; left: 0; right: 0; border-radius: 0 0 0 15px; }
 
-    #primary-timers-container { display: flex; flex-direction: column; gap: 30px; align-items: center; }
-    .primary-timer-item { text-align: center; width: 100%; }
-    .primary-timer-item .timer-image { margin: 0 auto 15px; border: 2px solid var(--border-color); background-color: #333; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-    
-    .primary-timer-item .ticket-image { 
-        margin: 0 auto 15px; 
-        width: 50px; 
-        height: 50px; 
-        color: var(--color-warning);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    /* --- ESTA ES LA REGLA CORREGIDA --- */
-    .primary-timer-item .timer-image img, 
-    .primary-timer-item .timer-image svg,
-    .primary-timer-item .ticket-image img, /* Se añadió esta línea */
-    .primary-timer-item .ticket-image svg { 
-        width: 100%; 
-        height: 100%; 
-        object-fit: cover; 
-    }
+        #current-time {
+            color: var(--text-muted-color);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        #current-time .timezone-abbr {
+            font-size: 0.8em;
+            margin-left: 5px;
+            opacity: 0.7;
+        }
 
-    .primary-timer-item .timer-name { font-weight: 700; margin: 0 0 8px 0; color: var(--text-color); }
-    .primary-timer-item .timer-desc { color: var(--text-muted-color); font-size: 0.9em; margin: 0 0 15px 0; }
-    .primary-timer-item .timer-countdown { font-weight: 700; font-family: 'Courier New', monospace; margin: 0; }
+        #primary-timers-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 30px; 
+            align-items: center; 
+            justify-content: center; 
+            flex-grow: 1; 
+            margin-bottom: 50px;
+        }
+        .primary-timer-item { text-align: center; width: 100%; }
+        .primary-timer-item .timer-image { margin: 0 auto 15px; border: 2px solid var(--border-color); background-color: #333; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        
+        .primary-timer-item .ticket-image { 
+            margin: 0 auto 15px; width: 50px; height: 50px; color: var(--color-primary);
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .primary-timer-item .timer-image img, .primary-timer-item .timer-image svg,
+        .primary-timer-item .ticket-image img, .primary-timer-item .ticket-image svg { 
+            width: 100%; height: 100%; object-fit: cover; 
+        }
 
-    .primary-timer-item.main .timer-image { width: 100px; height: 100px; border-radius: 16px; }
-    .primary-timer-item.main .timer-name { font-size: 1.8em; }
-    .primary-timer-item.main .timer-countdown { font-size: 2.5em; }
+        .timer-name-container, .spawn-item-name-container { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .spawn-item-name-container { justify-content: flex-start; }
+        .info-button, .sync-button { cursor: pointer; color: var(--text-muted-color); width: 18px; height: 18px; transition: color 0.2s ease; }
+        .info-button:hover, .sync-button:hover { color: var(--color-normal); }
+        .primary-timer-item .timer-name, .spawn-item-name { margin: 0; }
+        .primary-timer-item .timer-countdown-container, .spawn-item .countdown-container { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .spawn-item .countdown-container { justify-content: flex-end; }
 
-    .primary-timer-item.secondary { opacity: 0.8; padding-top: 20px; border-top: 1px solid var(--border-color); }
-    .primary-timer-item.secondary .timer-image,
-    .primary-timer-item.secondary .ticket-image { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px; border-width: 1px; }
-    .primary-timer-item.secondary .timer-name { font-size: 1.1em; color: #ffd740; }
-    .primary-timer-item.secondary .timer-countdown { font-size: 1.5em; }
-    .primary-timer-item.secondary .timer-desc { font-size: 0.8em; margin-bottom: 10px; }
+        .primary-timer-item .timer-name { font-weight: 700; margin: 0 0 8px 0; color: var(--text-color); }
+        .primary-timer-item .timer-desc { color: var(--text-muted-color); font-size: 0.9em; margin: 0 0 15px 0; }
+        .primary-timer-item .timer-countdown { font-weight: 700; font-family: 'Courier New', monospace; margin: 0; }
 
-    .spawn-item { display: flex; align-items: center; padding: 15px 25px; border-bottom: 1px solid var(--border-color); transition: opacity 0.3s ease; }
-    .spawn-item.disabled { opacity: 0.5; }
-    .spawn-item:first-child { border-top: 1px solid var(--border-color); }
-    .spawn-item-info { flex-grow: 1; }
-    .spawn-item-name { font-size: 1.1em; color: var(--text-color); margin: 0; }
-    .spawn-item-time { font-size: 0.9em; color: var(--text-muted-color); margin: 0; }
-    .countdown-timer { font-size: 1.2em; font-weight: 700; font-family: 'Courier New', monospace; }
-    .alert-toggle { cursor: pointer; margin-left: 20px; width: 24px; height: 24px; transition: color 0.2s ease, opacity 0.2s ease; }
-    .alert-toggle.enabled { color: var(--color-normal); }
-    .alert-toggle.disabled { color: var(--text-muted-color); opacity: 0.6; }
-    .item-icon { width: 24px; height: 24px; margin-right: 15px; }
-    .ticket-item { border-bottom: 1px solid var(--border-color); }
-    .ticket-item .item-icon { color: var(--color-warning); }
-    .ticket-item .spawn-item-name { color: var(--color-warning); }
+        .primary-timer-item.main .timer-image { width: 100px; height: 100px; border-radius: 16px; }
+        .primary-timer-item.main .timer-name { font-size: 1.8em; }
+        .primary-timer-item.main .timer-name-container { margin-bottom: 8px; }
+        .primary-timer-item.main .timer-countdown { font-size: 2.5em; }
 
-    #settings-button { position: absolute; top: 20px; right: 20px; width: 28px; height: 28px; color: var(--text-muted-color); cursor: pointer; transition: color 0.2s ease, transform 0.3s ease; }
-    #settings-button:hover { color: var(--text-color); transform: rotate(45deg); }
-    #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
-    #modal-overlay.visible { opacity: 1; visibility: visible; }
-    
-    #settings-modal { background-color: var(--box-bg-color); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); width: 450px; transform: scale(0.95); transition: transform 0.3s ease; text-align: center; }
-    #modal-overlay.visible #settings-modal { transform: scale(1); }
-    #settings-modal h2 { margin-top: 0; color: var(--color-primary); }
-    .settings-section { margin-bottom: 25px; }
-    .settings-section > label { display: block; margin-bottom: 10px; color: var(--text-muted-color); }
-    .settings-input { width: 100%; box-sizing: border-box; background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 10px; border-radius: 8px; font-size: 1em; text-align: center; }
-    select.settings-input { text-align-last: center; }
-    select.settings-input option { background-color: var(--bg-color); color: var(--text-color); }
+        .primary-timer-item.secondary { opacity: 0.8; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .primary-timer-item.secondary .timer-image,
+        .primary-timer-item.secondary .ticket-image { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px; border-width: 1px; }
+        .primary-timer-item.secondary .timer-name { font-size: 1.1em; }
+        .primary-timer-item.secondary .timer-name-container { margin-bottom: 8px; }
+        .primary-timer-item.secondary .timer-countdown { font-size: 1.5em; }
+        .primary-timer-item.secondary .timer-desc { font-size: 0.8em; margin-bottom: 10px; }
 
-    .checkbox-group { display: flex; gap: 30px; justify-content: center; }
-    .checkbox-label { display: flex; align-items: center; cursor: pointer; font-size: 0.9em; }
-    .checkbox-label input { display: none; }
-    .checkbox-custom { width: 20px; height: 20px; border: 2px solid var(--border-color); border-radius: 5px; margin-right: 8px; display: flex; justify-content: center; align-items: center; transition: background-color 0.2s ease, border-color 0.2s ease; }
-    .checkbox-custom svg { width: 14px; height: 14px; color: white; opacity: 0; transition: opacity 0.2s ease; }
-    .checkbox-label input:checked + .checkbox-custom { background-color: var(--color-normal); border-color: var(--color-normal); }
-    .checkbox-label input:checked + .checkbox-custom svg { opacity: 1; }
-    #settings-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
-    .settings-btn { background-color: var(--color-normal); color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    #test-notification-btn { background-color: var(--border-color); color: var(--text-color); }
-</style>
+        .spawn-item { display: flex; align-items: center; padding: 15px 25px; border-bottom: 1px solid var(--border-color); transition: opacity 0.3s ease; }
+        .spawn-item.disabled { opacity: 0.5; }
+        .spawn-item:first-child { border-top: 1px solid var(--border-color); }
+        .spawn-item-info { flex-grow: 1; }
+        .spawn-item-name { font-size: 1.1em; color: var(--text-color); }
+        .spawn-item-time { font-size: 0.9em; color: var(--text-muted-color); margin: 0; }
+        .countdown-timer { font-size: 1.2em; font-weight: 700; font-family: 'Courier New', monospace; }
+        .alert-toggle { cursor: pointer; margin-left: 20px; width: 24px; height: 24px; transition: color 0.2s ease, opacity 0.2s ease; }
+        .alert-toggle.enabled { color: var(--color-normal); }
+        .alert-toggle.disabled { color: var(--text-muted-color); opacity: 0.6; }
+        
+        /* --- CAMBIO: Reglas de color específicas y con mayor especificidad --- */
+        .primary-timer-item .timer-name-boss, .spawn-item .spawn-item-name-boss { color: var(--color-urgent); }
+        .primary-timer-item .timer-name-ticket, .ticket-item .spawn-item-name-ticket { color: var(--color-primary); }
+
+        .item-icon { width: 24px; height: 24px; margin-right: 15px; }
+        .ticket-item { border-bottom: 1px solid var(--border-color); }
+        .ticket-item .item-icon { color: var(--color-primary); }
+
+        #settings-button { position: absolute; top: 20px; right: 20px; width: 28px; height: 28px; color: var(--text-muted-color); cursor: pointer; transition: color 0.2s ease, transform 0.3s ease; }
+        #settings-button:hover { color: var(--text-color); transform: rotate(45deg); }
+        
+        #modal-overlay, #info-modal-overlay, #sync-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #modal-overlay.visible, #info-modal-overlay.visible, #sync-modal-overlay.visible { opacity: 1; visibility: visible; }
+        
+        #settings-modal, #info-modal, #sync-modal { background-color: var(--box-bg-color); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); transform: scale(0.95); transition: transform 0.3s ease; text-align: center; }
+        #modal-overlay.visible #settings-modal, #info-modal-overlay.visible #info-modal, #sync-modal-overlay.visible #sync-modal { transform: scale(1); }
+        #settings-modal h2, #info-modal h2, #sync-modal h2 { margin-top: 0; color: var(--color-primary); }
+        
+        #info-modal { width: 420px; text-align: left; }
+        #info-modal p { color: var(--text-muted-color); font-size: 0.95em; line-height: 1.6; margin: 15px 0; }
+        #info-modal p:last-of-type { margin-bottom: 25px; }
+        #info-modal strong { color: var(--text-color); font-weight: normal; }
+        #close-info-btn { display: block; margin: 0 auto; background-color: var(--border-color); color: var(--text-color); }
+
+        #sync-modal { width: 350px; }
+        #sync-modal p { color: var(--text-muted-color); font-size: 0.9em; margin: 15px 0 25px 0; }
+        .sync-inputs { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        .sync-input-group { display: flex; flex-direction: column; align-items: center; }
+        .sync-input-group label { font-size: 0.8em; color: var(--text-muted-color); margin-bottom: 8px; }
+        .sync-input-group input { width: 60px; text-align: center; }
+
+        .settings-section { margin-bottom: 25px; }
+        .settings-section > label { display: block; margin-bottom: 10px; color: var(--text-muted-color); }
+        .settings-input { width: 100%; box-sizing: border-box; background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 10px; border-radius: 8px; font-size: 1em; }
+        select.settings-input { text-align-last: center; }
+        select.settings-input option { background-color: var(--bg-color); color: var(--text-color); }
+
+        .checkbox-group { display: flex; gap: 30px; justify-content: center; }
+        .checkbox-label { display: flex; align-items: center; cursor: pointer; font-size: 0.9em; }
+        .checkbox-label input { display: none; }
+        .checkbox-custom { width: 20px; height: 20px; border: 2px solid var(--border-color); border-radius: 5px; margin-right: 8px; display: flex; justify-content: center; align-items: center; transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .checkbox-custom svg { width: 14px; height: 14px; color: white; opacity: 0; transition: opacity 0.2s ease; }
+        .checkbox-label input:checked + .checkbox-custom { background-color: var(--color-normal); border-color: var(--color-normal); }
+        .checkbox-label input:checked + .checkbox-custom svg { opacity: 1; }
+        #settings-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+        .settings-btn { background-color: var(--color-normal); color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #test-notification-btn { background-color: var(--border-color); color: var(--text-color); }
+    </style>
 </head>
 <body>
     <div class="main-wrapper">
@@ -123,6 +163,7 @@
             <div id="settings-button">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
             </div>
+            <div id="current-time"></div>
             <div id="primary-timers-container"></div>
             <div id="status-bar" data-lang-key="initializing"></div>
         </div>
@@ -133,35 +174,30 @@
 
     <div id="modal-overlay">
         <div id="settings-modal">
-            <h2 data-lang-key="settingsTitle"></h2>
-            
-            <div class="settings-section">
-                <label data-lang-key="timersLabel"></label>
-                <div style="display: flex; justify-content: center;">
-                    <label class="checkbox-label" for="boss-timers-toggle">
-                        <input type="checkbox" id="boss-timers-toggle">
-                        <span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
-                    </label>
-                </div>
-            </div>
-
+            <h2 data-lang-key="settingsTitle"></h2><div class="settings-section"><label data-lang-key="timersLabel"></label><div style="display: flex; justify-content: center;"><label class="checkbox-label" for="boss-timers-toggle"><input type="checkbox" id="boss-timers-toggle"><span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></span></label></div></div>
             <div class="settings-section"><label for="pre-alert-input" data-lang-key="preAlertLabel"></label><input type="text" id="pre-alert-input" class="settings-input" placeholder="e.g., 15, 5, 1"></div>
-            
-            <div class="settings-section">
-                <label data-lang-key="notificationTypeLabel"></label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label" for="sound-toggle"><input type="checkbox" id="sound-toggle"><span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></span><span data-lang-key="soundToggleLabel"></span></label>
-                    <label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></span><span data-lang-key="desktopToggleLabel"></span></label>
-                </div>
-            </div>
-
+            <div class="settings-section"><label data-lang-key="notificationTypeLabel"></label><div class="checkbox-group"><label class="checkbox-label" for="sound-toggle"><input type="checkbox" id="sound-toggle"><span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></span><span data-lang-key="soundToggleLabel"></span></label><label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></span><span data-lang-key="desktopToggleLabel"></span></label></div></div>
             <div class="settings-section"><label for="timezone-select" data-lang-key="timezoneLabel"></label><select id="timezone-select" class="settings-input"></select></div>
             <div class="settings-section"><label for="language-select" data-lang-key="languageLabel"></label><select id="language-select" class="settings-input"></select></div>
-            
-            <div id="settings-buttons">
-                <button id="test-notification-btn" class="settings-btn" data-lang-key="testButton"></button>
-                <button id="save-settings-btn" class="settings-btn" data-lang-key="saveButton"></button>
+            <div id="settings-buttons"><button id="test-notification-btn" class="settings-btn" data-lang-key="testButton"></button><button id="save-settings-btn" class="settings-btn" data-lang-key="saveButton"></button></div>
+        </div>
+    </div>
+
+    <div id="info-modal-overlay">
+        <div id="info-modal">
+            <h2 id="info-modal-title"></h2><p id="info-modal-body1"></p><p id="info-modal-body2"></p><button id="close-info-btn" class="settings-btn"></button>
+        </div>
+    </div>
+
+    <div id="sync-modal-overlay">
+        <div id="sync-modal">
+            <h2 data-lang-key="syncModalTitle"></h2><p data-lang-key="syncModalDesc"></p>
+            <div class="sync-inputs">
+                <div class="sync-input-group"><label data-lang-key="syncModalHours"></label><input type="number" id="sync-hours" class="settings-input" min="0" max="1" placeholder="H"></div>
+                <div class="sync-input-group"><label data-lang-key="syncModalMinutes"></label><input type="number" id="sync-minutes" class="settings-input" min="0" max="59" placeholder="M"></div>
+                <div class="sync-input-group"><label data-lang-key="syncModalSeconds"></label><input type="number" id="sync-seconds" class="settings-input" min="0" max="59" placeholder="S"></div>
             </div>
+            <button id="save-sync-btn" class="settings-btn" data-lang-key="syncModalButton"></button>
         </div>
     </div>
 

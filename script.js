@@ -31,6 +31,16 @@
             notificationBlocked: "Las notificaciones están bloqueadas. Por favor, habilítalas en la configuración de tu navegador/sistema.",
             notificationShowdownReady: "¡Ticket de Showdown Listo!",
             notificationShowdownReadyBody: "Un nuevo ticket de Showdown está disponible.",
+            infoModalTitle: "Info del Ticket de Showdown",
+            infoModalBody1: "Se recarga <strong>1 ticket cada 2 horas</strong>.",
+            infoModalBody2: "La cuenta regresiva de esta app asume que un ticket se usa tan pronto como está disponible. Puedes sincronizar manualmente el tiempo restante si es necesario.",
+            infoModalClose: "Cerrar",
+            syncModalTitle: "Sincronizar Ticket",
+            syncModalDesc: "Introduce el tiempo restante de recarga que ves en el juego para ajustar el temporizador.",
+            syncModalHours: "Horas",
+            syncModalMinutes: "Minutos",
+            syncModalSeconds: "Segundos",
+            syncModalButton: "Sincronizar",
         },
         en: {
             title: "Timers Dashboard",
@@ -60,221 +70,135 @@
             notificationBlocked: "Notifications are blocked. Please enable them in your browser/system settings.",
             notificationShowdownReady: "Showdown Ticket Ready!",
             notificationShowdownReadyBody: "A new Showdown Ticket is now available.",
+            infoModalTitle: "Showdown Ticket Info",
+            infoModalBody1: "<strong>1 ticket is recharged every 2 hours</strong>.",
+            infoModalBody2: "This app's countdown assumes a ticket is used as soon as it's available. You can manually sync the remaining time if needed.",
+            infoModalClose: "Close",
+            syncModalTitle: "Sync Ticket Timer",
+            syncModalDesc: "Enter the remaining recharge time you see in-game to adjust the timer.",
+            syncModalHours: "Hours",
+            syncModalMinutes: "Minutes",
+            syncModalSeconds: "Seconds",
+            syncModalButton: "Sync",
         }
     };
 
     // --- CONFIGURATION ---
     const defaultConfig = {
         dailyResetTime: '18:30',
-        dailyResetImageUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/59/dd/41/59dd412c-a794-533c-5aae-5a57687f2d76/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/217x0w.webp',
-        showdownTicketImageUrl: 'https://cdn-icons-png.flaticon.com/512/291/291213.png', // Se mantiene para las notificaciones
+        dailyResetImageUrl: 'style/bnsheroes.webp',
+        showdownTicketImageUrl: 'style/ticket-icon.png',
         showBossTimers: false,
-        boss: {
-            name: "Stalker Jiangshi",
-            imageUrl: "https://fizz-download.playnccdn.com/lg/file/heroes/download/199988c567c-1298c0ad-55d5-4011-957e-124cc5c4c1d0",
-            location: "Everdusk",
-            spawnTimes: ['13:00', '19:00', '23:00', '02:00', '05:00', '10:00'], 
-            alerts: { '13:00': true, '19:00': true, '23:00': true, '02:00': true, '05:00': true, '10:00': true }
-        },
+        boss: { name: "Stalker Jiangshi", imageUrl: "style/Stalker-Jiangshi.png", location: "Everdusk", spawnTimes: ['13:00', '19:00', '23:00', '02:00', '05:00', '10:00'], alerts: { '13:00': true, '19:00': true, '23:00': true, '02:00': true, '05:00': true, '10:00': true } },
         displayTimezone: getSystemTimezoneOffset(),
         preAlertMinutes: [15, 5, 1],
         currentLanguage: 'es',
         notificationTypes: { sound: true, desktop: true },
         showdownTicketIntervalHours: 2,
+        showdownTicketSync: null,
     };
     let config = {};
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // --- DOM ELEMENTS ---
-    const dom = {
-        mainWrapper: document.querySelector('.main-wrapper'),
-        primaryPanel: document.querySelector('.primary-panel'),
-        secondaryPanel: document.querySelector('.secondary-panel'),
-        primaryTimersContainer: document.getElementById('primary-timers-container'),
-        listContainer: document.getElementById('spawn-list-container'),
-        statusBar: document.getElementById('status-bar'),
-        modalOverlay: document.getElementById('modal-overlay'),
-        settingsButton: document.getElementById('settings-button'),
-        saveSettingsBtn: document.getElementById('save-settings-btn'),
-        bossTimersToggle: document.getElementById('boss-timers-toggle'),
-        preAlertInput: document.getElementById('pre-alert-input'),
-        soundToggle: document.getElementById('sound-toggle'),
-        desktopToggle: document.getElementById('desktop-toggle'),
-        timezoneSelect: document.getElementById('timezone-select'),
-        languageSelect: document.getElementById('language-select'),
-        testNotificationBtn: document.getElementById('test-notification-btn'),
-    };
+    const dom = { mainWrapper: document.querySelector('.main-wrapper'), primaryPanel: document.querySelector('.primary-panel'), secondaryPanel: document.querySelector('.secondary-panel'), primaryTimersContainer: document.getElementById('primary-timers-container'), listContainer: document.getElementById('spawn-list-container'), statusBar: document.getElementById('status-bar'), modalOverlay: document.getElementById('modal-overlay'), settingsButton: document.getElementById('settings-button'), saveSettingsBtn: document.getElementById('save-settings-btn'), bossTimersToggle: document.getElementById('boss-timers-toggle'), preAlertInput: document.getElementById('pre-alert-input'), soundToggle: document.getElementById('sound-toggle'), desktopToggle: document.getElementById('desktop-toggle'), timezoneSelect: document.getElementById('timezone-select'), languageSelect: document.getElementById('language-select'), testNotificationBtn: document.getElementById('test-notification-btn'), infoModalOverlay: document.getElementById('info-modal-overlay'), infoModalTitle: document.getElementById('info-modal-title'), infoModalBody1: document.getElementById('info-modal-body1'), infoModalBody2: document.getElementById('info-modal-body2'), closeInfoBtn: document.getElementById('close-info-btn'), syncModalOverlay: document.getElementById('sync-modal-overlay'), syncHours: document.getElementById('sync-hours'), syncMinutes: document.getElementById('sync-minutes'), syncSeconds: document.getElementById('sync-seconds'), saveSyncBtn: document.getElementById('save-sync-btn'), currentTime: document.getElementById('current-time'), };
     const alertSound = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
     let alertsShownToday = {};
     let lastResetCycleDay = null;
 
-    // --- INITIALIZATION ---
-    document.addEventListener('DOMContentLoaded', () => {
-        loadSettings();
-        addEventListeners();
-        populateSelects();
-        updateLanguage();
-        requestNotificationPermission();
-        setInterval(updateUI, 1000);
-        updateUI();
-    });
+    document.addEventListener('DOMContentLoaded', () => { loadSettings(); addEventListeners(); populateSelects(); updateLanguage(); requestNotificationPermission(); setInterval(updateUI, 1000); updateUI(); });
 
-    // --- CORE LOGIC ---
     function updateUI() {
         updateLanguage();
         const now = new Date();
-        checkAndPerformDailyReset(now);
+        
+        // Actualizar reloj de hora actual
+        const currentTimeString = formatDateToTimezoneString(now, config.displayTimezone, true);
+        const tzString = `UTC${config.displayTimezone.replace(':00','')}`;
+        dom.currentTime.innerHTML = `${currentTimeString} <span class="timezone-abbr">${tzString}</span>`;
 
+        checkAndPerformDailyReset(now);
         const dailyResetTimer = getDailyResetTimer(now);
         const lastReset = new Date(dailyResetTimer.targetDate.getTime() - 86400000);
         const showdownTicketTimer = getShowdownTicketTimer(now, lastReset);
-        
+        checkAndTriggerAlerts(now, [], dailyResetTimer, showdownTicketTimer);
         const primaryTimers = [dailyResetTimer];
         if (config.showBossTimers) {
-            dom.mainWrapper.style.width = '830px';
-            dom.secondaryPanel.style.opacity = '1';
-            dom.secondaryPanel.style.width = '450px';
-            dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
-
-            const bossTimers = config.boss.spawnTimes.map(time => {
-                const targetDate = getAbsoluteDateFromLocalTime(time);
-                return { 
-                    type: 'boss', ...config.boss, time, targetDate, 
-                    isAlertEnabled: !!config.boss.alerts[time],
-                    secondsLeft: Math.floor((targetDate - now) / 1000) 
-                };
-            }).filter(t => t.secondsLeft > -300);
-
+            dom.mainWrapper.style.width = '830px'; dom.secondaryPanel.style.opacity = '1'; dom.secondaryPanel.style.width = '450px'; dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
+            const bossTimers = config.boss.spawnTimes.map(time => { const targetDate = getAbsoluteDateFromLocalTime(time); return { type: 'boss', ...config.boss, time, targetDate, isAlertEnabled: !!config.boss.alerts[time], secondsLeft: Math.floor((targetDate - now) / 1000) }; }).filter(t => t.secondsLeft > -300);
             const nextActiveBoss = bossTimers.filter(s => s.isAlertEnabled && s.secondsLeft >= 0).sort((a, b) => a.secondsLeft - b.secondsLeft)[0];
-            
             if (nextActiveBoss) primaryTimers.push(nextActiveBoss);
             renderPrimaryPanel(primaryTimers);
-            
-            bossTimers.sort((a, b) => {
-                if (a.isAlertEnabled !== b.isAlertEnabled) return a.isAlertEnabled ? -1 : 1;
-                return a.secondsLeft - b.secondsLeft;
-            });
+            bossTimers.sort((a, b) => { if (a.isAlertEnabled !== b.isAlertEnabled) return a.isAlertEnabled ? -1 : 1; return a.secondsLeft - b.secondsLeft; });
             renderSecondaryPanel([showdownTicketTimer, ...bossTimers]);
             checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer);
         } else {
             primaryTimers.push(showdownTicketTimer);
-            dom.mainWrapper.style.width = '380px';
-            dom.secondaryPanel.style.opacity = '0';
-            dom.secondaryPanel.style.width = '0px';
-            dom.secondaryPanel.style.borderLeft = 'none';
-            dom.listContainer.innerHTML = '';
+            dom.mainWrapper.style.width = '380px'; dom.secondaryPanel.style.opacity = '0'; dom.secondaryPanel.style.width = '0px'; dom.secondaryPanel.style.borderLeft = 'none'; dom.listContainer.innerHTML = '';
             renderPrimaryPanel(primaryTimers);
             checkAndTriggerAlerts(now, [], dailyResetTimer, showdownTicketTimer);
         }
     }
     
-    // --- RENDER FUNCTIONS ---
     function renderPrimaryPanel(timers) {
+        const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`;
+        const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`;
         dom.primaryTimersContainer.innerHTML = timers.map((timer, index) => {
-            const itemClass = index === 0 ? 'main' : 'secondary';
-            const color = getCountdownColor(timer.secondsLeft, timer.type);
-            const countdown = formatTime(timer.secondsLeft);
-            const description = timer.type === 'boss' ? i18n[config.currentLanguage].bossSpawnIn(timer.location) : timer.description;
-            const imageDivClass = timer.type === 'ticket' ? 'ticket-image' : 'timer-image';
-            
-            // --- CAMBIO CLAVE: Lógica de íconos corregida ---
-            let imageContent = '';
-            if (timer.type === 'ticket') {
-                // Para el ticket, usar SIEMPRE el ícono SVG para consistencia visual.
-                imageContent = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>`;
-            } else {
-                // Para los otros timers (Reset, Boss), usar la imagen si existe.
-                imageContent = timer.imageUrl ? `<img src="${timer.imageUrl}" alt="${timer.name}">` : '';
-            }
-            
-            return `<div class="primary-timer-item ${itemClass}">
-                        <div class="${imageDivClass}">${imageContent}</div>
-                        <p class="timer-name">${timer.name}</p>
-                        <p class="timer-desc">${description}</p>
-                        <p class="timer-countdown" style="color: ${color};">${countdown}</p>
-                    </div>`;
+            const itemClass = index === 0 ? 'main' : 'secondary'; const color = getCountdownColor(timer.secondsLeft, timer.type); const countdown = formatTime(timer.secondsLeft); const description = timer.type === 'boss' ? i18n[config.currentLanguage].bossSpawnIn(timer.location) : timer.description; const imageDivClass = timer.type === 'ticket' ? 'ticket-image' : 'timer-image'; let imageContent = timer.type === 'ticket' ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>` : (timer.imageUrl ? `<img src="${timer.imageUrl}" alt="${timer.name}">` : ''); const nameClass = `timer-name ${timer.type === 'boss' ? 'timer-name-boss' : timer.type === 'ticket' ? 'timer-name-ticket' : ''}`; const nameContent = timer.type === 'ticket' ? `<div class="timer-name-container"><p class="${nameClass}">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>` : `<p class="${nameClass}">${timer.name}</p>`; const countdownContent = timer.type === 'ticket' ? `<div class="timer-countdown-container"><p class="timer-countdown" style="color: ${color};">${countdown}</p><div class="sync-button">${syncIconSVG}</div></div>` : `<p class="timer-countdown" style="color: ${color};">${countdown}</p>`; return `<div class="primary-timer-item ${itemClass}"><div class="${imageDivClass}">${imageContent}</div>${nameContent}<p class="timer-desc">${description}</p>${countdownContent}</div>`;
         }).join('');
     }
-
     function renderSecondaryPanel(timers) {
         dom.listContainer.innerHTML = timers.map(timer => {
-            const color = getCountdownColor(timer.secondsLeft, timer.type);
-            const time = formatTime(timer.secondsLeft);
-            const displayTime = formatToAMPM(getDisplayDate(timer.targetDate, config.displayTimezone));
-
-            if (timer.type === 'boss') {
-                const tzString = `UTC${config.displayTimezone.replace(':00','')}`;
-                const bellIcon = timer.isAlertEnabled ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.17 3.17l17.66 17.66" /></svg>`;
-                return `<div class="spawn-item ${!timer.isAlertEnabled ? 'disabled' : ''}">
-                            <div class="spawn-item-info">
-                                <p class="spawn-item-name">${timer.name}</p>
-                                <p class="spawn-item-time">${displayTime} (${tzString})</p>
-                            </div>
-                            <span class="countdown-timer" style="color: ${color};">${time}</span>
-                            <div class="alert-toggle ${timer.isAlertEnabled ? 'enabled' : 'disabled'}" data-time="${timer.time}">${bellIcon}</div>
-                        </div>`;
-            }
-            
-            const icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>`;
-            return `<div class="spawn-item ticket-item">
-                        <div class="item-icon">${icon}</div>
-                        <div class="spawn-item-info">
-                            <p class="spawn-item-name">${timer.name}</p>
-                            <p class="spawn-item-time">${timer.description} - ${displayTime}</p>
-                        </div>
-                        <span class="countdown-timer" style="color: ${color};">${time}</span>
-                    </div>`;
+            const color = getCountdownColor(timer.secondsLeft, timer.type); const time = formatTime(timer.secondsLeft); const displayTime = formatDateToTimezoneString(timer.targetDate, config.displayTimezone); if (timer.type === 'boss') { const tzString = `UTC${config.displayTimezone.replace(':00', '')}`; const bellIcon = timer.isAlertEnabled ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.17 3.17l17.66 17.66" /></svg>`; return `<div class="spawn-item ${!timer.isAlertEnabled ? 'disabled' : ''}"><div class="spawn-item-info"><p class="spawn-item-name spawn-item-name-boss">${timer.name}</p><p class="spawn-item-time">${displayTime} (${tzString})</p></div><span class="countdown-timer" style="color: ${color};">${time}</span><div class="alert-toggle ${timer.isAlertEnabled ? 'enabled' : 'disabled'}" data-time="${timer.time}">${bellIcon}</div></div>`; } const icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>`; const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`; const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`; const nameContent = `<div class="spawn-item-name-container"><p class="spawn-item-name spawn-item-name-ticket">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`; const countdownContent = `<div class="countdown-container"><span class="countdown-timer" style="color: ${color};">${time}</span><div class="sync-button">${syncIconSVG}</div></div>`; return `<div class="spawn-item ticket-item"><div class="item-icon">${icon}</div><div class="spawn-item-info">${nameContent}<p class="spawn-item-time">${timer.description} - ${displayTime}</p></div>${countdownContent}</div>`;
         }).join('');
     }
-
     function getAbsoluteDateFromLocalTime(timeString) { const now = new Date(); const [h, m] = timeString.split(':'); let d = new Date(); d.setHours(h, m, 0, 0); if (d < now) d.setDate(d.getDate() + 1); return d; }
     function getDailyResetTimer(now) { const t = getAbsoluteDateFromLocalTime(config.dailyResetTime); return { type: 'reset', name: i18n[config.currentLanguage].dailyResetName, description: i18n[config.currentLanguage].dailyResetDesc, imageUrl: config.dailyResetImageUrl, targetDate: t, secondsLeft: Math.floor((t - now) / 1000) }; }
-    function getShowdownTicketTimer(now, lastReset) { const msSince = now.getTime() - lastReset.getTime(); const intervalMs = config.showdownTicketIntervalHours * 3600000; const nextTime = new Date(lastReset.getTime() + (Math.floor(msSince / intervalMs) + 1) * intervalMs); return { type: 'ticket', name: i18n[config.currentLanguage].showdownName, description: i18n[config.currentLanguage].showdownDesc, targetDate: nextTime, secondsLeft: Math.floor((nextTime - now) / 1000), imageUrl: config.showdownTicketImageUrl }; }
-    function loadSettings() { const saved = localStorage.getItem('timersDashboardConfig'); config = JSON.parse(JSON.stringify(defaultConfig)); if (saved) { try { const parsed = JSON.parse(saved); config = { ...config, ...parsed }; config.boss = { ...defaultConfig.boss, ...(parsed.boss || {}) }; config.notificationTypes = { ...defaultConfig.notificationTypes, ...(parsed.notificationTypes || {})}; config.boss.spawnTimes = defaultConfig.boss.spawnTimes; } catch (e) { console.error("Error loading config.", e); } } }
-    function saveSettings() { config.showBossTimers = dom.bossTimersToggle.checked; const alerts = dom.preAlertInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0); config.preAlertMinutes = alerts.length ? alerts.sort((a, b) => b - a) : defaultConfig.preAlertMinutes; config.notificationTypes = { sound: dom.soundToggle.checked, desktop: dom.desktopToggle.checked }; config.displayTimezone = dom.timezoneSelect.value; config.currentLanguage = dom.languageSelect.value; localStorage.setItem('timersDashboardConfig', JSON.stringify(config)); closeModal(); }
-    function toggleAlertState(time) { if (config.boss.alerts[time] !== undefined) { config.boss.alerts[time] = !config.boss.alerts[time]; localStorage.setItem('timersDashboardConfig', JSON.stringify(config)); updateUI(); } }
+    function getShowdownTicketTimer(now, lastReset) { const intervalMs = config.showdownTicketIntervalHours * 3600000; let nextTime; if (config.showdownTicketSync && config.showdownTicketSync > lastReset.getTime()) { const syncAnchor = config.showdownTicketSync; const msSinceSync = now.getTime() - syncAnchor; if (msSinceSync > 0) { const intervalsPassed = Math.floor(msSinceSync / intervalMs); nextTime = new Date(syncAnchor + (intervalsPassed + 1) * intervalMs); } else { nextTime = new Date(syncAnchor); } } else { const msSinceReset = now.getTime() - lastReset.getTime(); const intervalsSinceReset = Math.floor(msSinceReset / intervalMs); nextTime = new Date(lastReset.getTime() + (intervalsSinceReset + 1) * intervalMs); } return { type: 'ticket', name: i18n[config.currentLanguage].showdownName, description: i18n[config.currentLanguage].showdownDesc, targetDate: nextTime, secondsLeft: Math.floor((nextTime - now) / 1000), imageUrl: config.showdownTicketImageUrl }; }
+    function loadSettings() { let tempConfig = JSON.parse(JSON.stringify(defaultConfig)); const savedJSON = getCookie('timersDashboardConfig'); if (savedJSON) { try { const savedConfig = JSON.parse(savedJSON); tempConfig = { ...tempConfig, ...savedConfig }; tempConfig.boss = { ...defaultConfig.boss, ...(savedConfig.boss || {}) }; tempConfig.notificationTypes = { ...defaultConfig.notificationTypes, ...(savedConfig.notificationTypes || {}) }; } catch (e) { console.error("Error al cargar la configuración de la cookie.", e); } } config = tempConfig; config.boss.spawnTimes = defaultConfig.boss.spawnTimes; }
+    function saveConfigToCookie() { setCookie('timersDashboardConfig', JSON.stringify(config), 365); }
+    function saveSettings() { config.showBossTimers = dom.bossTimersToggle.checked; const alerts = dom.preAlertInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0); config.preAlertMinutes = alerts.length ? alerts.sort((a, b) => b - a) : defaultConfig.preAlertMinutes; config.notificationTypes = { sound: dom.soundToggle.checked, desktop: dom.desktopToggle.checked }; config.displayTimezone = dom.timezoneSelect.value; config.currentLanguage = dom.languageSelect.value; saveConfigToCookie(); closeModal(); }
+    function toggleAlertState(time) { if (config.boss.alerts[time] !== undefined) { config.boss.alerts[time] = !config.boss.alerts[time]; saveConfigToCookie(); updateUI(); } }
+    function saveSyncData() { const h = parseInt(dom.syncHours.value) || 0; const m = parseInt(dom.syncMinutes.value) || 0; const s = parseInt(dom.syncSeconds.value) || 0; const remainingSeconds = (h * 3600) + (m * 60) + s; const now = new Date().getTime(); config.showdownTicketSync = now + (remainingSeconds * 1000); saveConfigToCookie(); closeSyncModal(); updateUI(); }
+    function checkAndPerformDailyReset(now) { const t = getAbsoluteDateFromLocalTime(config.dailyResetTime); const r = new Date(t); if (now >= r) r.setDate(r.getDate() - 1); const d = r.getDate(); if (lastResetCycleDay !== null && lastResetCycleDay !== d) { alertsShownToday = {}; if (config.showdownTicketSync) { config.showdownTicketSync = null; saveConfigToCookie(); } } lastResetCycleDay = d; }
     function openModal() { dom.bossTimersToggle.checked = config.showBossTimers; dom.preAlertInput.value = config.preAlertMinutes.join(', '); dom.soundToggle.checked = config.notificationTypes.sound; dom.desktopToggle.checked = config.notificationTypes.desktop; dom.timezoneSelect.value = config.displayTimezone; dom.languageSelect.value = config.currentLanguage; dom.modalOverlay.classList.add('visible'); }
     function closeModal() { dom.modalOverlay.classList.remove('visible'); updateUI(); }
-    function addEventListeners() { dom.settingsButton.addEventListener('click', openModal); dom.modalOverlay.addEventListener('click', e => { if (e.target === dom.modalOverlay) closeModal(); }); dom.saveSettingsBtn.addEventListener('click', saveSettings); dom.listContainer.addEventListener('click', e => { const t = e.target.closest('.alert-toggle'); if (t) toggleAlertState(t.dataset.time); }); dom.testNotificationBtn.addEventListener('click', () => { const lang = i18n[config.currentLanguage]; if (Notification.permission !== 'granted') { requestNotificationPermission(); alert(lang.notificationBlocked); return; } showFullAlert(lang.notificationPreAlert(config.boss.name, 1), lang.notificationPreAlertBody(config.boss.location), config.boss.imageUrl); setTimeout(() => { const rt = formatToAMPM(getDisplayDate(new Date(), config.displayTimezone)); showFullAlert(lang.notificationReset, lang.notificationResetBody(rt), config.dailyResetImageUrl); }, 1000); setTimeout(() => { showFullAlert(lang.notificationShowdownReady, lang.notificationShowdownReadyBody, config.showdownTicketImageUrl); }, 2000); }); window.addEventListener('focus', updateLanguage); }
-    function checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer) {
-        const time = now.toTimeString().slice(0, 5);
-        if (config.showBossTimers) { bossTimers.forEach(spawn => { if (!spawn.isAlertEnabled) return; const cycleKey = `${lastResetCycleDay}-${spawn.time}`; config.preAlertMinutes.forEach(min => { const alertTime = new Date(spawn.targetDate.getTime() - min * 60000).toTimeString().slice(0, 5); const alertKey = `${cycleKey}-${min}`; if (time === alertTime && !alertsShownToday[alertKey]) { const lang = i18n[config.currentLanguage]; showFullAlert(lang.notificationPreAlert(spawn.name, min), lang.notificationPreAlertBody(spawn.location), spawn.imageUrl); alertsShownToday[alertKey] = true; } }); }); } const resetTime = dailyResetTimer.targetDate.toTimeString().slice(0, 5); const resetAlertKey = `${lastResetCycleDay}-reset`; if (time === resetTime && !alertsShownToday[resetAlertKey]) { const lang = i18n[config.currentLanguage]; const displayResetTime = formatToAMPM(getDisplayDate(dailyResetTimer.targetDate, config.displayTimezone)); showFullAlert(lang.notificationReset, lang.notificationResetBody(displayResetTime), dailyResetTimer.imageUrl); alertsShownToday[resetAlertKey] = true; }
-        const isSameAsReset = Math.abs(showdownTicketTimer.targetDate.getTime() - dailyResetTimer.targetDate.getTime()) < 5000;
-        if (!isSameAsReset) {
-            const showdownTime = showdownTicketTimer.targetDate.toTimeString().slice(0, 5);
-            const showdownAlertKey = `showdown-${showdownTicketTimer.targetDate.getTime()}`;
-            if (time === showdownTime && !alertsShownToday[showdownAlertKey]) {
-                const lang = i18n[config.currentLanguage];
-                showFullAlert(lang.notificationShowdownReady, lang.notificationShowdownReadyBody, showdownTicketTimer.imageUrl);
-                alertsShownToday[showdownAlertKey] = true;
-            }
-        }
-    }
-    function checkAndPerformDailyReset(now) { const t = getAbsoluteDateFromLocalTime(config.dailyResetTime); const r = new Date(t); if (now >= r) r.setDate(r.getDate() - 1); const d = r.getDate(); if (lastResetCycleDay !== d) { alertsShownToday = {}; lastResetCycleDay = d; } }
+    function openInfoModal() { const lang = i18n[config.currentLanguage]; dom.infoModalTitle.textContent = lang.infoModalTitle; dom.infoModalBody1.innerHTML = lang.infoModalBody1; dom.infoModalBody2.innerHTML = lang.infoModalBody2; dom.closeInfoBtn.textContent = lang.infoModalClose; dom.infoModalOverlay.classList.add('visible'); }
+    function closeInfoModal() { dom.infoModalOverlay.classList.remove('visible'); }
+    function openSyncModal() { dom.syncHours.value = ''; dom.syncMinutes.value = ''; dom.syncSeconds.value = ''; dom.syncModalOverlay.classList.add('visible'); dom.syncHours.focus(); }
+    function closeSyncModal() { dom.syncModalOverlay.classList.remove('visible'); }
+    function addEventListeners() { const mainContainer = document.querySelector('.main-wrapper'); mainContainer.addEventListener('click', e => { const infoBtn = e.target.closest('.info-button'); const syncBtn = e.target.closest('.sync-button'); const alertToggle = e.target.closest('.alert-toggle'); if (infoBtn) openInfoModal(); if (syncBtn) openSyncModal(); if (alertToggle) toggleAlertState(alertToggle.dataset.time); }); dom.settingsButton.addEventListener('click', openModal); dom.modalOverlay.addEventListener('click', e => { if (e.target === dom.modalOverlay) closeModal(); }); dom.saveSettingsBtn.addEventListener('click', saveSettings); dom.testNotificationBtn.addEventListener('click', () => { const lang = i18n[config.currentLanguage]; if (Notification.permission !== 'granted') { requestNotificationPermission(); alert(lang.notificationBlocked); return; } showFullAlert(lang.notificationPreAlert(config.boss.name, 1), lang.notificationPreAlertBody(config.boss.location), config.boss.imageUrl); setTimeout(() => { const rt = formatDateToTimezoneString(new Date(), config.displayTimezone); showFullAlert(lang.notificationReset, lang.notificationResetBody(rt), config.dailyResetImageUrl); }, 1000); setTimeout(() => { showFullAlert(lang.notificationShowdownReady, lang.notificationShowdownReadyBody, config.showdownTicketImageUrl); }, 2000); }); window.addEventListener('focus', updateLanguage); dom.infoModalOverlay.addEventListener('click', e => { if (e.target === dom.infoModalOverlay) closeInfoModal(); }); dom.closeInfoBtn.addEventListener('click', closeInfoModal); dom.syncModalOverlay.addEventListener('click', e => { if (e.target === dom.syncModalOverlay) closeSyncModal(); }); dom.saveSyncBtn.addEventListener('click', saveSyncData); }
+    function checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer) { if (config.showBossTimers) { bossTimers.forEach(spawn => { if (!spawn.isAlertEnabled) return; const cycleKey = `${lastResetCycleDay}-${spawn.time}`; config.preAlertMinutes.forEach(min => { const alertTime = new Date(spawn.targetDate.getTime() - min * 60000).toTimeString().slice(0, 5); const alertKey = `${cycleKey}-${min}`; if (now.toTimeString().slice(0, 5) === alertTime && !alertsShownToday[alertKey]) { const lang = i18n[config.currentLanguage]; showFullAlert(lang.notificationPreAlert(spawn.name, min), lang.notificationPreAlertBody(spawn.location), spawn.imageUrl); alertsShownToday[alertKey] = true; } }); }); } const resetAlertKey = `${lastResetCycleDay}-reset`; if (dailyResetTimer.secondsLeft <= 0 && dailyResetTimer.secondsLeft > -5 && !alertsShownToday[resetAlertKey]) { const lang = i18n[config.currentLanguage]; const displayResetTime = formatDateToTimezoneString(dailyResetTimer.targetDate, config.displayTimezone); showFullAlert(lang.notificationReset, lang.notificationResetBody(displayResetTime), dailyResetTimer.imageUrl); alertsShownToday[resetAlertKey] = true; } const isSameAsReset = Math.abs(showdownTicketTimer.targetDate.getTime() - dailyResetTimer.targetDate.getTime()) < 5000; const showdownAlertKey = `showdown-${showdownTicketTimer.targetDate.getTime()}`; if (!isSameAsReset && showdownTicketTimer.secondsLeft <= 0 && showdownTicketTimer.secondsLeft > -5 && !alertsShownToday[showdownAlertKey]) { const lang = i18n[config.currentLanguage]; showFullAlert(lang.notificationShowdownReady, lang.notificationShowdownReadyBody, config.showdownTicketImageUrl); alertsShownToday[showdownAlertKey] = true; } }
     function populateSelects() { for (let i = 14; i >= -12; i--) { const o = `${i>=0?'+':'-'}${String(Math.abs(i)).padStart(2,'0')}:00`; dom.timezoneSelect.add(new Option(`UTC ${o}`, o)); } dom.languageSelect.innerHTML = `<option value="es">Español</option><option value="en">English</option>`; }
-    
-    function updateLanguage() {
-        const lang = i18n[config.currentLanguage];
-        document.title = lang.title;
-        document.documentElement.lang = config.currentLanguage;
-        
-        const desktopLabelKey = isMobile ? 'pushToggleLabel' : 'desktopToggleLabel';
-        const desktopToggleSpan = dom.desktopToggle.parentElement.querySelector('span[data-lang-key]');
-        if (desktopToggleSpan) {
-            desktopToggleSpan.dataset.langKey = desktopLabelKey;
-        }
-
-        document.querySelectorAll('[data-lang-key]').forEach(el => { if (lang[el.dataset.langKey]) el.textContent = lang[el.dataset.langKey]; });
-        const p = Notification.permission; 
-        dom.statusBar.textContent = p === "granted" ? lang.alertsEnabled : (p === "denied" ? lang.alertsDisabled : lang.permissionRequired);
-    }
-
+    function updateLanguage() { const lang = i18n[config.currentLanguage]; document.title = lang.title; document.documentElement.lang = config.currentLanguage; const desktopLabelKey = isMobile ? 'pushToggleLabel' : 'desktopToggleLabel'; const desktopToggleSpan = dom.desktopToggle.parentElement.querySelector('span[data-lang-key]'); if (desktopToggleSpan) { desktopToggleSpan.dataset.langKey = desktopLabelKey; } document.querySelectorAll('[data-lang-key]').forEach(el => { if (lang[el.dataset.langKey] && typeof lang[el.dataset.langKey] === 'string') el.textContent = lang[el.dataset.langKey]; }); const p = Notification.permission; dom.statusBar.textContent = p === "granted" ? lang.alertsEnabled : (p === "denied" ? lang.alertsDisabled : lang.permissionRequired); }
     function requestNotificationPermission() { if (Notification.permission === 'default') Notification.requestPermission().then(updateLanguage); }
     function showFullAlert(title, body, imageUrl) { if (config.notificationTypes.desktop && Notification.permission === 'granted') { new Notification(title, { body, icon: imageUrl, requireInteraction: false }); } if (config.notificationTypes.sound) { alertSound.play().catch(e => console.warn("Sound blocked.")); } }
-    function getSystemTimezoneOffset() { const o = new Date().getTimezoneOffset(); return `${o>0?'-':'+'}${String(Math.floor(Math.abs(o/60))).padStart(2,'0')}:00`; }
-    function getDisplayDate(d, o) { const u = d.getTime(); const [h, m] = o.replace(':', ' ').split(' '); return new Date(u + (parseInt(h) * 3600 + parseInt(m) * 60) * 1000); }
-    function formatToAMPM(d) { let h = d.getUTCHours(); let m = d.getUTCMinutes(); return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`; }
+    function getSystemTimezoneOffset() { const o = new Date().getTimezoneOffset(); return `${o<=0?'+':'-'}${String(Math.floor(Math.abs(o)/60)).padStart(2,'0')}:00`; }
+    
+    function formatDateToTimezoneString(date, offsetString, showSeconds = false) {
+        try {
+            const sign = offsetString.startsWith('-') ? '+' : '-';
+            const hours = parseInt(offsetString.substring(1, 3));
+            const timeZone = `Etc/GMT${sign}${hours}`;
+            const options = {
+                timeZone,
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            };
+            if (showSeconds) {
+                options.second = '2-digit';
+            }
+            return new Intl.DateTimeFormat('en-US', options).format(date);
+        } catch (e) {
+            console.error("Error formatting date for timezone", e);
+            return "Invalid Time";
+        }
+    }
+
     function formatTime(s) { if (s<0||isNaN(s)) s=0; const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = s%60; return [h,m,sec].map(v => String(v).padStart(2,'0')).join(':'); }
-    function getCountdownColor(s, type) { if (type === 'boss') { const u = (Math.min(...config.preAlertMinutes)||5)*60; const w = (Math.max(...config.preAlertMinutes)||15)*60; if (s<=u) return 'var(--color-urgent)'; if (s<=w) return 'var(--color-warning)'; } return 'var(--color-normal)'; }
+    // --- CAMBIO: Se ajusta el color del contador del ticket ---
+    function getCountdownColor(s, type) { if (type === 'boss') { const u = (Math.min(...config.preAlertMinutes) || 5) * 60; const w = (Math.max(...config.preAlertMinutes) || 15) * 60; if (s <= u) return 'var(--color-urgent)'; if (s <= w) return 'var(--color-warning)'; } else if (type === 'ticket') { return 'var(--color-primary)'; } return 'var(--color-normal)'; }
+    function setCookie(name, value, days) { let expires = ""; if (days) { const date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax"; }
+    function getCookie(name) { const nameEQ = name + "="; const ca = document.cookie.split(';'); for(let i = 0; i < ca.length; i++) { let c = ca[i]; while (c.charAt(0) === ' ') c = c.substring(1, c.length); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length); } return null; }
 
 })();
