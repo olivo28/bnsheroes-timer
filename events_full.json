@@ -1,0 +1,103 @@
+{
+  "events": {
+    "Field Boss Challenge": {
+      "name": {
+        "en": "Field Boss Challenge",
+        "es": "Desafío de Jefe de Campo"
+      },
+      "period": "September 30 - October 14, 6:30 PM (UTC-4)",
+      "summary": {
+        "en": "Participate in defeating the Field Boss 'Stalker Jiangshi' in the Everdusk region to earn tickets. These tickets are used to spin the 'Wheel of Fate' in Moonshadow Village to get rewards.",
+        "es": "Participa en la derrota del Jefe de Campo 'Jiangshi el Acechador' en la región de Everdusk para ganar boletos. Estos boletos se usan para girar la 'Rueda del Destino' en Moonshadow Village y obtener recompensas."
+      },
+      "boss_details": {
+        "name": "Stalker Jiangshi",
+        "region": "Everdusk",
+        "spawn_times_utc4": [
+          "1:00 PM", "7:00 PM", "11:00 PM", "2:00 AM", "5:00 AM", "10:00 AM"
+        ],
+        "ranking_rewards": {
+          "base_on_participation": {
+            "description": {
+              "en": "Guaranteed reward for all participants who damage the boss.",
+              "es": "Recompensa garantizada para todos los participantes que dañen al jefe."
+            },
+            "rewards": [
+              { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 1 }
+            ]
+          },
+          "bonus_by_rank": [
+            { "tier_name": { "en": "First Place", "es": "Primer Lugar" }, "rank_start": 1, "rank_end": 1, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 6 } ] },
+            { "tier_name": { "en": "Second Place", "es": "Segundo Lugar" }, "rank_start": 2, "rank_end": 2, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 5 } ] },
+            { "tier_name": { "en": "Third Place", "es": "Tercer Lugar" }, "rank_start": 3, "rank_end": 3, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 4 } ] },
+            { "tier_name": { "en": "Rank 4-7", "es": "Rango 4-7" }, "rank_start": 4, "rank_end": 7, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 3 } ] },
+            { "tier_name": { "en": "Rank 8-10", "es": "Rango 8-10" }, "rank_start": 8, "rank_end": 10, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 2 } ] },
+            { "tier_name": { "en": "Rank 11-50", "es": "Rango 11-50" }, "rank_start": 11, "rank_end": 50, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 1 } ] }
+          ]
+        }
+      },
+      "rewards": {
+        "wheel_of_fate": [
+          { "item": { "en": "Divine Gem Bundle", "es": "Paquete de Gemas Divinas" }, "count": 100 },
+          { "item": { "en": "Refined Secret Art Chest", "es": "Cofre de Arte Secreto Refinado" }, "count": 1 },
+          { "item": { "en": "Common-Refined Sagittarius, Aries Chest I", "es": "Cofre Común-Refinado de Sagitario y Aries I" }, "count": 1 },
+          { "item": { "en": "Refined Divine Idol Chest", "es": "Cofre de Ídolo Divino Refinado" }, "count": 3 },
+          { "item": { "en": "Fruit of Potential Chest I", "es": "Cofre de Fruta del Potencial I" }, "count": 5 },
+          { "item": { "en": "Common Sagittarius, Aries Chest I", "es": "Cofre Común de Sagitario y Aries I" }, "count": 1 },
+          { "item": { "en": "Handcrafted Licorice Pill", "es": "Píldora de Regaliz Hecha a Mano" }, "count": 1 },
+          { "item": { "en": "Strong Ginseng Tea", "es": "Té de Ginseng Fuerte" }, "count": 1 }
+        ],
+        "cumulative_spins": [
+          { "condition": { "en": "Spin 15 times", "es": "Girar 15 veces" }, "item": { "en": "Limited Name Card: Clash with the Stalker Jiangshi", "es": "Tarjeta de Nombre Limitada: Enfrentamiento con el Stalker Jiangshi" }, "count": 1 },
+          { "condition": { "en": "Spin 30 times", "es": "Girar 30 veces" }, "item": { "en": "Title: Jiangshi Slayer", "es": "Título: Asesino de Jiangshi" }, "count": 1 }
+        ]
+      }
+    },
+    "Daily Challenge": {
+      "name": {
+        "en": "Daily Challenge",
+        "es": "Desafío Diario"
+      },
+      "period": "September 30 - October 14, 6:30 PM (UTC-4)",
+      "summary": {
+        "en": "Complete daily missions to earn points. Use 10 points to claim a random reward from the list. Up to 100 points can be obtained and 10 rewards claimed per day.",
+        "es": "Completa misiones diarias para ganar puntos. Usa 10 puntos para reclamar una recompensa aleatoria de la lista. Se pueden obtener hasta 100 puntos y reclamar 10 recompensas por día."
+      },
+      "missions": [
+        { "description": { "en": "Complete Request", "es": "Completar Solicitud" }, "points": 5 },
+        { "description": { "en": "Play Bounty Hunt", "es": "Jugar Caza de Recompensas" }, "points": 5 },
+        { "description": { "en": "Use Underground Dungeon", "es": "Usar Mazmorra Subterránea" }, "points": 5 },
+        { "description": { "en": "Play Showdown", "es": "Jugar Enfrentamiento" }, "points": 5 },
+        { "description": { "en": "Clear Boss Trial (Solo)", "es": "Superar Prueba de Jefe (Solo)" }, "points": 10 },
+        { "description": { "en": "Clear Boss Trial (Party)", "es": "Superar Prueba de Jefe (Grupo)" }, "points": 10 },
+        { "description": { "en": "Clear Mind Training", "es": "Superar Entrenamiento Mental" }, "points": 5 }
+      ],
+      "rewards": {
+        "reward_pool": [
+          { "item": { "en": "Gold Coin Pouch", "es": "Bolsa de Monedas de Oro" }, "count": 2 },
+          { "item": { "en": "Common Sagittarius Chest I", "es": "Cofre Común de Sagitario I" }, "count": 1 },
+          { "item": { "en": "Common Sagittarius, Aries Chest I", "es": "Cofre Común de Sagitario y Aries I" }, "count": 1 },
+          { "item": { "en": "Common-Refined Earthen Meteorite Chest I", "es": "Cofre Común-Refinado de Meteorito Terrestre I" }, "count": 1 }
+        ]
+      }
+    },
+    "Ukapong's Hidden Challenge": {
+      "name": {
+        "en": "Ukapong's Hidden Challenge",
+        "es": "El Desafío Oculto de Ukapong"
+      },
+      "period": "September 30 - October 14, 6:30 PM (UTC-4)",
+      "summary": {
+        "en": "Complete a series of unique dungeon missions to earn specific rewards, including cosmetics for Yunma Fei. The event duration has been extended to October 14th, 2025.",
+        "es": "Completa una serie de misiones de mazmorra únicas para ganar recompensas específicas, incluyendo cosméticos para Yunma Fei. La duración del evento ha sido extendida hasta el 14 de Octubre de 2025."
+      },
+      "missions_and_rewards": [
+        { "mission": { "en": "Clear Pot Dog Donmanja – Normal Mode", "es": "Superar Pot Dog Donmanja – Modo Normal" }, "reward_item": { "en": "Entry Ticket Supply Chest", "es": "Cofre de Suministro de Boletos de Entrada" }, "reward_count": 1 },
+        { "mission": { "en": "Clear Pot Dog Donmanja – Hard Mode", "es": "Superar Pot Dog Donmanja – Modo Difícil" }, "reward_item": { "en": "Scarlet Bloom Yunma Fei's Outfit", "es": "Atuendo de Yunma Fei Flor Escarlata" }, "reward_count": 1 },
+        { "mission": { "en": "Clear Baribari – Normal Mode", "es": "Superar Baribari – Modo Normal" }, "reward_item": { "en": "Entry Ticket Supply Chest", "es": "Cofre de Suministro de Boletos de Entrada" }, "reward_count": 1 },
+        { "mission": { "en": "Clear Baribari – Hard Mode", "es": "Superar Baribari – Modo Difícil" }, "reward_item": { "en": "Scarlet Bloom Yunma Fei's Weapon", "es": "Arma de Yunma Fei Flor Escarlata" }, "reward_count": 1 },
+        { "mission": { "en": "Complete all missions", "es": "Completar todas las misiones" }, "reward_item": { "en": "Entry Ticket Supply Chest", "es": "Cofre de Suministro de Boletos de Entrada" }, "reward_count": 1 }
+      ]
+    }
+  }
+}

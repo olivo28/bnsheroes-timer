@@ -19,6 +19,22 @@
             --color-primary: #bb86fc;
             --color-success: #69f0ae;
             --color-danger: #ff8a80;
+
+            --color-fire-role: #ff7043;
+            --color-water-role: #29b6f6;
+            --color-poison-role: #9ccc65;
+            --color-lightning-role: #ffee58;
+            --color-typeless-role: #78909c;
+            --color-dark-role: #ab47bc;
+            --color-default-role: #78909c;
+            
+            --rarity1-color: #d500f9; /* Exalted - Morado */
+            --rarity2-color: #536dfe; /* Revered - Azul Oscuro */
+            --rarity3-color: #00b0ff; /* Famed - Azul Claro */
+
+            --rarity1-bg-color: rgb(210, 21, 244);
+            --rarity2-bg-color: rgb(42 62 177);
+            --rarity3-bg-color: rgb(76, 193, 247);
         }
 
         body {
@@ -28,9 +44,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
         }
 
         /* --- Custom Scrollbar --- */
@@ -38,7 +53,7 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: var(--bg-color);
+            background: var(--box-bg-color);
         }
         ::-webkit-scrollbar-thumb {
             background-color: var(--border-color);
@@ -48,10 +63,23 @@
             background-color: #555;
         }
 
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .main-wrapper { display: flex; background-color: var(--box-bg-color); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden; height: 600px; transition: width 0.3s ease; }
         .primary-panel { width: 380px; padding: 25px 30px; position: relative; text-align: center; display: flex; flex-direction: column; }
         .secondary-panel { width: 480px; border-left: 1px solid var(--border-color); transition: opacity 0.3s ease, width 0.3s ease; display: flex; flex-direction: column; }
-        #spawn-list-container { flex-grow: 1; overflow-y: auto; }
+        #timers-container { flex-grow: 1; overflow-y: auto; }
         
         #status-bar { padding: 10px 20px; background-color: #1f1f1f; text-align: left; font-size: 0.8em; position: absolute; bottom: 0; left: 0; right: 0; border-radius: 0 0 0 15px; display: flex; justify-content: space-between; align-items: center; }
         #status-bar span { color: var(--text-muted-color); }
@@ -68,15 +96,15 @@
         #current-time {
             display: flex;
             justify-content: space-evenly;
+            padding-left: 20px;
             align-items: center;
-            margin-left: 30px;
             width: 170px;
             min-height: 36px;
         }
         .datetime-stack {
             display: flex;
             flex-direction: column;
-            text-align: left;
+            text-align: center;
             line-height: 1.2;
             color: var(--text-muted-color);
             font-size: 0.9em;
@@ -129,7 +157,7 @@
 
         .spawn-item { display: flex; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--border-color); transition: opacity 0.3s ease; }
         .spawn-item.disabled { opacity: 0.5; }
-        .spawn-item:first-child:not(.ticket-item) { border-top: 1px solid var(--border-color); }
+        .spawn-item:last-child { border-bottom: none; }
         .spawn-item-icon { width: 32px; height: 32px; margin-right: 15px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0; }
         .spawn-item-icon img { width: 100%; height: 100%; object-fit: cover; }
         .spawn-item-info { flex-grow: 1; }
@@ -141,10 +169,53 @@
         .alert-toggle.enabled { color: var(--color-normal); }
         .alert-toggle.disabled { color: var(--text-muted-color); opacity: 0.6; }
         
-        #events-container { padding: 0 25px 0px 25px; border-bottom: 1px solid var(--border-color); display: none; }
-        .panel-subtitle { font-size: 1.2em; color: var(--color-primary); text-align: center; margin: 15px 0; }
-        .event-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .event-item:last-child { border-bottom: none; }
+        #banners-container { display: flex; flex-direction: column; background-color: var(--box-bg-color); border-radius: 16px; border: 1px solid var(--border-color); min-height: 148px; box-sizing: border-box; }
+        #banners-container.horizontal-layout { flex-direction: row; }
+        .banner-section { flex: 1; text-align: center; padding: 15px; }
+        .banner-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding: 0 5px; }
+        .banner-countdown { font-size: 0.8em; color: var(--color-warning); }
+        .banner-box {position: relative;padding: 15px;border-radius: 12px;display: flex;justify-content: center;align-items: center;min-height: 90px;height: 120px;overflow: hidden;background-color: #333;}
+        .banner-element-icon { position: absolute; top: 50%; left: 20px; width: 50px; height: 50px; opacity: 0.8; transform: translateY(-50%); }
+        .banner-heroes { display: flex; gap: 15px; justify-content: center; padding-left: 40px; }
+        .banner-hero-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .banner-hero-img-container { position: relative; width: 80px; height: 80px; cursor: pointer; }
+
+        .banner-hero-img { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+            transition: outline-color 0.2s ease;
+            outline: 3px solid transparent;
+            outline-offset: -3px;
+        }
+        .banner-hero-img-container:hover .rarity-1 { outline-color: var(--rarity1-color); }
+        .banner-hero-img-container:hover .rarity-2 { outline-color: var(--rarity2-color); }
+        .banner-hero-img-container:hover .rarity-3 { outline-color: var(--rarity3-color); }
+
+        .banner-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+        .hero-role-icon {position: absolute;top: 2px;left: 2px;width: 17px;height: 17px;border-radius: 50px;padding: 1px;display: flex;justify-content: space-evenly;flex-wrap: wrap;flex-direction: row;}
+        .hero-role-icon img {display: flex;width: 16px;height: 16px;flex-wrap: nowrap;}
+        .banner-hero-name { font-size: 0.8em; color: var(--text-color); font-weight: 700; }
+        .rarity-1 { background-color: var(--rarity1-bg-color); box-shadow: inset 0 0 15px 3px var(--rarity1-color); }
+        .rarity-2 { background-color: var(--rarity2-bg-color); box-shadow: inset 0 0 15px 3px var(--rarity2-color); }
+        .rarity-3 { background-color: var(--rarity3-bg-color); box-shadow: inset 0 0 15px 3px var(--rarity3-color); }
+
+        .hero-role-icon.element-fire { background-color: var(--color-fire-role); }
+        .hero-role-icon.element-water { background-color: var(--color-water-role); }
+        .hero-role-icon.element-earth { background-color: var(--color-earth-role); }
+        .hero-role-icon.element-wind { background-color: var(--color-wind-role); }
+        .hero-role-icon.element-lightning { background-color: var(--color-lightning-role); }
+        .hero-role-icon.element-typeless { background-color: var(--color-typeless-role); }
+        .hero-role-icon.element-default { background-color: var(--color-default-role); }
+        
+        #events-container { padding: 0 18px 10px 18px; border-bottom: 1px solid var(--border-color); }
+        .panel-subtitle { font-size: 1.2em; color: var(--color-primary); text-align: center; margin: 15px 0 10px 0; }
+        .panel-subtitle-small { font-size: 1.0em; color: var(--color-primary); margin: 0; font-weight: 700; }
+        .event-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; transition: background-color 0.2s; cursor: pointer; padding: 8px 10px; margin: 0 -10px; border-radius: 6px; }
+        .event-item:not(:last-child) { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .event-item:hover { background-color: rgba(255, 255, 255, 0.05); }
         .event-name { color: var(--text-color); }
         .event-countdown { color: var(--color-warning); }
 
@@ -158,9 +229,23 @@
         #settings-button { width: 28px; height: 28px; color: var(--text-muted-color); cursor: pointer; transition: color 0.2s ease, transform 0.3s ease; }
         #settings-button:hover { color: var(--text-color); transform: rotate(45deg); }
         
-        #modal-overlay, #info-modal-overlay, #sync-modal-overlay, #about-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
-        #modal-overlay.visible, #info-modal-overlay.visible, #sync-modal-overlay.visible, #about-modal-overlay.visible { opacity: 1; visibility: visible; }
+        #modal-overlay, #info-modal-overlay, #sync-modal-overlay, #about-modal-overlay, #hero-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #modal-overlay.visible, #info-modal-overlay.visible, #sync-modal-overlay.visible, #about-modal-overlay.visible, #hero-modal-overlay.visible { opacity: 1; visibility: visible; }
         
+        #hero-modal-overlay { background-color: rgba(0,0,0,0.85); cursor: pointer; }
+        #hero-modal-content { max-width: 450px; max-height: 85vh; padding: 10px; text-align: center; cursor: default; }
+        #hero-modal-image { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(85vh - 120px); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #hero-modal-info { margin-top: 15px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; }
+        #hero-modal-name { font-size: 1.5em; font-weight: 700; margin: 0 0 10px 0; }
+        .hero-modal-details { display: flex; justify-content: center; align-items: center; gap: 20px; font-size: 1em; }
+        .hero-modal-details > div { display: flex; align-items: center; gap: 8px; }
+        .hero-modal-details img { width: 28px; height: 28px; }
+        .hero-modal-details span { font-weight: bold; }
+        .rarity-text-1 { color: var(--rarity1-color); }
+        .rarity-text-2 { color: var(--rarity2-color); }
+        .rarity-text-3 { color: var(--rarity3-color); }
+
+
         #settings-modal, #info-modal, #sync-modal, #about-modal { background-color: var(--box-bg-color); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); transform: scale(0.95); transition: transform 0.3s ease; text-align: center; }
         #modal-overlay.visible #settings-modal, #info-modal-overlay.visible #info-modal, #sync-modal-overlay.visible #sync-modal, #about-modal-overlay.visible #about-modal { transform: scale(1); }
         #settings-modal h2, #info-modal h2, #sync-modal h2, #about-modal h2 { margin-top: 0; color: var(--color-primary); }
@@ -201,45 +286,176 @@
         #settings-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
         .settings-btn { background-color: var(--color-normal); color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         #test-notification-btn { background-color: var(--border-color); color: var(--text-color); }
+        
+        /* Event Details Panel */
+        #event-details-panel {
+            background-color: var(--box-bg-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            width: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: width 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
+            height: calc(600px + 15px + 148px); /* Height of main-wrapper + gap + banners-container */
+            display: flex;
+            flex-direction: column;
+        }
+        #event-details-panel.visible {
+            width: 450px;
+            opacity: 1;
+            height: 810px;
+        }
+        .details-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        .details-header h2 {
+            margin: 0 0 5px 0;
+            color: var(--color-primary);
+            font-size: 1.5em;
+        }
+        .details-header p {
+            margin: 0;
+            font-size: 0.8em;
+            color: var(--text-muted-color);
+        }
+        .close-details-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            color: var(--text-muted-color);
+            background-color: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .close-details-btn:hover {
+            color: var(--text-color);
+            background-color: var(--border-color);
+        }
+        .details-content {
+            padding: 0 25px 25px 25px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .details-section h3 {
+            font-size: 1.1em;
+            color: var(--text-color);
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        .details-summary {
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: var(--text-muted-color);
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        .details-table th, .details-table td {
+            text-align: left;
+            padding: 8px 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .details-table th {
+            color: var(--text-muted-color);
+            font-weight: normal;
+        }
+        .details-table td:last-child {
+            text-align: right;
+            color: var(--color-warning);
+        }
+        .details-table tr:last-child td {
+            border-bottom: none;
+        }
+        .details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .details-list li {
+            padding: 8px 5px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+        .details-list li:last-child {
+            border-bottom: none;
+        }
+        .participation-reward {
+            font-size: 0.9em;
+            background-color: rgba(255, 255, 255, 0.04);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: var(--text-muted-color);
+            line-height: 1.5;
+        }
+        .participation-reward strong {
+            color: var(--text-color);
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+         .participation-reward span strong {
+            display: inline;
+            color: var(--color-warning);
+        }
+
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <div class="primary-panel">
-            <div class="top-bar">
-                <div class="top-bar-left">
-                    <div class="time-format-container">
-                        <span>12h</span>
-                        <label class="time-format-switch">
-                            <input type="checkbox" id="time-format-switch">
-                            <span class="slider"></span>
-                        </label>
-                        <span>24h</span>
+    <div class="app-container">
+        <div class="content-wrapper">
+            <div class="main-wrapper">
+                <div class="primary-panel">
+                    <div class="top-bar">
+                        <div class="top-bar-left">
+                            <div class="time-format-container">
+                                <span>12h</span>
+                                <label class="time-format-switch">
+                                    <input type="checkbox" id="time-format-switch">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>24h</span>
+                            </div>
+                        </div>
+                        <div class="top-bar-center">
+                             <div id="current-time"></div>
+                        </div>
+                        <div class="top-bar-right">
+                            <div id="settings-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="primary-timers-container"></div>
+                    
+                    <div id="status-bar">
+                        <span data-lang-key="initializing"></span>
+                        <div id="about-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
+                        </div>
                     </div>
                 </div>
-                <div class="top-bar-center">
-                     <div id="current-time"></div>
-                </div>
-                <div class="top-bar-right">
-                    <div id="settings-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
-                    </div>
+                <div class="secondary-panel">
+                    <div id="events-container"></div>
+                    <div id="timers-container"></div>
                 </div>
             </div>
-            
-            <div id="primary-timers-container"></div>
-            
-            <div id="status-bar">
-                <span data-lang-key="initializing"></span>
-                <div id="about-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
-                </div>
-            </div>
+            <div id="banners-container"></div>
         </div>
-        <div class="secondary-panel">
-            <div id="events-container"></div>
-            <div id="spawn-list-container"></div>
-        </div>
+        <div id="event-details-panel"></div>
     </div>
 
     <div id="modal-overlay">
@@ -298,6 +514,25 @@
             <h3 id="about-disclaimer-title"></h3>
             <p id="about-disclaimer-body" class="disclaimer"></p>
             <button id="close-about-btn" class="settings-btn"></button>
+        </div>
+    </div>
+
+    <div id="hero-modal-overlay">
+        <div id="hero-modal-content">
+            <img id="hero-modal-image" src="" alt="Hero Image">
+            <div id="hero-modal-info">
+                <h3 id="hero-modal-name"></h3>
+                <div class="hero-modal-details">
+                    <div>
+                        <img id="hero-modal-element-icon" src="" alt="Element">
+                        <span id="hero-modal-rarity"></span>
+                    </div>
+                    <div>
+                        <img id="hero-modal-role-icon" src="" alt="Role">
+                        <span id="hero-modal-role"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
