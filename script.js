@@ -85,12 +85,18 @@
 
     // --- CONFIGURATION ---
     const defaultConfig = {
-        dailyResetTime: '18:30', // This time should be in UTC
+        dailyResetTime: '18:30', // This time is in UTC
         dailyResetImageUrl: 'style/bnsheroes.webp',
         showdownTicketImageUrl: 'style/ticket-icon.png',
         showBossTimers: false,
-        // These times are now treated as UTC
-        boss: { name: "Stalker Jiangshi", imageUrl: "style/Stalker-Jiangshi.png", location: "Everdusk", spawnTimes: ['13:00', '19:00', '23:00', '02:00', '05:00', '10:00'], alerts: { '13:00': true, '19:00': true, '23:00': true, '02:00': true, '05:00': true, '10:00': true } },
+        // These times are in a reference timezone of UTC-4
+        boss: { 
+            name: "Stalker Jiangshi", 
+            imageUrl: "style/Stalker-Jiangshi.png", 
+            location: "Everdusk", 
+            spawnTimes: ['02:00', '05:00', '10:00', '13:00', '19:00', '23:00'], 
+            alerts: { '02:00': true, '05:00': true, '10:00': true, '13:00': true, '19:00': true, '23:00': true } 
+        },
         displayTimezone: getSystemTimezoneOffset(),
         preAlertMinutes: [15, 5, 1],
         currentLanguage: 'es',
@@ -125,9 +131,9 @@
         if (config.showBossTimers) {
             dom.mainWrapper.style.width = '830px'; dom.secondaryPanel.style.opacity = '1'; dom.secondaryPanel.style.width = '450px'; dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
             
-            // --- CAMBIO: Se usa la función UTC para calcular la fecha del jefe ---
+            // --- CAMBIO: Usa la función que interpreta el tiempo desde UTC-4 ---
             const bossTimers = config.boss.spawnTimes.map(time => {
-                const targetDate = getAbsoluteDateFromUTCTime(time);
+                const targetDate = getAbsoluteDateFromReferenceTimezone(time, -4);
                 return { type: 'boss', ...config.boss, time, targetDate, isAlertEnabled: !!config.boss.alerts[time], secondsLeft: Math.floor((targetDate - now) / 1000) };
             }).filter(t => t.secondsLeft > -300);
 
@@ -159,16 +165,29 @@
         }).join('');
     }
     
-    // --- CAMBIO DEFINITIVO: Nueva función que interpreta el tiempo como UTC ---
+    // This function assumes the time string is in UTC
     function getAbsoluteDateFromUTCTime(timeString) {
         const now = new Date();
         const [h, m] = timeString.split(':').map(Number);
-        
-        // Crea una fecha objetivo para hoy en UTC
         let targetDate = new Date();
         targetDate.setUTCHours(h, m, 0, 0);
+        if (targetDate < now) {
+            targetDate.setUTCDate(targetDate.getUTCDate() + 1);
+        }
+        return targetDate;
+    }
 
-        // Si la hora UTC ya pasó hoy, la mueve para mañana
+    // --- CAMBIO: Nueva función para interpretar una hora desde una zona de referencia (ej: UTC-4) ---
+    function getAbsoluteDateFromReferenceTimezone(timeString, referenceOffsetHours) {
+        const now = new Date();
+        const [h, m] = timeString.split(':').map(Number);
+        
+        // Calcula la hora UTC correcta. Si la referencia es -4, restamos -4 (sumamos 4).
+        const utcHour = h - referenceOffsetHours;
+
+        let targetDate = new Date();
+        targetDate.setUTCHours(utcHour, m, 0, 0);
+
         if (targetDate < now) {
             targetDate.setUTCDate(targetDate.getUTCDate() + 1);
         }
@@ -176,7 +195,7 @@
     }
 
     function getDailyResetTimer(now) {
-        // --- CAMBIO: Usa la función UTC para el reset diario ---
+        // El reset diario sigue usando la función UTC original
         const t = getAbsoluteDateFromUTCTime(config.dailyResetTime);
         return { type: 'reset', name: i18n[config.currentLanguage].dailyResetName, description: i18n[config.currentLanguage].dailyResetDesc, imageUrl: config.dailyResetImageUrl, targetDate: t, secondsLeft: Math.floor((t - now) / 1000) };
     }
