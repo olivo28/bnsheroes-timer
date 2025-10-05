@@ -1,5 +1,3 @@
----
-
 # Game Timers Dashboard
 
 [English](#english) | [Español](#español)
@@ -66,7 +64,7 @@ Donations are welcome but never required! Your feedback is the best support.
 
 ## Español
 
-Un dashboard web limpio y de un solo archivo para seguir temporizadores importantes dentro de un juego, como el reinicio diario, la aparición de jefes y tickets especiales. Incluye notificaciones de escritorio y sonido personalizables para asegurar que nunca te pierdas un evento. Toda la configuración se guarda localmente en las cookies de tu navegador.
+Un dashboard web limpio y de un solo archivo para seguir temporizadores importantes de BnS Heroes, como el reinicio diario, la aparición de jefes y tickets especiales. Incluye notificaciones de escritorio y sonido personalizables para asegurar que nunca te pierdas un evento. Toda la configuración se guarda localmente en las cookies de tu navegador.
 
 ---
 
