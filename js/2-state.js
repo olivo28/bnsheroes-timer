@@ -13,6 +13,7 @@ const App = {
         allHeroesData: [],
         allEventsData: {},
         currentOpenEventId: null,
+        swiper: null // <-- AÑADE ESTA LÍNEA
     },
     
     // Referencias a elementos del DOM. Se inicializan como null y se pueblan después.

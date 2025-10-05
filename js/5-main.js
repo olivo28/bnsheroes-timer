@@ -7,14 +7,72 @@
 (function () {
 
     /**
+     * Reestructura el DOM para usar Swiper en dispositivos móviles.
+     * Coge los paneles existentes y los envuelve en la estructura de slides de Swiper.
+     */
+    function setupMobileSwiper() {
+        const mainWrapper = document.querySelector('.main-wrapper');
+        const primaryPanel = document.querySelector('.primary-panel');
+        const secondaryPanel = document.querySelector('.secondary-panel');
+
+        // Si los elementos no existen, no hacer nada.
+        if (!mainWrapper || !primaryPanel || !secondaryPanel) return;
+
+        // 1. Crear la estructura HTML que Swiper necesita
+        const swiperContainer = document.createElement('div');
+        swiperContainer.className = 'swiper mobile-swiper-container';
+
+        const swiperWrapper = document.createElement('div');
+        swiperWrapper.className = 'swiper-wrapper';
+
+        const slide1 = document.createElement('div');
+        slide1.className = 'swiper-slide';
+
+        const slide2 = document.createElement('div');
+        slide2.className = 'swiper-slide';
+
+        const pagination = document.createElement('div');
+        pagination.className = 'swiper-pagination';
+
+        // 2. Mover los paneles originales dentro de los nuevos 'slides'
+        slide1.appendChild(primaryPanel);
+        slide2.appendChild(secondaryPanel);
+        swiperWrapper.appendChild(slide1);
+        swiperWrapper.appendChild(slide2);
+
+        // 3. Ensamblar la estructura final del Swiper
+        swiperContainer.appendChild(swiperWrapper);
+        swiperContainer.appendChild(pagination);
+
+        // 4. Limpiar el contenedor original y añadir la nueva estructura Swiper
+        mainWrapper.innerHTML = '';
+        mainWrapper.appendChild(swiperContainer);
+        
+        // 5. Inicializar la librería Swiper sobre la nueva estructura
+        App.state.swiper = new Swiper('.mobile-swiper-container', {
+            loop: false,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+        });
+    }
+
+    /**
      * Inicializa la aplicación después de cargar los datos.
      * Configura el estado inicial, la UI y los listeners.
      */
     function initialize() {
-        // 1. Poblar las referencias del DOM.
         App.initializeDOM();
-
-        // 2. Ahora que los elementos del DOM existen, podemos continuar.
+        
+        // Solo reestructuramos el DOM y creamos el Swiper si es móvil
+        if (App.state.isMobile) {
+            setupMobileSwiper();
+            // Es crucial volver a buscar las referencias a los paneles, ya que los hemos movido en el DOM.
+            App.dom.primaryPanel = document.querySelector('.primary-panel');
+            App.dom.secondaryPanel = document.querySelector('.secondary-panel');
+        }
+        
         Logic.loadSettings();
         UI.populateSelects();
         UI.updateLanguage();
@@ -22,9 +80,12 @@
         
         addEventListeners();
 
-        // Bucle principal que actualiza la UI cada segundo
-        setInterval(() => UI.updateAll(), 1000);
-        UI.updateAll(); // Ejecutar una vez inmediatamente para no esperar 1s
+        // CORRECCIÓN: Retrasamos el inicio del bucle de actualización
+        // para dar tiempo a que Swiper se inicialice completamente.
+        setTimeout(() => {
+            UI.updateAll(); // Primera ejecución
+            setInterval(() => UI.updateAll(), 1000); // Bucle principal
+        }, 100); // Un pequeño retraso de 100ms es más que suficiente
     }
 
     /**
@@ -32,8 +93,12 @@
      * Centraliza el manejo de interacciones del usuario.
      */
     function addEventListeners() {
-        // Listeners para clics dentro de los paneles principales
-        App.dom.mainWrapper.addEventListener('click', e => {
+        // En móvil, el clic se gestiona en mainWrapper. En PC, en primaryPanel.
+        // Unimos los listeners para simplificar.
+        const clickArea1 = App.dom.primaryPanel;
+        const clickArea2 = App.dom.secondaryPanel;
+
+        function handlePanelClick(e) {
             const infoBtn = e.target.closest('.info-button');
             const syncBtn = e.target.closest('.sync-button');
             const alertToggle = e.target.closest('.alert-toggle');
@@ -42,36 +107,46 @@
             if (alertToggle) {
                  Logic.toggleAlertState(alertToggle.dataset.bossId, alertToggle.dataset.time);
             }
-        });
+        }
+        
+        if (clickArea1) clickArea1.addEventListener('click', handlePanelClick);
+        if (clickArea2) clickArea2.addEventListener('click', handlePanelClick);
+
 
         // Listener para clics en los items de evento
-        App.dom.eventsContainer.addEventListener('click', e => {
-            const eventItem = e.target.closest('.event-item');
-            if (eventItem && eventItem.dataset.eventId) {
-                const eventId = eventItem.dataset.eventId;
-                if (eventId === App.state.currentOpenEventId) {
-                    UI.closeEventDetailsPanel();
-                } else {
-                    UI.openEventDetailsPanel(eventId);
+        if(App.dom.eventsContainer) {
+            App.dom.eventsContainer.addEventListener('click', e => {
+                const eventItem = e.target.closest('.event-item');
+                if (eventItem && eventItem.dataset.eventId) {
+                    const eventId = eventItem.dataset.eventId;
+                    if (eventId === App.state.currentOpenEventId) {
+                        UI.closeEventDetailsPanel();
+                    } else {
+                        UI.openEventDetailsPanel(eventId);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // Listener para cerrar el panel de detalles del evento
-        App.dom.eventDetailsPanel.addEventListener('click', e => {
-            if (e.target.closest('.close-details-btn')) {
-                UI.closeEventDetailsPanel();
-            }
-        });
+        if(App.dom.eventDetailsPanel) {
+            App.dom.eventDetailsPanel.addEventListener('click', e => {
+                if (e.target.closest('.close-details-btn')) {
+                    UI.closeEventDetailsPanel();
+                }
+            });
+        }
 
         // Listener para clics en los héroes de los banners
-        App.dom.bannersContainer.addEventListener('click', e => {
-            const heroWrapper = e.target.closest('.banner-hero-img-container');
-            if (heroWrapper && heroWrapper.dataset.heroName) {
-                const hero = Logic.findHeroByName(heroWrapper.dataset.heroName);
-                UI.openHeroModal(hero);
-            }
-        });
+        if(App.dom.bannersContainer) {
+            App.dom.bannersContainer.addEventListener('click', e => {
+                const heroWrapper = e.target.closest('.banner-hero-img-container');
+                if (heroWrapper && heroWrapper.dataset.heroName) {
+                    const hero = Logic.findHeroByName(heroWrapper.dataset.heroName);
+                    UI.openHeroModal(hero);
+                }
+            });
+        }
         
         // Listeners para botones y controles globales
         App.dom.settingsButton.addEventListener('click', () => UI.openSettingsModal());
@@ -134,7 +209,6 @@
             Logic.saveConfigToCookie();
         });
 
-
         // Actualizar idioma si el usuario vuelve a la pestaña
         window.addEventListener('focus', () => UI.updateLanguage());
     }
@@ -156,7 +230,7 @@
         })
         .catch(error => {
             console.error("Error cargando los datos iniciales (heroes_data.json o events_full.json):", error);
-            document.body.innerHTML = `<div style="color: white; text-align: center; padding: 50px;">Error al cargar datos. Asegúrate de que los archivos 'heroes_data.json' y 'events_full.json' existen y son accesibles. Revisa la consola (F12) para más detalles.</div>`;
+            document.body.innerHTML = `<div style="text-align: center; color: white; padding: 40px;"><p>Error al cargar datos. Asegúrate de que los archivos 'heroes_data.json' y 'events_full.json' existen y son accesibles.</p><p>Revisa la consola (F12) para más detalles.</p></div>`;
         });
     });
 

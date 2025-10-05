@@ -608,3 +608,108 @@ select.settings-input option { background-color: var(--bg-color); color: var(--t
 .streams-modal-footer .checkbox-group {
     justify-content: space-around;
 }
+
+
+/* --- ESTILOS PARA ADAPTACIÓN MÓVIL --- */
+@media (max-width: 900px) {
+    body {
+        /* Permitir scroll vertical en móvil y usar toda la altura */
+        display: block;
+        padding: 0;
+        height: 100%;
+    }
+
+    .app-container, .content-wrapper {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+
+    /* Contenedor principal ahora ocupa todo el ancho y tiene altura automática */
+    .main-wrapper {
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color); /* Separador sutil */
+        box-shadow: none;
+        overflow: visible;
+        order: 1; /* Aseguramos que se muestre primero */
+    }
+
+    /* Paneles ahora son full-width */
+    .primary-panel, .secondary-panel {
+        width: 100%;
+        box-sizing: border-box;
+        border-left: none;
+        padding: 20px;
+    }
+
+    .primary-panel {
+        padding-bottom: 70px; 
+    }
+    #status-bar {
+        border-radius: 0;
+    }
+
+    /* Banners siempre abajo y fuera del swipe */
+    #banners-container {
+        width: 100%;
+        border-radius: 0;
+        border: none; /* Quitamos bordes superior/izquierdo/derecho */
+        flex-direction: column;
+        order: 2; /* Se muestra después del main-wrapper */
+        padding-top: 15px; /* Espacio entre el paginador y los banners */
+    }
+    .banner-heroes {
+        gap: 10px;
+        padding-left: 0; /* Centramos los héroes */
+    }
+    .banner-hero-img-container {
+        width: 70px;
+        height: 70px;
+    }
+    .banner-element-icon {
+        display: none; /* Ocultamos el icono de elemento en móvil para ahorrar espacio */
+    }
+
+
+    /* Panel de detalles de evento se vuelve un overlay full-screen */
+    #event-details-panel {
+        position: fixed;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        z-index: 1100;
+        transition: top 0.4s ease;
+        height: 100vh !important;
+    }
+    #event-details-panel.visible {
+        top: 0;
+        width: 100%;
+    }
+
+    /* --- Estilos del Swiper --- */
+    .mobile-swiper-container {
+        padding-bottom: 30px; /* Espacio para el paginador */
+    }
+    .swiper-slide {
+        width: 100%;
+        height: auto;
+        /* Forzamos una altura mínima para consistencia visual */
+        min-height: 450px;
+    }
+    .swiper-pagination {
+        position: absolute; /* Lo posicionamos relativo al contenedor del swiper */
+        bottom: 10px;
+    }
+    .swiper-pagination-bullet {
+        background-color: var(--text-muted-color);
+    }
+    .swiper-pagination-bullet-active {
+        background-color: var(--color-primary);
+    }
+}

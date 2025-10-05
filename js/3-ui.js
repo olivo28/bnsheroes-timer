@@ -18,6 +18,7 @@ const UI = {
     
         const currentDateString = Utils.formatDateToLocaleDateString(now, config.displayTimezone, config.currentLanguage);
         const currentTimeString = Utils.formatDateToTimezoneString(now, config.displayTimezone, config.use24HourFormat, true);
+        
         const tzString = `UTC${config.displayTimezone.replace(':00', '')}`;
         App.dom.currentTime.innerHTML = `<div class="datetime-stack"><span>${currentDateString}</span><span>${currentTimeString}</span></div><span class="timezone-abbr">${tzString}</span>`;
     
@@ -28,23 +29,39 @@ const UI = {
         
         const showSecondaryPanel = config.showBossTimers || config.showEvents;
     
-        if (showSecondaryPanel) {
-            App.dom.mainWrapper.style.width = '860px'; 
-            App.dom.secondaryPanel.style.opacity = '1'; 
-            App.dom.secondaryPanel.style.width = '480px'; 
-            App.dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
-            App.dom.bannersContainer.style.width = '860px';
-            App.dom.bannersContainer.classList.add('horizontal-layout');
-        } else {
-            App.dom.mainWrapper.style.width = '380px'; 
-            App.dom.secondaryPanel.style.opacity = '0'; 
-            App.dom.secondaryPanel.style.width = '0px'; 
-            App.dom.secondaryPanel.style.borderLeft = 'none';
-            App.dom.bannersContainer.style.width = '380px';
-            App.dom.bannersContainer.classList.remove('horizontal-layout');
+        // ESTA LÓGICA AHORA ES SOLO PARA ESCRITORIO
+        if (!App.state.isMobile) {
+            if (showSecondaryPanel) {
+                App.dom.mainWrapper.style.width = '860px'; 
+                App.dom.secondaryPanel.style.opacity = '1'; 
+                App.dom.secondaryPanel.style.width = '480px'; 
+                App.dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
+                App.dom.bannersContainer.style.width = '860px';
+                App.dom.bannersContainer.classList.add('horizontal-layout');
+            } else {
+                App.dom.mainWrapper.style.width = '380px'; 
+                App.dom.secondaryPanel.style.opacity = '0'; 
+                App.dom.secondaryPanel.style.width = '0px'; 
+                App.dom.secondaryPanel.style.borderLeft = 'none';
+                App.dom.bannersContainer.style.width = '380px';
+                App.dom.bannersContainer.classList.remove('horizontal-layout');
+            }
+        } else { // Comportamiento para Móvil
+            // CORRECCIÓN: Hacemos el código más seguro
+            const secondaryPanelElement = document.querySelector('.secondary-panel');
+            if (secondaryPanelElement) {
+                const secondarySlide = secondaryPanelElement.closest('.swiper-slide');
+                if (secondarySlide) {
+                    secondarySlide.style.display = showSecondaryPanel ? 'block' : 'none';
+                }
+            }
+
+            if (App.state.swiper && App.state.swiper.update) {
+                App.state.swiper.update();
+            }
         }
         App.dom.bannersContainer.style.opacity = '1';
-        App.dom.bannersContainer.style.visibility = 'visible';
+        App.dom.bannersContainer.style.visibility = 'visible';      
         
         this.renderBannersPanel();
     
