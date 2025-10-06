@@ -610,6 +610,7 @@ const UI = {
         App.dom.heroModalRole.textContent = lang[roleKey] || heroData.role;
 
         App.dom.heroModalElementIcon.src = `assets/elements/${heroData.element}_icon.png`;
+        App.dom.heroModalElementIcon.alt = heroData.element;
         App.dom.heroModalRoleIcon.src = `assets/roles/${heroData.role}_icon.png`;
         App.dom.heroModalRoleIcon.className = "role-icon"
 
