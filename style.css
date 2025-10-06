@@ -1,11 +1,67 @@
+/******************************************************************
+*
+*   Índice del Archivo CSS
+*
+*   Puedes usar la función de búsqueda (Ctrl+F o Cmd+F) con
+*   los números de sección (ej. "3.5.") para navegar
+*   rápidamente a la parte del código que desees.
+*
+*******************************************************************
+*
+*   1. CONFIGURACIÓN GLOBAL Y ESTILOS BASE
+*      1.1. Importación de Fuentes
+*      1.2. Variables CSS (Custom Properties)
+*      1.3. Estilos Base del Body
+*      1.4. Scrollbar Personalizado
+*
+*   2. ESTRUCTURA PRINCIPAL (LAYOUT)
+*
+*   3. COMPONENTES
+*      3.1. Barra Superior y Reloj
+*      3.2. Temporizadores Principales (Panel Izquierdo)
+*      3.3. Barra de Estado (Inferior Izquierda)
+*      3.4. Lista de Spawns (Panel Derecho)
+*      3.5. Banners de Héroes
+*      3.6. Lista de Eventos (Panel Derecho)
+*      3.7. Botones e Iconos Interactivos
+*      3.8. Modales (Estructura General)
+*          3.8.1. Modal de Héroe
+*          3.8.2. Modal de Información y 'Acerca de'
+*          3.8.3. Modal de Sincronización
+*          3.8.4. Modal de Configuración
+*          3.8.5. Modal de Streams
+*      3.9. Panel de Detalles de Evento (Lateral Derecho)
+*      3.10. Botón Flotante (FAB) de Twitch
+*
+*   4. CLASES DE UTILIDAD Y MODIFICADORES
+*      4.1. Colores por Rareza (Texto y Fondo)
+*      4.2. Colores por Elemento/Rol
+*      4.3. Modificadores de Color de Texto
+*
+*   5. ANIMACIONES (KEYFRAMES)
+*
+*   6. DISEÑO ADAPTATIVO (MEDIA QUERIES)
+*      6.1. Ajustes Generales de Layout Móvil
+*      6.2. Componentes en Móvil
+*      6.3. Estilos del Swiper (Específico para Móvil)
+*
+******************************************************************/
+
+/* --- 1. CONFIGURACIÓN GLOBAL Y ESTILOS BASE --- */
+
+/* --- 1.1. Importación de Fuentes --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
+/* --- 1.2. Variables CSS (Custom Properties) --- */
 :root {
+    /* Paleta de Colores Principal */
     --bg-color: #1a1a1a;
     --box-bg-color: #242424;
     --border-color: #3a3a3a;
     --text-color: #e0e0e0;
     --text-muted-color: #888;
+
+    /* Colores de Estado y Alertas */
     --color-urgent: #ff5252;
     --color-warning: #ffd740;
     --color-normal: #40c4ff;
@@ -13,6 +69,7 @@
     --color-success: #69f0ae;
     --color-danger: #ff8a80;
 
+    /* Colores por Rol/Elemento */
     --color-fire-role: #ff7043;
     --color-water-role: #29b6f6;
     --color-poison-role: #9ccc65;
@@ -21,24 +78,23 @@
     --color-dark-role: #ab47bc;
     --color-default-role: #78909c;
 
-    --rarity1-color: #d500f9;
-    /* Exalted - Morado */
-    --rarity2-color: #536dfe;
-    /* Revered - Azul Oscuro */
-    --rarity3-color: #00b0ff;
-    /* Famed - Azul Claro */
+    /* Colores por Rareza */
+    --rarity1-color: #d500f9; /* Exalted - Morado */
+    --rarity2-color: #536dfe; /* Revered - Azul Oscuro */
+    --rarity3-color: #00b0ff; /* Famed - Azul Claro */
 
     --rarity1-bg-color: rgb(210, 21, 244);
     --rarity2-bg-color: rgb(42 62 177);
     --rarity3-bg-color: rgb(76, 193, 247);
-
-    /* --- NUEVAS VARIABLES AÑADIDAS --- */
     --color-exalted-gold: #ffd700;
+
+    /* Fondos para Modales por Rareza */
     --rarity1-modal-bg: rgba(210, 21, 244, 0.15);
     --rarity2-modal-bg: rgba(42, 62, 177, 0.15);
     --rarity3-modal-bg: rgba(76, 193, 247, 0.15);
 }
 
+/* --- 1.3. Estilos Base del Body --- */
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
@@ -50,23 +106,25 @@ body {
     padding: 20px;
 }
 
-/* --- Custom Scrollbar --- */
+/* --- 1.4. Scrollbar Personalizado --- */
 ::-webkit-scrollbar {
     width: 8px;
 }
-
 ::-webkit-scrollbar-track {
     background: var(--box-bg-color);
 }
-
 ::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
     border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
+
+/* --- FIN DE CONFIGURACIÓN GLOBAL Y ESTILOS BASE --- */
+
+
+/* --- 2. ESTRUCTURA PRINCIPAL (LAYOUT) --- */
 
 .app-container {
     display: flex;
@@ -109,52 +167,26 @@ body {
     flex-direction: column;
 }
 
-#timers-container {
-    flex-grow: 1;
-    overflow-y: auto;
+.panel-subtitle {
+    font-size: 1.2em;
+    color: var(--color-primary);
+    text-align: center;
+    margin: 15px 0 10px 0;
 }
 
-#status-bar {
-    padding: 10px 20px;
-    background-color: #1f1f1f;
-    text-align: left;
-    font-size: 0.8em;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border-radius: 0 0 0 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.panel-subtitle-small {
+    font-size: 1.0em;
+    color: var(--color-primary);
+    margin: 0;
+    font-weight: 700;
 }
 
-#status-bar span {
-    color: var(--text-muted-color);
-}
+/* --- FIN DE ESTRUCTURA PRINCIPAL --- */
 
-#about-button {
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    color: var(--text-muted-color);
-    transition: color 0.2s ease, background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
 
-#about-button:hover {
-    color: var(--text-color);
-    background-color: var(--border-color);
-}
+/* --- 3. COMPONENTES --- */
 
-#about-button svg {
-    width: 20px;
-    height: 20px;
-}
-
+/* --- 3.1. Barra Superior y Reloj --- */
 .top-bar {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -174,9 +206,6 @@ body {
 
 .top-bar-right {
     justify-self: end;
-}
-
-.top-bar-right {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -206,6 +235,7 @@ body {
     color: var(--text-muted-color);
 }
 
+/* --- Switch de Formato de Hora --- */
 .time-format-container {
     display: flex;
     align-items: center;
@@ -259,6 +289,7 @@ input:checked+.slider:before {
     transform: translateX(16px);
 }
 
+/* --- 3.2. Temporizadores Principales (Panel Izquierdo) --- */
 #primary-timers-container {
     display: flex;
     flex-direction: column;
@@ -266,7 +297,7 @@ input:checked+.slider:before {
     align-items: center;
     justify-content: center;
     flex-grow: 1;
-    margin-bottom: 50px;
+    margin-bottom: 50px; /* Espacio para la barra de estado */
 }
 
 .primary-timer-item {
@@ -311,24 +342,6 @@ input:checked+.slider:before {
     gap: 8px;
 }
 
-.spawn-item-name-container {
-    justify-content: flex-start;
-}
-
-.info-button,
-.sync-button {
-    cursor: pointer;
-    color: var(--text-muted-color);
-    width: 18px;
-    height: 18px;
-    transition: color 0.2s ease;
-}
-
-.info-button:hover,
-.sync-button:hover {
-    color: var(--color-normal);
-}
-
 .primary-timer-item .timer-name,
 .spawn-item-name {
     margin: 0;
@@ -340,10 +353,6 @@ input:checked+.slider:before {
     align-items: center;
     justify-content: center;
     gap: 8px;
-}
-
-.spawn-item .countdown-container {
-    justify-content: flex-end;
 }
 
 .primary-timer-item .timer-name {
@@ -370,30 +379,28 @@ input:checked+.slider:before {
     margin: 0;
 }
 
+/* Modificador: Temporizador Principal Grande */
 .primary-timer-item.main .timer-image {
     width: 100px;
     height: 100px;
     border-radius: 16px;
 }
-
 .primary-timer-item.main .timer-name {
     font-size: 1.8em;
 }
-
 .primary-timer-item.main .timer-name-container {
     margin-bottom: 8px;
 }
-
 .primary-timer-item.main .timer-countdown {
     font-size: 2.5em;
 }
 
+/* Modificador: Temporizador Secundario Pequeño */
 .primary-timer-item.secondary {
     opacity: 0.8;
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
 }
-
 .primary-timer-item.secondary .timer-image,
 .primary-timer-item.secondary .ticket-image {
     width: 50px;
@@ -402,22 +409,45 @@ input:checked+.slider:before {
     margin-bottom: 10px;
     border-width: 1px;
 }
-
 .primary-timer-item.secondary .timer-name {
     font-size: 1.1em;
 }
-
 .primary-timer-item.secondary .timer-name-container {
     margin-bottom: 8px;
 }
-
 .primary-timer-item.secondary .timer-countdown {
     font-size: 1.5em;
 }
-
 .primary-timer-item.secondary .timer-desc {
     font-size: 0.8em;
     margin-bottom: 10px;
+}
+
+
+/* --- 3.3. Barra de Estado (Inferior Izquierda) --- */
+#status-bar {
+    padding: 10px 20px;
+    background-color: #1f1f1f;
+    text-align: left;
+    font-size: 0.8em;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0 0 0 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#status-bar span {
+    color: var(--text-muted-color);
+}
+
+
+/* --- 3.4. Lista de Spawns (Panel Derecho) --- */
+#timers-container {
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 .spawn-item {
@@ -428,12 +458,12 @@ input:checked+.slider:before {
     transition: opacity 0.3s ease;
 }
 
-.spawn-item.disabled {
-    opacity: 0.5;
-}
-
 .spawn-item:last-child {
     border-bottom: none;
+}
+
+.spawn-item.disabled {
+    opacity: 0.5;
 }
 
 .spawn-item-icon {
@@ -456,6 +486,10 @@ input:checked+.slider:before {
     flex-grow: 1;
 }
 
+.spawn-item-name-container {
+    justify-content: flex-start;
+}
+
 .spawn-item-name {
     font-size: 1.1em;
     color: var(--text-color);
@@ -467,15 +501,8 @@ input:checked+.slider:before {
     margin: 0;
 }
 
-.event-tip {
-    background-color: var(--color-primary);
-    color: var(--bg-color);
-    font-size: 0.7em;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: bold;
-    margin-left: 8px;
-    vertical-align: middle;
+.spawn-item .countdown-container {
+    justify-content: flex-end;
 }
 
 .countdown-timer {
@@ -484,23 +511,21 @@ input:checked+.slider:before {
     font-family: 'Courier New', monospace;
 }
 
-.alert-toggle {
-    cursor: pointer;
-    margin-left: 20px;
+/* --- Ticket Items (Variación de Spawn Item) --- */
+.ticket-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.ticket-item .item-icon {
     width: 24px;
     height: 24px;
-    transition: color 0.2s ease, opacity 0.2s ease;
+    margin-right: 15px;
+    border: none;
+    color: var(--color-primary);
 }
 
-.alert-toggle.enabled {
-    color: var(--color-normal);
-}
 
-.alert-toggle.disabled {
-    color: var(--text-muted-color);
-    opacity: 0.6;
-}
-
+/* --- 3.5. Banners de Héroes --- */
 #banners-container {
     display: flex;
     flex-direction: column;
@@ -584,22 +609,20 @@ input:checked+.slider:before {
     outline-offset: -3px;
 }
 
-.banner-hero-img-container:hover .rarity-1 {
-    outline-color: var(--rarity1-color);
-}
-
-.banner-hero-img-container:hover .rarity-2 {
-    outline-color: var(--rarity2-color);
-}
-
-.banner-hero-img-container:hover .rarity-3 {
-    outline-color: var(--rarity3-color);
-}
-
 .banner-hero-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.banner-hero-img-container:hover .rarity-1 { outline-color: var(--rarity1-color); }
+.banner-hero-img-container:hover .rarity-2 { outline-color: var(--rarity2-color); }
+.banner-hero-img-container:hover .rarity-3 { outline-color: var(--rarity3-color); }
+
+.banner-hero-name {
+    font-size: 0.8em;
+    color: var(--text-color);
+    font-weight: 700;
 }
 
 .hero-role-icon {
@@ -623,108 +646,26 @@ input:checked+.slider:before {
     flex-wrap: nowrap;
 }
 
-.banner-hero-name {
-    font-size: 0.8em;
-    color: var(--text-color);
-    font-weight: 700;
-}
-
-.rarity-1 {
-    background-color: var(--rarity1-bg-color);
-    box-shadow: inset 0 0 15px 3px var(--rarity1-color);
-}
-
-.rarity-2 {
-    background-color: var(--rarity2-bg-color);
-    box-shadow: inset 0 0 15px 3px var(--rarity2-color);
-}
-
-.rarity-3 {
-    background-color: var(--rarity3-bg-color);
-    box-shadow: inset 0 0 15px 3px var(--rarity3-color);
-}
-
-.hero-role-icon.element-fire {
-    background-color: var(--color-fire-role);
-}
-
-.hero-role-icon.element-water {
-    background-color: var(--color-water-role);
-}
-
-.hero-role-icon.element-earth {
-    background-color: var(--color-earth-role);
-}
-
-.hero-role-icon.element-wind {
-    background-color: var(--color-wind-role);
-}
-
-.hero-role-icon.element-lightning {
-    background-color: var(--color-lightning-role);
-}
-
-.hero-role-icon.element-typeless {
-    background-color: var(--color-typeless-role);
-}
-
-.hero-role-icon.element-default {
-    background-color: var(--color-default-role);
-}
-
+/* --- Fondos de Banner por Elemento --- */
 .banner-box::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
     z-index: 0;
 }
+.banner-bg-fire::before { background: radial-gradient(ellipse, transparent 20%, rgba(227, 63, 14, 0.25) 100%); }
+.banner-bg-water::before { background: radial-gradient(ellipse, transparent 20%, rgba(41, 182, 246, 0.2) 100%); }
+.banner-bg-poison::before { background: radial-gradient(ellipse, transparent 20%, rgba(156, 204, 101, 0.2) 100%); }
+.banner-bg-lightning::before { background: radial-gradient(ellipse, transparent 20%, rgba(255, 238, 88, 0.2) 100%); }
+.banner-bg-typeless::before { background: radial-gradient(ellipse, transparent 20%, rgba(120, 144, 156, 0.15) 100%); }
+.banner-bg-dark::before { background: radial-gradient(ellipse, transparent 20%, rgba(171, 71, 188, 0.2) 100%); }
 
-.banner-bg-fire::before {
-    background: radial-gradient(ellipse, transparent 20%, rgba(227, 63, 14, 0.25) 100%);
-}
 
-.banner-bg-water::before {
-    background: radial-gradient(ellipse, transparent 20%, rgba(41, 182, 246, 0.2) 100%);
-}
-
-.banner-bg-poison::before {
-    background: radial-gradient(ellipse, transparent 20%, rgba(156, 204, 101, 0.2) 100%);
-}
-
-.banner-bg-lightning::before {
-    background: radial-gradient(ellipse, transparent 20%, rgba(255, 238, 88, 0.2) 100%);
-}
-
-.banner-bg-typeless::before {
-    background: radial-gradient(ellipse, transparent 20%, rgba(120, 144, 156, 0.15) 100%);
-}
-
-.banner-bg-dark::before {
-    background: radial-gradient(ellipse, transparent 20%, rgba(171, 71, 188, 0.2) 100%);
-}
-
+/* --- 3.6. Lista de Eventos (Panel Derecho) --- */
 #events-container {
     padding: 0 18px 10px 18px;
     border-bottom: 1px solid var(--border-color);
-}
-
-.panel-subtitle {
-    font-size: 1.2em;
-    color: var(--color-primary);
-    text-align: center;
-    margin: 15px 0 10px 0;
-}
-
-.panel-subtitle-small {
-    font-size: 1.0em;
-    color: var(--color-primary);
-    margin: 0;
-    font-weight: 700;
 }
 
 .event-item {
@@ -755,29 +696,48 @@ input:checked+.slider:before {
     color: var(--color-warning);
 }
 
-.primary-timer-item .timer-name-boss,
-.spawn-item .spawn-item-name-boss {
-    color: var(--color-urgent);
+.event-tip {
+    background-color: var(--color-primary);
+    color: var(--bg-color);
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
 }
 
-.primary-timer-item .timer-name-ticket,
-.ticket-item .spawn-item-name-ticket {
-    color: var(--color-primary);
+
+/* --- 3.7. Botones e Iconos Interactivos --- */
+.info-button,
+.sync-button {
+    cursor: pointer;
+    color: var(--text-muted-color);
+    width: 18px;
+    height: 18px;
+    transition: color 0.2s ease;
 }
 
-.ticket-item .item-icon {
+.info-button:hover,
+.sync-button:hover {
+    color: var(--color-normal);
+}
+
+.alert-toggle {
+    cursor: pointer;
+    margin-left: 20px;
     width: 24px;
     height: 24px;
-    margin-right: 15px;
-    border: none;
+    transition: color 0.2s ease, opacity 0.2s ease;
 }
 
-.ticket-item {
-    border-bottom: 1px solid var(--border-color);
+.alert-toggle.enabled {
+    color: var(--color-normal);
 }
 
-.ticket-item .item-icon {
-    color: var(--color-primary);
+.alert-toggle.disabled {
+    color: var(--text-muted-color);
+    opacity: 0.6;
 }
 
 #settings-button {
@@ -793,16 +753,39 @@ input:checked+.slider:before {
     transform: rotate(45deg);
 }
 
+#about-button {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    color: var(--text-muted-color);
+    transition: color 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+#about-button:hover {
+    color: var(--text-color);
+    background-color: var(--border-color);
+}
+
+#about-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+/* --- 3.8. Modales (Estructura General) --- */
 #modal-overlay,
 #info-modal-overlay,
 #sync-modal-overlay,
 #about-modal-overlay,
-#hero-modal-overlay {
+#hero-modal-overlay,
+#streams-modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 1000;
     display: flex;
@@ -817,17 +800,48 @@ input:checked+.slider:before {
 #info-modal-overlay.visible,
 #sync-modal-overlay.visible,
 #about-modal-overlay.visible,
-#hero-modal-overlay.visible {
+#hero-modal-overlay.visible,
+#streams-modal-overlay.visible {
     opacity: 1;
     visibility: visible;
 }
 
+#settings-modal,
+#info-modal,
+#sync-modal,
+#about-modal {
+    background-color: var(--box-bg-color);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+#modal-overlay.visible #settings-modal,
+#info-modal-overlay.visible #info-modal,
+#sync-modal-overlay.visible #sync-modal,
+#about-modal-overlay.visible #about-modal,
+#streams-modal-overlay.visible #streams-modal {
+    transform: scale(1);
+}
+
+#settings-modal h2,
+#info-modal h2,
+#sync-modal h2,
+#about-modal h2 {
+    margin-top: 0;
+    color: var(--color-primary);
+}
+
+
+/* --- 3.8.1. Modal de Héroe --- */
 #hero-modal-overlay {
     background-color: rgba(0, 0, 0, 0.85);
     cursor: pointer;
 }
 
-/* --- ESTILOS DEL MODAL DE HÉROE MODIFICADOS --- */
 #hero-modal-content {
     max-width: 450px;
     max-height: 85vh;
@@ -843,8 +857,7 @@ input:checked+.slider:before {
 
 #hero-modal-image {
     display: block;
-    width: auto;
-    height: auto;
+    width: auto; height: auto;
     max-width: 100%;
     max-height: calc(85vh - 120px);
     border-radius: 8px;
@@ -873,13 +886,7 @@ input:checked+.slider:before {
     font-size: 1em;
 }
 
-/*
-.role-icon, #hero-modal-role-icon.role-icon {
-    filter: invert(1)
-}
-    */
-
-.hero-modal-details>div {
+.hero-modal-details > div {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -888,70 +895,24 @@ input:checked+.slider:before {
 .hero-modal-details img {
     width: 28px;
     height: 28px;
-    /* Corrección: Asegura que los íconos de rol no se inviertan */
     filter: none;
 }
 
-/* Aumenta el tamaño del ícono de elemento */
 #hero-modal-element-icon {
     width: 32px;
     height: 32px;
 }
 
-
 .hero-modal-details span {
     font-weight: bold;
 }
 
-.rarity-text-1 {
-    color: var(--rarity1-color);
-}
-
-.rarity-text-2 {
-    color: var(--rarity2-color);
-}
-
-.rarity-text-3 {
-    color: var(--rarity3-color);
-}
-
-
-#settings-modal,
-#info-modal,
-#sync-modal,
-#about-modal {
-    background-color: var(--box-bg-color);
-    padding: 30px;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-    text-align: center;
-}
-
-#modal-overlay.visible #settings-modal,
-#info-modal-overlay.visible #info-modal,
-#sync-modal-overlay.visible #sync-modal,
-#about-modal-overlay.visible #about-modal {
-    transform: scale(1);
-}
-
-#settings-modal h2,
-#info-modal h2,
-#sync-modal h2,
-#about-modal h2 {
-    margin-top: 0;
-    color: var(--color-primary);
-}
-
+/* --- 3.8.2. Modal de Información y 'Acerca de' --- */
 #info-modal,
 #about-modal {
     width: 420px;
 }
-
-#about-modal {
-    text-align: center;
-}
+#about-modal { text-align: center; }
 
 #info-modal p,
 #about-modal p {
@@ -961,10 +922,16 @@ input:checked+.slider:before {
     margin: 15px 0;
 }
 
+#info-modal p:last-of-type { margin-bottom: 25px; }
+
+#info-modal strong {
+    color: var(--text-color);
+    font-weight: normal;
+}
+
 #about-modal h3 {
     color: var(--text-color);
-    margin-top: 25px;
-    margin-bottom: 10px;
+    margin-top: 25px; margin-bottom: 10px;
     font-size: 1.1em;
 }
 
@@ -984,19 +951,7 @@ input:checked+.slider:before {
     color: var(--color-normal);
     text-decoration: none;
 }
-
-#about-modal a:hover {
-    text-decoration: underline;
-}
-
-#info-modal p:last-of-type {
-    margin-bottom: 25px;
-}
-
-#info-modal strong {
-    color: var(--text-color);
-    font-weight: normal;
-}
+#about-modal a:hover { text-decoration: underline; }
 
 #close-info-btn,
 #close-about-btn {
@@ -1006,6 +961,7 @@ input:checked+.slider:before {
     color: var(--text-color);
 }
 
+/* --- 3.8.3. Modal de Sincronización --- */
 #sync-modal {
     width: 350px;
 }
@@ -1040,11 +996,12 @@ input:checked+.slider:before {
     text-align: center;
 }
 
+/* --- 3.8.4. Modal de Configuración --- */
 .settings-section {
     margin-bottom: 25px;
 }
 
-.settings-section>label {
+.settings-section > label {
     display: block;
     margin-bottom: 10px;
     color: var(--text-muted-color);
@@ -1107,12 +1064,12 @@ select.settings-input option {
     transition: opacity 0.2s ease;
 }
 
-.checkbox-label input:checked+.checkbox-custom {
+.checkbox-label input:checked + .checkbox-custom {
     background-color: var(--color-normal);
     border-color: var(--color-normal);
 }
 
-.checkbox-label input:checked+.checkbox-custom svg {
+.checkbox-label input:checked + .checkbox-custom svg {
     opacity: 1;
 }
 
@@ -1138,7 +1095,106 @@ select.settings-input option {
     color: var(--text-color);
 }
 
-/* Event Details Panel */
+
+/* --- 3.8.5. Modal de Streams --- */
+#streams-modal {
+    background-color: var(--box-bg-color);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+.streams-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.streams-modal-header h2 {
+    margin: 0;
+    color: var(--color-primary);
+    font-size: 1.4em;
+}
+#close-streams-modal {
+    background: none; border: none;
+    color: var(--text-muted-color);
+    font-size: 2em;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: color 0.2s ease;
+}
+#close-streams-modal:hover { color: var(--text-color); }
+#streams-modal-content {
+    padding: 25px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+.modal-stream-item { text-align: center; }
+.stream-thumbnail {
+    width: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    position: relative;
+    height: 200px;
+}
+.modal-stream-item .stream-image-link {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    color: white;
+    text-decoration: none;
+}
+.modal-stream-item .stream-image-link:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+}
+.modal-stream-item .streamer-name {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+}
+.modal-stream-item .stream-countdown,
+.modal-stream-item .stream-is-live {
+    font-family: 'Courier New', monospace;
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--color-normal);
+    margin: 0;
+}
+.modal-stream-item .stream-is-live { color: var(--color-urgent); }
+.no-streams-message {
+    color: var(--text-muted-color);
+    text-align: center;
+    padding: 40px 0;
+}
+
+.streams-modal-footer {
+    padding: 20px 25px;
+    border-top: 1px solid var(--border-color);
+    background-color: rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+.streams-modal-footer h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1em;
+    color: var(--text-muted-color);
+    text-align: center;
+}
+.streams-modal-footer .checkbox-group { justify-content: space-around; }
+
+
+/* --- 3.9. Panel de Detalles de Evento (Lateral Derecho) --- */
 #event-details-panel {
     background-color: var(--box-bg-color);
     border-radius: 16px;
@@ -1148,7 +1204,6 @@ select.settings-input option {
     overflow: hidden;
     transition: width 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
     height: calc(600px + 15px + 148px);
-    /* Height of main-wrapper + gap + banners-container */
     display: flex;
     flex-direction: column;
 }
@@ -1179,11 +1234,9 @@ select.settings-input option {
 
 .close-details-btn {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 15px; right: 15px;
     cursor: pointer;
-    width: 30px;
-    height: 30px;
+    width: 30px; height: 30px;
     color: var(--text-muted-color);
     background-color: transparent;
     border-radius: 50%;
@@ -1241,7 +1294,8 @@ select.settings-input option {
     color: var(--color-warning);
 }
 
-.details-table tr:last-child td {
+.details-table tr:last-child td,
+.details-list li:last-child {
     border-bottom: none;
 }
 
@@ -1256,10 +1310,6 @@ select.settings-input option {
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
-}
-
-.details-list li:last-child {
-    border-bottom: none;
 }
 
 .participation-reward {
@@ -1284,9 +1334,8 @@ select.settings-input option {
     color: var(--color-warning);
 }
 
-/* --- Botón Flotante y Modal de Streams --- */
 
-/* Botón Flotante (FAB) */
+/* --- 3.10. Botón Flotante (FAB) de Twitch --- */
 #twitch-fab {
     position: fixed;
     bottom: 25px;
@@ -1305,175 +1354,20 @@ select.settings-input option {
     transform: scale(0);
     opacity: 0;
 }
-
 #twitch-fab.visible {
     transform: scale(1);
     opacity: 1;
 }
-
-#twitch-fab:hover {
-    transform: scale(1.1);
-}
-
+#twitch-fab:hover { transform: scale(1.1); }
 #twitch-fab svg {
     color: white;
     width: 32px;
     height: 32px;
 }
-
-/* Overlay del Modal */
-#streams-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-#streams-modal-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Contenedor del Modal */
-#streams-modal {
-    background-color: var(--box-bg-color);
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    width: 90%;
-    max-width: 450px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
-
-#streams-modal-overlay.visible #streams-modal {
-    transform: scale(1);
-}
-
-.streams-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 25px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-
-.streams-modal-header h2 {
-    margin: 0;
-    color: var(--color-primary);
-    font-size: 1.4em;
-}
-
-#close-streams-modal {
-    background: none;
-    border: none;
-    color: var(--text-muted-color);
-    font-size: 2em;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0 5px;
-    transition: color 0.2s ease;
-}
-
-#close-streams-modal:hover {
-    color: var(--text-color);
-}
-
-#streams-modal-content {
-    padding: 25px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-/* Estilo de cada item de stream dentro del modal */
-.modal-stream-item {
-    text-align: center;
-}
-
-.stream-thumbnail {
-    width: 400px;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 15px;
-    position: relative;
-    height: 200px;
-}
-
-.modal-stream-item .stream-image-link {
-    display: block;
-    border-radius: 12px;
-    overflow: hidden;
-    color: white;
-    text-decoration: none;
-}
-
-.modal-stream-item .stream-image-link:hover {
-    transform: scale(1.02);
-    transition: transform 0.2s ease;
-}
-
-.modal-stream-item .streamer-name {
-    font-size: 1.2em;
-    font-weight: 700;
-    margin: 0 0 5px 0;
-}
-
-.modal-stream-item .stream-countdown,
-.modal-stream-item .stream-is-live {
-    font-family: 'Courier New', monospace;
-    font-size: 1.8em;
-    font-weight: 700;
-    color: var(--color-normal);
-    margin: 0;
-}
-
-.modal-stream-item .stream-is-live {
-    color: var(--color-urgent);
-}
-
-.no-streams-message {
-    color: var(--text-muted-color);
-    text-align: center;
-    padding: 40px 0;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
-    }
-
-    70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
-    }
-
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
-    }
-}
-
 #twitch-fab .notification-dot {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 12px;
-    height: 12px;
+    top: 6px; right: 6px;
+    width: 12px; height: 12px;
     background-color: var(--color-urgent);
     border: 2px solid var(--box-bg-color);
     border-radius: 50%;
@@ -1481,55 +1375,155 @@ select.settings-input option {
     transform: scale(0);
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
 #twitch-fab.alert-active .notification-dot {
     opacity: 1;
     transform: scale(1);
     animation: pulse 2s infinite;
 }
+#twitch-fab.live-active .notification-dot { display: none; }
 
-.streams-modal-footer {
-    padding: 20px 25px;
-    border-top: 1px solid var(--border-color);
-    background-color: rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
+
+/* --- FIN DE COMPONENTES --- */
+
+
+/* --- 4. CLASES DE UTILIDAD Y MODIFICADORES --- */
+
+/* --- 4.1. Colores por Rareza (Texto y Fondo) --- */
+.rarity-text-1 { color: var(--rarity1-color); }
+.rarity-text-2 { color: var(--rarity2-color); }
+.rarity-text-3 { color: var(--rarity3-color); }
+
+.rarity-1 {
+    background-color: var(--rarity1-bg-color);
+    box-shadow: inset 0 0 15px 3px var(--rarity1-color);
+}
+.rarity-2 {
+    background-color: var(--rarity2-bg-color);
+    box-shadow: inset 0 0 15px 3px var(--rarity2-color);
+}
+.rarity-3 {
+    background-color: var(--rarity3-bg-color);
+    box-shadow: inset 0 0 15px 3px var(--rarity3-color);
 }
 
-.streams-modal-footer h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.1em;
-    color: var(--text-muted-color);
-    text-align: center;
+/* --- 4.2. Colores por Elemento/Rol --- */
+.hero-role-icon.element-fire { background-color: var(--color-fire-role); }
+.hero-role-icon.element-water { background-color: var(--color-water-role); }
+.hero-role-icon.element-earth { background-color: var(--color-earth-role); }
+.hero-role-icon.element-wind { background-color: var(--color-wind-role); }
+.hero-role-icon.element-lightning { background-color: var(--color-lightning-role); }
+.hero-role-icon.element-typeless { background-color: var(--color-typeless-role); }
+.hero-role-icon.element-default { background-color: var(--color-default-role); }
+
+/* --- 4.3. Modificadores de Color de Texto --- */
+.primary-timer-item .timer-name-boss,
+.spawn-item .spawn-item-name-boss {
+    color: var(--color-urgent);
 }
 
-/* Reutilizamos el .checkbox-group de la configuración principal */
-.streams-modal-footer .checkbox-group {
-    justify-content: space-around;
+.primary-timer-item .timer-name-ticket,
+.ticket-item .spawn-item-name-ticket {
+    color: var(--color-primary);
 }
 
+/* --- FIN DE CLASES DE UTILIDAD --- */
 
-/* --- ESTILOS PARA ADAPTACIÓN MÓVIL --- */
+
+/* --- 5. ANIMACIONES (KEYFRAMES) --- */
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    }
+}
+
+@keyframes live-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 12px rgba(255, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+    }
+}
+
+#twitch-fab.live-active {
+    animation: live-pulse 1.5s infinite;
+}
+
+/* --- FIN DE ANIMACIONES --- */
+
+
+/* --- 6. DISEÑO ADAPTATIVO (MEDIA QUERIES) --- */
+
 @media (max-width: 900px) {
+    /* --- 6.1. Ajustes Generales de Layout Móvil --- */
     body {
-        /* Permitir scroll vertical en móvil y usar toda la altura */
         display: block;
         padding: 0;
         height: 100%;
     }
 
-        #events-container {
-            padding: 0 0px 7px 0px;
-            border-bottom: 1px solid var(--border-color);
-        }
+    .app-container,
+    .content-wrapper {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
 
-        #primary-timers-container {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-}
+    .main-wrapper {
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: none;
+        overflow: visible;
+        order: 1;
+    }
+
+    .primary-panel,
+    .secondary-panel {
+        width: 100%;
+        box-sizing: border-box;
+        border-left: none;
+        padding: 20px;
+    }
+
+    .primary-panel {
+        padding-bottom: 2px;
+    }
+
+    #status-bar {
+        border-radius: 0;
+    }
+
+    /* --- 6.2. Componentes en Móvil --- */
+    #events-container {
+        padding: 0 0px 7px 0px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    #primary-timers-container {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+    }
 
     .spawn-item {
         display: flex;
@@ -1548,62 +1542,18 @@ select.settings-input option {
         height: 200px;
     }
 
-    .app-container,
-    .content-wrapper {
-        flex-direction: column;
-        width: 100%;
-        gap: 0;
-    }
-
-    /* Contenedor principal ahora ocupa todo el ancho y tiene altura automática */
-    .main-wrapper {
-        width: 100%;
-        height: auto;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        /* Separador sutil */
-        box-shadow: none;
-        overflow: visible;
-        order: 1;
-        /* Aseguramos que se muestre primero */
-    }
-
-    /* Paneles ahora son full-width */
-    .primary-panel,
-    .secondary-panel {
-        width: 100%;
-        box-sizing: border-box;
-        border-left: none;
-        padding: 20px;
-    }
-
-    .primary-panel {
-        padding-bottom: 2px;
-    }
-
-    #status-bar {
-        border-radius: 0;
-    }
-
-    /* Banners siempre abajo y fuera del swipe */
     #banners-container {
         width: 100%;
         border-radius: 0;
         border: none;
-        /* Quitamos bordes superior/izquierdo/derecho */
         flex-direction: column;
         order: 2;
-        /* Se muestra después del main-wrapper */
         padding-top: 15px;
-        /* Espacio entre el paginador y los banners */
     }
 
     .banner-heroes {
         gap: 10px;
         padding-left: 0;
-        /* Centramos los héroes */
     }
 
     .banner-hero-img-container {
@@ -1613,21 +1563,17 @@ select.settings-input option {
 
     .banner-element-icon {
         display: none;
-        /* Ocultamos el icono de elemento en móvil para ahorrar espacio */
     }
 
-
-    /* Panel de detalles de evento se vuelve un overlay full-screen */
     #event-details-panel {
         position: fixed;
         top: 100%;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: 100vh !important;
         border-radius: 0;
         z-index: 1100;
         transition: top 0.4s ease;
-        height: 100vh !important;
     }
 
     #event-details-panel.visible {
@@ -1635,22 +1581,19 @@ select.settings-input option {
         width: 100%;
     }
 
-    /* --- Estilos del Swiper --- */
+    /* --- 6.3. Estilos del Swiper (Específico para Móvil) --- */
     .mobile-swiper-container {
         padding-bottom: 30px;
-        /* Espacio para el paginador */
     }
 
     .swiper-slide {
         width: 100%;
         height: auto;
-        /* Forzamos una altura mínima para consistencia visual */
         min-height: 450px;
     }
 
     .swiper-pagination {
         position: absolute;
-        /* Lo posicionamos relativo al contenedor del swiper */
         bottom: 10px;
     }
 
@@ -1663,25 +1606,4 @@ select.settings-input option {
     }
 }
 
-/* --- Animación para el estado "EN VIVO" --- */
-@keyframes live-pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 12px rgba(255, 0, 0, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
-    }
-}
-
-/* Aplica la animación cuando el stream está en vivo */
-#twitch-fab.live-active {
-    animation: live-pulse 1.5s infinite;
-}
-
-/* Oculta el punto de notificación si ya está en modo "en vivo" para no saturar */
-#twitch-fab.live-active .notification-dot {
-    display: none;
-}
+/* --- FIN DE DISEÑO ADAPTATIVO --- */
