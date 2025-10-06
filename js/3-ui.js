@@ -351,8 +351,8 @@ const UI = {
                 <div class="modal-stream-item">
                     <a href="https://twitch.tv/${stream.twitchChannel}" 
                        target="_blank" rel="noopener noreferrer" 
-                       class="stream-image-link" 
-                       style="background-image: url('${stream.imageUrl}');">
+                       class="stream-image-link">
+                       <img src="${stream.imageUrl}" alt="${stream.name}" class="stream-thumbnail">
                     </a>
                     <p class="streamer-name">${stream.name}</p>
                     ${countdownHTML}

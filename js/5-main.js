@@ -50,6 +50,8 @@
         
         // 5. Inicializar la librería Swiper sobre la nueva estructura
         App.state.swiper = new Swiper('.mobile-swiper-container', {
+            // AÑADIMOS LA SOLUCIÓN: autoHeight ajustará la altura del carrusel dinámicamente
+            autoHeight: true, 
             loop: false,
             pagination: {
                 el: '.swiper-pagination',
