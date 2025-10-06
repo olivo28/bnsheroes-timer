@@ -1,119 +1,167 @@
-# Game Timers Dashboard
-
-[English](#english) | [Español](#español)
-
----
-
-## English
-
-A clean, single-file web dashboard to track important in-game timers, such as daily resets, boss spawns, and special tickets. It features customizable desktop and sound notifications to ensure you never miss an event. All settings are saved locally in your browser's cookies.
-
----
-
-### ✨ Live Demo
-
-The easiest way to use this tool is through the live version. The repository is primarily for code visualization.
-
-**[➡️ Try the Live Demo Here!](https://olivo28.github.io/bnsheroes-timer)**
-
----
-
-### Features
-
--   **Daily Reset Timer:** A prominent countdown to the main daily server reset.
--   **Showdown Ticket Timer:** Tracks when your next Showdown ticket will be available, with an option to sync it manually.
--   **Optional Boss Timers:** A toggleable secondary panel to track multiple boss spawn times.
--   **Customizable Notifications:**
-    -   Enable or disable desktop and sound alerts.
-    -   Set custom pre-alert minutes for boss spawns (e.g., 15, 5, and 1 minute before).
-    -   Receive notifications for the Daily Reset and when a Showdown Ticket is ready.
--   **Timezone & Language Support:**
-    -   Display all times in your preferred timezone.
-    -   Switch between English and Spanish interfaces.
--   **Persistent Settings:** Your configuration is automatically saved in your browser's **cookies**.
--   **Responsive Design:** The layout adapts, showing a single panel or a dual-panel view depending on your settings.
-
-### How to Use
-
-1.  **Open the Live Demo link.**
-2.  Click the **gear icon (⚙️)** in the top-right corner to open the settings modal.
-3.  **Configure your preferences:**
-    -   Check "Enable Boss Timers" to show the secondary panel.
-    -   Set your desired pre-alert minutes.
-    -   Choose your notification types (Sound/Desktop).
-    -   Select your timezone and language.
-4.  Click **"Save"**.
-5.  When your browser asks for permission to show notifications, **click "Allow"**. This is required for desktop alerts to work.
-
-### Technical Details
-
--   Built entirely with **Vanilla JavaScript**, **HTML**, and **CSS**.
--   **No frameworks or external libraries**, making it extremely lightweight and fast.
--   Contained within a single HTML file and a single JS file for simplicity.
-
-### 🤝 Contact & Support
-
-If you find this tool useful and would like to show your support, or if you need help, you can find me on the official **BNS Heroes** Discord server.
-
--   **My Discord:** `@olivo28`
--   **BNS Heroes Discord:** [Join Here](https://discord.gg/4eKe49CkVS)
-
-Donations are welcome but never required! Your feedback is the best support.
-
----
-
-## Español
-
-Un dashboard web limpio y de un solo archivo para seguir temporizadores importantes de BnS Heroes, como el reinicio diario, la aparición de jefes y tickets especiales. Incluye notificaciones de escritorio y sonido personalizables para asegurar que nunca te pierdas un evento. Toda la configuración se guarda localmente en las cookies de tu navegador.
-
----
-
-### ✨ Demo en Vivo
-
-La forma más fácil de usar esta herramienta es a través de la versión en vivo. El repositorio existe principalmente para visualizar el código.
-
-**[➡️ ¡Prueba la Demo en Vivo Aquí!](https://olivo28.github.io/bnsheroes-timer)**
-
----
-
-### Características
-
--   **Temporizador de Reset Diario:** Una cuenta regresiva principal para el reinicio diario del servidor.
--   **Temporizador de Ticket de Showdown:** Rastrea cuándo estará disponible tu próximo ticket, con opción de sincronizarlo manualmente.
--   **Temporizadores de Jefes (Opcionales):** Un panel secundario que se puede activar para seguir múltiples horarios de aparición de jefes.
--   **Notificaciones Personalizables:**
-    -   Activa o desactiva las alertas de escritorio y de sonido.
-    -   Establece minutos de pre-alerta personalizados para los jefes (ej: 15, 5 y 1 minuto antes).
-    -   Recibe notificaciones para el Reset Diario y cuando un Ticket de Showdown esté listo.
--   **Soporte de Zona Horaria e Idioma:**
-    -   Muestra todas las horas en tu zona horaria preferida.
-    -   Cambia la interfaz entre Inglés y Español.
--   **Configuración Persistente:** Tu configuración se guarda automáticamente en las **cookies** de tu navegador.
--   **Diseño Adaptable:** La interfaz se adapta, mostrando un solo panel o una vista de doble panel según tus ajustes.
-
-### Cómo Usar
-
-1.  **Abre el enlace de la Demo en Vivo.**
-2.  Haz clic en el **ícono de engranaje (⚙️)** en la esquina superior derecha para abrir la ventana de configuración.
-3.  **Configura tus preferencias:**
-    -   Marca "Activar Timer de Jefes" para mostrar el panel secundario.
-    -   Define los minutos de pre-alerta que desees.
-    -   Elige tus tipos de notificación (Sonido/Escritorio).
-    -   Selecciona tu zona horaria e idioma.
-4.  Haz clic en **"Guardar"**.
-5.  Cuando tu navegador pida permiso para mostrar notificaciones, **haz clic en "Permitir"**. Esto es necesario para que las alertas de escritorio funcionen.
-
-### Detalles Técnicos
-
--   Construido enteramente con **JavaScript (Vanilla JS)**, **HTML** y **CSS**.
--   **Sin frameworks o librerías externas**, lo que lo hace extremadamente ligero y rápido.
--   Contenido en un único archivo HTML y un único archivo JS para mayor simplicidad.
-
-### 🤝 Contacto y Soporte
-
-Si encuentras útil esta herramienta y te gustaría mostrar tu apoyo, o si necesitas ayuda, puedes encontrarme en el servidor oficial de Discord de **BNS Heroes**.
-
--   **Mi Discord:** `@olivo28`
--   **Discord de BNS Heroes:** [Únete Aquí](https://discord.gg/4eKe49CkVS)
-
-Las donaciones son bienvenidas, ¡pero nunca obligatorias! Tu feedback es el mejor apoyo.
+# BnS Heroes - HUB/Timer 
+  
+[English](#english) | [Español](#español)  
+  
+---  
+  
+## English  
+  
+A comprehensive web dashboard for tracking BnS Heroes game timers, events, banners, and Twitch streams. Features customizable notifications, multi-language support, and responsive design for desktop and mobile.  
+  
+### ✨ Live Demo  
+**[➡️ Try it Here!](https://olivo28.github.io/bnsheroes-timer)**  
+  
+### Features  
+  
+#### Core Timers  
+- **Daily Reset Timer**: Countdown to daily server reset with notifications  
+- **Showdown Ticket Timer**: Tracks ticket availability with manual sync option  
+- **Boss Spawn Timers**: Multiple boss spawn schedules with individual alert toggles  
+  
+#### Events & Content  
+- **Active Events Panel**: Real-time display of ongoing game events  
+- **Event Details**: Comprehensive mission lists, rewards, and boss rankings  
+- **Banner Tracking**: Current and upcoming hero banners with element info  
+- **Hero Database**: Complete hero information with rarities, roles, and elements  
+  
+#### Twitch Integration  
+- **Stream Widget**: Displays upcoming official streams  
+- **Stream Notifications**: Pre-stream (15 min) and post-stream alerts  
+- **Live Status**: Real-time indication when streams are active  
+  
+#### Notifications & Alerts  
+- **Desktop Notifications**: Browser notifications for important events  
+- **Sound Alerts**: Audio notifications with customizable alert sound  
+- **Pre-Alert System**: Configurable warnings (15, 5, 1 min before boss spawns)  
+- **Daily Reset Alerts**: Notification when game day resets  
+- **Showdown Ticket Alerts**: Alert when new ticket is available  
+  
+#### Customization  
+- **Timezone Support**: Display all times in your preferred timezone (UTC-12 to UTC+14)  
+- **Language Toggle**: Full interface in English or Spanish  
+- **Time Format**: Switch between 12h/24h display  
+- **Persistent Settings**: All preferences saved in browser cookies  
+- **Selective Display**: Toggle boss timers and events on/off  
+  
+#### Responsive Design  
+- **Desktop Layout**: Dual-panel view with primary and secondary timers  
+- **Mobile Layout**: Swiper-based navigation with swipeable panels  
+- **Adaptive UI**: Automatically adjusts based on screen size and settings  
+  
+### Technical Architecture  
+  
+- **Modular JavaScript**: 6-module system (0-data.js through 5-main.js)  
+- **Vanilla JS**: No frameworks, pure JavaScript  
+- **External Libraries**: Swiper.js for mobile navigation  
+- **Data Sources**: JSON files for heroes and events data  
+- **State Management**: Centralized state in App object  
+- **Cookie Persistence**: Settings saved locally in browser  
+  
+### How to Use  
+  
+1. **Open the live demo**  
+2. **Grant notification permission** when prompted  
+3. **Click settings icon (⚙️)** to configure:  
+   - Enable/disable boss timers and events  
+   - Set pre-alert minutes (comma-separated)  
+   - Choose notification types (sound/desktop)  
+   - Select timezone and language  
+   - Toggle 12h/24h time format  
+4. **Click "Save"** to apply settings  
+5. **Interact with events** to see detailed information  
+6. **Sync showdown timer** if needed using the sync button  
+  
+### Browser Compatibility  
+  
+- Chrome, Firefox, Edge, Safari (desktop & mobile)  
+- Requires: ES6 support, cookies enabled, Notification API  
+  
+### 🤝 Contact & Support  
+  
+Find me on the official **BNS Heroes** Discord:  
+- **Discord:** `@olivo28`  
+- **Server:** [Join Here](https://discord.gg/4eKe49CkVS)  
+  
+Donations welcome but never required! Feedback is the best support.  
+  
+---  
+  
+## Español  
+  
+Un dashboard web completo para rastrear temporizadores, eventos, banners y streams de Twitch de BnS Heroes. Incluye notificaciones personalizables, soporte multiidioma y diseño responsivo para escritorio y móvil.  
+  
+### ✨ Demo en Vivo  
+**[➡️ ¡Pruébalo Aquí!](https://olivo28.github.io/bnsheroes-timer)**  
+  
+### Características  
+  
+#### Temporizadores Principales  
+- **Timer de Reset Diario**: Cuenta regresiva al reinicio del servidor con notificaciones  
+- **Timer de Ticket de Showdown**: Rastrea disponibilidad de tickets con opción de sincronización manual  
+- **Timers de Aparición de Jefes**: Múltiples horarios de spawn con alertas individuales  
+  
+#### Eventos y Contenido  
+- **Panel de Eventos Activos**: Visualización en tiempo real de eventos del juego  
+- **Detalles de Eventos**: Listas completas de misiones, recompensas y rankings de jefes  
+- **Seguimiento de Banners**: Banners actuales y próximos con información de elementos  
+- **Base de Datos de Héroes**: Información completa de héroes con rarezas, roles y elementos  
+  
+#### Integración con Twitch  
+- **Widget de Streams**: Muestra próximos streams oficiales  
+- **Notificaciones de Stream**: Alertas pre-stream (15 min) y post-stream  
+- **Estado en Vivo**: Indicación en tiempo real cuando los streams están activos  
+  
+#### Notificaciones y Alertas  
+- **Notificaciones de Escritorio**: Notificaciones del navegador para eventos importantes  
+- **Alertas de Sonido**: Notificaciones de audio con sonido personalizable  
+- **Sistema de Pre-Alerta**: Avisos configurables (15, 5, 1 min antes de spawn de jefes)  
+- **Alertas de Reset Diario**: Notificación cuando el día del juego se reinicia  
+- **Alertas de Ticket de Showdown**: Aviso cuando hay nuevo ticket disponible  
+  
+#### Personalización  
+- **Soporte de Zona Horaria**: Muestra todas las horas en tu zona horaria preferida (UTC-12 a UTC+14)  
+- **Cambio de Idioma**: Interfaz completa en inglés o español  
+- **Formato de Hora**: Cambia entre formato 12h/24h  
+- **Configuración Persistente**: Todas las preferencias guardadas en cookies del navegador  
+- **Visualización Selectiva**: Activa/desactiva timers de jefes y eventos  
+  
+#### Diseño Responsivo  
+- **Layout de Escritorio**: Vista de doble panel con temporizadores primarios y secundarios  
+- **Layout Móvil**: Navegación basada en Swiper con paneles deslizables  
+- **UI Adaptativa**: Se ajusta automáticamente según tamaño de pantalla y configuración  
+  
+### Arquitectura Técnica  
+  
+- **JavaScript Modular**: Sistema de 6 módulos (0-data.js hasta 5-main.js)  
+- **Vanilla JS**: Sin frameworks, JavaScript puro  
+- **Librerías Externas**: Swiper.js para navegación móvil  
+- **Fuentes de Datos**: Archivos JSON para datos de héroes y eventos  
+- **Gestión de Estado**: Estado centralizado en objeto App  
+- **Persistencia con Cookies**: Configuración guardada localmente en el navegador  
+  
+### Cómo Usar  
+  
+1. **Abre la demo en vivo**  
+2. **Otorga permiso de notificaciones** cuando se solicite  
+3. **Haz clic en el ícono de configuración (⚙️)** para configurar:  
+   - Activar/desactivar timers de jefes y eventos  
+   - Establecer minutos de pre-alerta (separados por comas)  
+   - Elegir tipos de notificación (sonido/escritorio)  
+   - Seleccionar zona horaria e idioma  
+   - Cambiar formato de hora 12h/24h  
+4. **Haz clic en "Guardar"** para aplicar configuración  
+5. **Interactúa con eventos** para ver información detallada  
+6. **Sincroniza el timer de showdown** si es necesario usando el botón de sincronización  
+  
+### Compatibilidad de Navegadores  
+  
+- Chrome, Firefox, Edge, Safari (escritorio y móvil)  
+- Requiere: Soporte ES6, cookies habilitadas, API de Notificaciones  
+  
+### 🤝 Contacto y Soporte  
+  
+Encuéntrame en el Discord oficial de **BNS Heroes**:  
+- **Discord:** `@olivo28`  
+- **Servidor:** [Únete Aquí](https://discord.gg/4eKe49CkVS)  
+  
+¡Las donaciones son bienvenidas pero nunca obligatorias! Tu feedback es el mejor apoyo.
