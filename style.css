@@ -873,9 +873,11 @@ input:checked+.slider:before {
     font-size: 1em;
 }
 
+/*
 .role-icon, #hero-modal-role-icon.role-icon {
     filter: invert(1)
 }
+    */
 
 .hero-modal-details>div {
     display: flex;
