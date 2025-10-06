@@ -15,7 +15,7 @@ const Logic = {
             try {
                 const savedConfig = JSON.parse(savedJSON);
                 tempConfig = { ...DEFAULT_CONFIG, ...savedConfig };
-                tempConfig.streamAlerts = { ...DEFAULT_CONFIG.streamAlerts, ...(savedConfig.streamAlerts || {}) }; // <-- AÑADE ESTA LÍNEA
+                tempConfig.streamAlerts = { ...DEFAULT_CONFIG.streamAlerts, ...(savedConfig.streamAlerts || {}) };
                 if (savedConfig.bosses) {
                      tempConfig.bosses = DEFAULT_CONFIG.bosses.map(defaultBoss => {
                         const savedBoss = savedConfig.bosses.find(b => b.id === defaultBoss.id);
@@ -25,16 +25,14 @@ const Logic = {
                 tempConfig.notificationTypes = { ...DEFAULT_CONFIG.notificationTypes, ...(savedConfig.notificationTypes || {}) };
                 tempConfig.events = DEFAULT_CONFIG.events;
                 tempConfig.banner = DEFAULT_CONFIG.banner;
+                // --- AÑADE ESTA LÍNEA AQUÍ ---
+                tempConfig.streams = DEFAULT_CONFIG.streams; // Forzar siempre los datos de streams más recientes del archivo.
+                // -----------------------------
             } catch (e) {
                 console.error("Error loading settings from cookie.", e);
             }
         }
         App.state.config = tempConfig;
-    },
-
-    /** Guarda la configuración actual en una cookie. */
-    saveConfigToCookie: function() {
-        Utils.setCookie('timersDashboardConfig', JSON.stringify(App.state.config), 365);
     },
 
     /**

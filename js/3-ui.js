@@ -290,32 +290,52 @@ const UI = {
         const now = new Date();
 
         if (!config.streams || config.streams.length === 0) {
-            App.dom.twitchFab.classList.remove('visible', 'alert-active');
+            App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
             return;
         }
 
         const upcomingStreams = config.streams
             .map(stream => ({ ...stream, date: new Date(stream.streamTimeUTC) }))
-            .filter(stream => stream.date.getTime() > now.getTime() - (2 * 60 * 60 * 1000))
+            // Mantenemos streams en la lista hasta 2h después de que terminen para mostrar el modal
+            .filter(stream => {
+                const durationMs = (stream.durationHours || 2) * 3600 * 1000;
+                const endTime = stream.date.getTime() + durationMs;
+                return endTime > now.getTime() - (2 * 3600 * 1000);
+            })
             .sort((a, b) => a.date - b.date);
+
+        // Primero, removemos todos los estados para empezar de cero en cada ciclo.
+        App.dom.twitchFab.classList.remove('alert-active', 'live-active');
 
         if (upcomingStreams.length > 0) {
             App.dom.twitchFab.classList.add('visible');
             this.renderStreamsModal(upcomingStreams, now);
 
-            // LÓGICA PARA EL PUNTO DE NOTIFICACIÓN
-            const nextStream = upcomingStreams[0];
-            const secondsLeft = Math.floor((nextStream.date.getTime() - now.getTime()) / 1000);
-            
-            // Muestra la alerta si falta 1 hora o menos, y el stream no ha empezado
-            if (secondsLeft <= 3600 && secondsLeft > 0) {
-                App.dom.twitchFab.classList.add('alert-active');
+            // Buscamos si hay algún stream actualmente en vivo
+            const liveStream = upcomingStreams.find(stream => {
+                const startTime = stream.date.getTime();
+                const durationMs = (stream.durationHours || 2) * 3600 * 1000; // Asumir 2h si no está definido
+                const endTime = startTime + durationMs;
+                return now.getTime() >= startTime && now.getTime() < endTime;
+            });
+
+            if (liveStream) {
+                // Si hay un stream en vivo, activamos el pulso rojo
+                App.dom.twitchFab.classList.add('live-active');
             } else {
-                App.dom.twitchFab.classList.remove('alert-active');
+                // Si no hay ninguno en vivo, comprobamos si el próximo está por empezar
+                const nextStream = upcomingStreams.find(s => s.date > now);
+                if (nextStream) {
+                    const secondsLeft = Math.floor((nextStream.date.getTime() - now.getTime()) / 1000);
+                    // Muestra la alerta amarilla si falta 1 hora o menos
+                    if (secondsLeft <= 3600 && secondsLeft > 0) {
+                        App.dom.twitchFab.classList.add('alert-active');
+                    }
+                }
             }
 
         } else {
-            App.dom.twitchFab.classList.remove('visible', 'alert-active');
+            App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
             this.renderStreamsModal([], now);
         }
     },

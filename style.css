@@ -1634,3 +1634,26 @@ select.settings-input option {
         background-color: var(--color-primary);
     }
 }
+
+/* --- Animación para el estado "EN VIVO" --- */
+@keyframes live-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 12px rgba(255, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+    }
+}
+
+/* Aplica la animación cuando el stream está en vivo */
+#twitch-fab.live-active {
+    animation: live-pulse 1.5s infinite;
+}
+
+/* Oculta el punto de notificación si ya está en modo "en vivo" para no saturar */
+#twitch-fab.live-active .notification-dot {
+    display: none;
+}
