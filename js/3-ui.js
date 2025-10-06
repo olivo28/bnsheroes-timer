@@ -244,7 +244,7 @@ const UI = {
                     const heroData = Logic.findHeroByName(name);
                     if (heroData) {
                         const shortImg = `assets/heroes_icon/${heroData.short_image}`;
-                        const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
+                        const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
                         const featuredClass = isSingleExalted ? 'featured' : '';
 
                         return `
@@ -611,6 +611,7 @@ const UI = {
 
         App.dom.heroModalElementIcon.src = `assets/elements/${heroData.element}_icon.png`;
         App.dom.heroModalRoleIcon.src = `assets/roles/${heroData.role}_icon.png`;
+        App.dom.heroModalRoleIcon.className = "role-icon"
 
         App.dom.heroModalOverlay.classList.add('visible');
     },

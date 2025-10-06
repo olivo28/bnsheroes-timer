@@ -873,6 +873,10 @@ input:checked+.slider:before {
     font-size: 1em;
 }
 
+.role-icon, #hero-modal-role-icon.role-icon {
+    filter: invert(1)
+}
+
 .hero-modal-details>div {
     display: flex;
     align-items: center;
@@ -882,7 +886,16 @@ input:checked+.slider:before {
 .hero-modal-details img {
     width: 28px;
     height: 28px;
+    /* Corrección: Asegura que los íconos de rol no se inviertan */
+    filter: none;
 }
+
+/* Aumenta el tamaño del ícono de elemento */
+#hero-modal-element-icon {
+    width: 32px;
+    height: 32px;
+}
+
 
 .hero-modal-details span {
     font-weight: bold;
