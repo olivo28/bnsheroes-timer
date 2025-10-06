@@ -31,6 +31,12 @@
     --rarity1-bg-color: rgb(210, 21, 244);
     --rarity2-bg-color: rgb(42 62 177);
     --rarity3-bg-color: rgb(76, 193, 247);
+
+    /* --- NUEVAS VARIABLES AÑADIDAS --- */
+    --color-exalted-gold: #ffd700;
+    --rarity1-modal-bg: rgba(210, 21, 244, 0.15);
+    --rarity2-modal-bg: rgba(42, 62, 177, 0.15);
+    --rarity3-modal-bg: rgba(76, 193, 247, 0.15);
 }
 
 body {
@@ -821,12 +827,18 @@ input:checked+.slider:before {
     cursor: pointer;
 }
 
+/* --- ESTILOS DEL MODAL DE HÉROE MODIFICADOS --- */
 #hero-modal-content {
     max-width: 450px;
     max-height: 85vh;
     padding: 10px;
     text-align: center;
     cursor: default;
+    background-color: var(--box-bg-color);
+    border-radius: 12px;
+    border: 3px solid transparent;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    transition: border-color 0.3s ease;
 }
 
 #hero-modal-image {
@@ -841,15 +853,16 @@ input:checked+.slider:before {
 
 #hero-modal-info {
     margin-top: 15px;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 10px;
+    padding: 15px;
     border-radius: 8px;
+    transition: background-color 0.3s ease;
 }
 
 #hero-modal-name {
     font-size: 1.5em;
     font-weight: 700;
     margin: 0 0 10px 0;
+    transition: color 0.3s ease;
 }
 
 .hero-modal-details {

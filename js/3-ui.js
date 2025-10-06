@@ -578,6 +578,27 @@ const UI = {
         if (!heroData) return;
         const lang = I18N_STRINGS[App.state.config.currentLanguage];
 
+        // --- INICIO DE LA NUEVA LÓGICA ---
+    
+        // 1. Establecer el color del borde según el elemento del héroe
+        const elementColorVar = `--color-${heroData.element || 'default'}-role`;
+        const elementColor = getComputedStyle(document.documentElement).getPropertyValue(elementColorVar).trim();
+        App.dom.heroModalContent.style.borderColor = elementColor || 'var(--border-color)';
+    
+        // 2. Establecer el color de fondo de la información según la rareza
+        const rarityBgColorVar = `--rarity${heroData.rarity}-modal-bg`;
+        App.dom.heroModalInfo.style.backgroundColor = `var(${rarityBgColorVar})`;
+    
+        // 3. Establecer el color del nombre si el héroe es Exaltado (rareza 1)
+        if (heroData.rarity === 1) {
+            App.dom.heroModalName.style.color = 'var(--color-exalted-gold)';
+        } else {
+            // Restablecer al color por defecto para otros héroes
+            App.dom.heroModalName.style.color = ''; 
+        }
+        
+        // --- FIN DE LA NUEVA LÓGICA ---
+
         App.dom.heroModalImage.src = `assets/heroes_full/${heroData.long_image}`;
         App.dom.heroModalName.textContent = heroData.game_name;
         

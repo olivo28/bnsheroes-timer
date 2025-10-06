@@ -57,7 +57,10 @@
         "short_image": "bocksle_a_de.png",
         "long_image": "full_illust_hero_bocksle_base.png",
         "role": "tactician",
-        "element": "typeless"
+        "element": "typeless",
+        "skins": {
+            "bm_01": "full_illust_hero_bocksle_bm_01.png"
+        }
     },
     {
         "asset_name": "chachaung",
@@ -77,7 +80,10 @@
         "short_image": "cheonjingwon_a_km.png",
         "long_image": "full_illust_hero_cheonjingwon_base.png",
         "role": "attacker",
-        "element": "typeless"
+        "element": "typeless",
+        "skins": {
+            "bm_01": "full_illust_hero_cheonjingwon_bm_01.png"
+        }
     },
     {
         "asset_name": "cheonseo",
@@ -177,7 +183,10 @@
         "short_image": "gammadeung_a_su.png",
         "long_image": "full_illust_hero_gammadeung_base.png",
         "role": "supporter",
-        "element": "water"
+        "element": "water",
+        "skins": {
+            "bm_02": "full_illust_hero_gammadeung_bm_02.png"
+        }
     },
     {
         "asset_name": "ganmyowol",
@@ -287,7 +296,10 @@
         "short_image": "harin_a_su.png",
         "long_image": "full_illust_hero_harin_base.png",
         "role": "attacker",
-        "element": "water"
+        "element": "water",
+        "skins": {
+            "bm_01": "full_illust_hero_harin_bm_01.png"
+        }
     },
     {
         "asset_name": "hongbi",
@@ -327,7 +339,10 @@
         "short_image": "hwajung_a_fm.png",
         "long_image": "full_illust_hero_hwajung_base.png",
         "role": "",
-        "element": ""
+        "element": "",
+        "skins": {
+            "bm_01": "full_illust_hero_hwajung_bm_01.png"
+        }
     },
     {
         "asset_name": "ilang",
@@ -337,7 +352,10 @@
         "short_image": "ilang_a_de.png",
         "long_image": "full_illust_hero_ilang_base.png",
         "role": "attacker",
-        "element": "lightning"
+        "element": "lightning",
+        "skins": {
+            "bm_01": "full_illust_hero_ilang_bm_01.png"
+        }
     },
     {
         "asset_name": "iolag",
@@ -437,7 +455,10 @@
         "short_image": "pohwalan_a_gm.png",
         "long_image": "full_illust_hero_pohwalan_base.png",
         "role": "attacker",
-        "element": "fire"
+        "element": "fire",
+        "skins": {
+            "bm_01": "full_illust_hero_pohwalan_bm_01.png"
+        }
     },
     {
         "asset_name": "sehwa",
@@ -447,7 +468,10 @@
         "short_image": "sehwa_a_km.png",
         "long_image": "full_illust_hero_sehwa_base.png",
         "role": "attacker",
-        "element": "fire"
+        "element": "fire",
+        "skins": {
+            "bm_01": "full_illust_hero_sehwa_bm_01.png"
+        }
     },
     {
         "asset_name": "somyeong",
@@ -457,7 +481,10 @@
         "short_image": "somyeong_a_gm.png",
         "long_image": "full_illust_hero_somyeong_base.png",
         "role": "attacker",
-        "element": "poison"
+        "element": "poison",
+        "skins": {
+            "bm_02": "full_illust_hero_somyeong_bm_02.png"
+        }
     },
     {
         "asset_name": "soyeonhwa",
@@ -467,7 +494,10 @@
         "short_image": "soyeonhwa_a_km.png",
         "long_image": "full_illust_hero_soyeonhwa_base.png",
         "role": "attacker",
-        "element": "poison"
+        "element": "poison",
+        "skins": {
+            "bm_01": "full_illust_hero_soyeonhwa_bm_01.png"
+        }
     },
     {
         "asset_name": "susam",
@@ -477,7 +507,10 @@
         "short_image": "susam_a_fm.png",
         "long_image": "full_illust_hero_susam_base.png",
         "role": "attacker",
-        "element": "fire"
+        "element": "fire",
+        "skins": {
+            "bm_01": "full_illust_hero_susam_bm_01.png"
+        }
     },
     {
         "asset_name": "suwadaeseong",
@@ -597,6 +630,9 @@
         "short_image": "yuseol_a_as.png",
         "long_image": "full_illust_hero_yuseol_base.png",
         "role": "attacker",
-        "element": "water"
+        "element": "water",
+        "skins": {
+            "bm_01": "full_illust_hero_yuseol_bm_01.png"
+        }
     }
 ]

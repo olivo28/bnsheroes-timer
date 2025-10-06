@@ -66,6 +66,9 @@ const App = {
         closeStreamsModal: null,
         preStreamAlertToggle: null,
         postStreamAlertToggle: null,
+        // --- NUEVAS REFERENCIAS AÑADIDAS ---
+        heroModalContent: null,
+        heroModalInfo: null,
     },
     
     // Otros recursos globales
@@ -126,5 +129,9 @@ const App = {
         this.dom.closeStreamsModal = document.getElementById('close-streams-modal');
         this.dom.preStreamAlertToggle = document.getElementById('pre-stream-alert-toggle');
         this.dom.postStreamAlertToggle = document.getElementById('post-stream-alert-toggle');
+        
+        // --- NUEVAS REFERENCIAS AÑADIDAS ---
+        this.dom.heroModalContent = document.getElementById('hero-modal-content');
+        this.dom.heroModalInfo = document.getElementById('hero-modal-info');
     }
 };
