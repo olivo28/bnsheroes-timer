@@ -51,6 +51,22 @@ const Logic = {
     },
 
     /**
+     * Guarda la configuración actual del estado en una cookie.
+     */
+    saveConfigToCookie: function() {
+        try {
+            // Se crea una copia para no guardar en la cookie datos que se recargan siempre desde el archivo.
+            const configToSave = JSON.parse(JSON.stringify(App.state.config));
+            delete configToSave.events;
+            delete configToSave.banner;
+            delete configToSave.streams;
+            Utils.setCookie('timersDashboardConfig', JSON.stringify(configToSave), 365);
+        } catch (e) {
+            console.error("Error saving settings to cookie.", e);
+        }
+    },
+
+    /**
      * Cambia el estado de alerta para un jefe y hora específicos y guarda la configuración.
      * @param {string} bossId - ID del jefe.
      * @param {string} time - Hora del spawn ("HH:MM").

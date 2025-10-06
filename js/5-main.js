@@ -153,6 +153,7 @@
         // Listeners para botones y controles globales
         App.dom.settingsButton.addEventListener('click', () => UI.openSettingsModal());
         App.dom.saveSettingsBtn.addEventListener('click', () => Logic.saveSettings());
+        App.dom.closeSettingsBtn.addEventListener('click', () => UI.closeSettingsModal());
         
         App.dom.timeFormatSwitch.addEventListener('change', () => {
             App.state.config.use24HourFormat = App.dom.timeFormatSwitch.checked;

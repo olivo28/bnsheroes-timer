@@ -29,6 +29,7 @@ const App = {
         modalOverlay: null,
         settingsButton: null,
         saveSettingsBtn: null,
+        closeSettingsBtn: null,
         bossTimersToggle: null,
         eventsToggle: null,
         preAlertInput: null,
@@ -90,6 +91,7 @@ const App = {
         this.dom.modalOverlay = document.getElementById('modal-overlay');
         this.dom.settingsButton = document.getElementById('settings-button');
         this.dom.saveSettingsBtn = document.getElementById('save-settings-btn');
+        this.dom.closeSettingsBtn = document.getElementById('close-settings-btn');
         this.dom.bossTimersToggle = document.getElementById('boss-timers-toggle');
         this.dom.eventsToggle = document.getElementById('events-toggle');
         this.dom.preAlertInput = document.getElementById('pre-alert-input');
