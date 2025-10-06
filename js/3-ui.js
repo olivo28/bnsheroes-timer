@@ -261,8 +261,8 @@ const UI = {
                     }
                     return '';
                 }).join('');
-                const elementIcon = banner.element ? `<img src="assets/elements/${banner.element}_icon.png" class="banner-element-icon" alt="${banner.element}">` : '';
-                content = `<div class="banner-box">${elementIcon}<div class="banner-heroes">${heroImagesHtml}</div></div>`;
+                const backgroundClass = banner.element ? `banner-bg-${banner.element}` : '';
+                content = `<div class="banner-box ${backgroundClass}"><div class="banner-heroes">${heroImagesHtml}</div></div>`;
             }
             
             return `

@@ -542,20 +542,15 @@ input:checked+.slider:before {
 }
 
 .banner-element-icon {
-    position: absolute;
-    top: 50%;
-    left: 20px;
-    width: 50px;
-    height: 50px;
-    opacity: 0.8;
-    transform: translateY(-50%);
+    display: none;
 }
 
 .banner-heroes {
     display: flex;
     gap: 15px;
     justify-content: center;
-    padding-left: 40px;
+    padding-left: 0;
+    z-index: 1;
 }
 
 .banner-hero-wrapper {
@@ -669,6 +664,42 @@ input:checked+.slider:before {
 
 .hero-role-icon.element-default {
     background-color: var(--color-default-role);
+}
+
+.banner-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.banner-bg-fire::before {
+    background: radial-gradient(ellipse, transparent 20%, rgba(227, 63, 14, 0.25) 100%);
+}
+
+.banner-bg-water::before {
+    background: radial-gradient(ellipse, transparent 20%, rgba(41, 182, 246, 0.2) 100%);
+}
+
+.banner-bg-poison::before {
+    background: radial-gradient(ellipse, transparent 20%, rgba(156, 204, 101, 0.2) 100%);
+}
+
+.banner-bg-lightning::before {
+    background: radial-gradient(ellipse, transparent 20%, rgba(255, 238, 88, 0.2) 100%);
+}
+
+.banner-bg-typeless::before {
+    background: radial-gradient(ellipse, transparent 20%, rgba(120, 144, 156, 0.15) 100%);
+}
+
+.banner-bg-dark::before {
+    background: radial-gradient(ellipse, transparent 20%, rgba(171, 71, 188, 0.2) 100%);
 }
 
 #events-container {
@@ -1140,7 +1171,7 @@ select.settings-input option {
 }
 
 .details-content {
-    padding: 0 25px 25px 25px;
+    padding: 0 5px 20px 5px;
     overflow-y: auto;
     flex-grow: 1;
 }
