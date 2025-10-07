@@ -6,6 +6,7 @@
 const Utils = {
     /**
      * Formatea una fecha a una cadena de tiempo localizada (ej: "10:30:05 PM").
+     * USA LUXON para un manejo robusto de zonas horarias.
      * @param {Date} date - El objeto Date a formatear.
      * @param {string} offsetString - La zona horaria en formato "+HH:00" o "-HH:00".
      * @param {boolean} use24HourFormat - Si se debe usar el formato de 24 horas.
@@ -14,27 +15,31 @@ const Utils = {
      */
     formatDateToTimezoneString(date, offsetString, use24HourFormat, showSeconds = false) {
         try {
+            const { DateTime } = luxon;
+            // Luxon requiere un formato de zona IANA como 'Etc/GMT+4' para GMT-4. El signo está invertido.
             const sign = offsetString.startsWith('-') ? '+' : '-';
             const hours = parseInt(offsetString.substring(1, 3));
             const timeZone = `Etc/GMT${sign}${hours}`;
-            const options = {
-                timeZone,
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: !use24HourFormat, // <-- CORRECCIÓN CLAVE: Usa el parámetro, no el estado global
-            };
-            if (showSeconds) {
-                options.second = '2-digit';
+
+            const dt = DateTime.fromJSDate(date).setZone(timeZone);
+
+            let format;
+            if (use24HourFormat) {
+                format = showSeconds ? 'HH:mm:ss' : 'HH:mm';
+            } else {
+                format = showSeconds ? 'h:mm:ss a' : 'h:mm a';
             }
-            return new Intl.DateTimeFormat(use24HourFormat ? 'en-GB' : 'en-US', options).format(date);
+
+            return dt.toFormat(format);
         } catch (e) {
-            console.error("Error formatting date for timezone", e);
+            console.error("Error formatting date for timezone with Luxon", e);
             return "Invalid Time";
         }
     },
 
     /**
      * Formatea una fecha a una cadena de fecha corta localizada (ej: "25/12/2023").
+     * USA LUXON para un manejo robusto de zonas horarias y localización.
      * @param {Date} date - El objeto Date a formatear.
      * @param {string} offsetString - La zona horaria en formato "+HH:00" o "-HH:00".
      * @param {string} lang - El código de idioma (ej: 'es', 'en').
@@ -42,16 +47,19 @@ const Utils = {
      */
     formatDateToLocaleDateString(date, offsetString, lang) {
         try {
+            const { DateTime } = luxon;
+            // Convertimos el offset a una zona IANA que Luxon entiende.
             const sign = offsetString.startsWith('-') ? '+' : '-';
             const hours = parseInt(offsetString.substring(1, 3));
             const timeZone = `Etc/GMT${sign}${hours}`;
-            const options = {
-                timeZone,
-                dateStyle: 'short'
-            };
-            return new Intl.DateTimeFormat(lang, options).format(date);
+
+            return DateTime.fromJSDate(date)
+                .setZone(timeZone)
+                .setLocale(lang)
+                .toLocaleString(DateTime.DATE_SHORT);
+
         } catch (e) {
-            console.error("Error formatting date for locale", e);
+            console.error("Error formatting date for locale with Luxon", e);
             return "Invalid Date";
         }
     },

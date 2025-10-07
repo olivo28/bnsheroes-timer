@@ -136,7 +136,7 @@ const Logic = {
      * @param {Date} now - La fecha y hora actual (ya corregida).
      */
     checkAndPerformDailyReset: function(now) {
-        const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime, -4);
+        const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime);
         const r = new Date(t);
         if (now >= r) {
             r.setUTCDate(r.getUTCDate() - 1);
@@ -158,7 +158,7 @@ const Logic = {
      * @returns {object} El objeto del timer de reset.
      */
     getDailyResetTimer: function(now) {
-        const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime, -4);
+        const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime);
         return {
             type: 'reset',
             name: I18N_STRINGS[App.state.config.currentLanguage].dailyResetName,
@@ -211,7 +211,7 @@ const Logic = {
     getBossTimers: function(now) {
         return App.state.config.bosses.flatMap(boss =>
             boss.spawnTimes.map(time => {
-                const targetDate = this.getAbsoluteDateFromReferenceTimezone(time, -4);
+                const targetDate = this.getAbsoluteDateFromReferenceTimezone(time);
                 return {
                     type: 'boss',
                     id: boss.id,
@@ -247,7 +247,7 @@ const Logic = {
             .filter(event => event.status && event.status.resetSchedule && event.status.resetSchedule.dayOfWeek)
             .map(event => {
                 const resetInfo = event.status.resetSchedule;
-                const targetDate = this.getNextWeeklyResetDate(now, resetInfo.dayOfWeek.en, resetInfo.time, -4);
+                const targetDate = this.getNextWeeklyResetDate(now, resetInfo.dayOfWeek.en, resetInfo.time);
                 
                 return {
                     type: 'weekly',
@@ -356,8 +356,8 @@ const Logic = {
         const event = App.state.config.events.find(e => e.id === eventName);
         if (!event) return false;
         
-        const startDate = this.getAbsoluteDateWithCustomDate(event.startDate, App.state.config.dailyResetTime, -4);
-        const endDate = this.getAbsoluteDateWithCustomDate(event.endDate, App.state.config.dailyResetTime, -4);
+        const startDate = this.getAbsoluteDateWithCustomDate(event.startDate, App.state.config.dailyResetTime);
+        const endDate = this.getAbsoluteDateWithCustomDate(event.endDate, App.state.config.dailyResetTime);
         
         return now >= startDate && now <= endDate;
     },
@@ -366,33 +366,47 @@ const Logic = {
      * Calcula una fecha absoluta a partir de una fecha, hora y zona horaria de referencia.
      * @param {string} dateString - La fecha en formato "YYYY-MM-DD".
      * @param {string} timeString - La hora en formato "HH:MM".
-     * @param {number} referenceOffsetHours - El offset de la zona horaria de referencia (ej: -4).
      * @returns {Date} El objeto Date calculado.
      */
-    getAbsoluteDateWithCustomDate: function(dateString, timeString, referenceOffsetHours) {
+    getAbsoluteDateWithCustomDate: function(dateString, timeString) {
+        // Obtenemos la variable global de Luxon
+        const DateTime = luxon.DateTime;
+        
+        // Creamos un objeto Luxon a partir de la fecha y hora, en nuestra zona de referencia
         const [h, m] = timeString.split(':').map(Number);
-        const utcHour = h - referenceOffsetHours;
-        const targetDate = new Date(dateString + 'T00:00:00Z');
-        targetDate.setUTCHours(utcHour, m, 0, 0);
-        return targetDate;
+        const targetDate = DateTime.fromISO(dateString, { zone: App.state.config.referenceTimezone })
+            .set({ hour: h, minute: m, second: 0, millisecond: 0 });
+
+        // Devolvemos un objeto Date nativo para mantener la compatibilidad con el resto del código
+        return targetDate.toJSDate();
     },
     
     /**
-     * Calcula la próxima fecha absoluta para una hora dada en una zona horaria de referencia.
+     * Calcula la próxima fecha absoluta para una hora dada en la zona horaria de referencia.
      * @param {string} timeString - La hora en formato "HH:MM".
-     * @param {number} referenceOffsetHours - El offset de la zona horaria de referencia (ej: -4).
-     * @returns {Date} El objeto Date calculado.
+     * @returns {Date} El objeto Date calculado para hoy o mañana.
      */
-    getAbsoluteDateFromReferenceTimezone: function(timeString, referenceOffsetHours) {
-        const now = this.getCorrectedNow();
+    getAbsoluteDateFromReferenceTimezone: function(timeString) {
+        // Obtenemos la variable global de Luxon
+        const DateTime = luxon.DateTime;
+        const config = App.state.config;
+
+        // 1. Tomamos la hora actual (ya corregida) y la interpretamos en la zona horaria de referencia.
+        const now = DateTime.fromJSDate(this.getCorrectedNow(), { zone: config.referenceTimezone });
+
+        // 2. Extraemos la hora y minutos del string de entrada.
         const [h, m] = timeString.split(':').map(Number);
-        const utcHour = h - referenceOffsetHours;
-        let targetDate = new Date(now);
-        targetDate.setUTCHours(utcHour, m, 0, 0);
+
+        // 3. Creamos una fecha objetivo para "hoy" en la zona de referencia con la hora especificada.
+        let targetDate = now.set({ hour: h, minute: m, second: 0, millisecond: 0 });
+
+        // 4. Si la hora objetivo ya pasó hoy, la movemos para mañana.
         if (targetDate < now) {
-            targetDate.setUTCDate(targetDate.getUTCDate() + 1);
+            targetDate = targetDate.plus({ days: 1 });
         }
-        return targetDate;
+
+        // 5. Devolvemos un objeto Date nativo para mantener la compatibilidad con el resto del código existente.
+        return targetDate.toJSDate();
     },
 
     /**
@@ -400,27 +414,30 @@ const Logic = {
      * @param {Date} now - La fecha y hora actual (ya corregida).
      * @param {string} dayOfWeek - El día de la semana en inglés (ej. "Tuesday").
      * @param {string} timeString - La hora en formato "HH:MM".
-     * @param {number} referenceOffsetHours - El offset de la zona horaria de referencia.
      * @returns {Date} El objeto Date del próximo reinicio.
      */
-    getNextWeeklyResetDate: function(now, dayOfWeek, timeString, referenceOffsetHours) {
+    getNextWeeklyResetDate: function(now, dayOfWeek, timeString) {
         const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const targetDay = weekDays.indexOf(dayOfWeek);
+        const DateTime = luxon.DateTime;
+        const config = App.state.config;
 
+        const nowInRefTz = DateTime.fromJSDate(now, { zone: config.referenceTimezone });
         const [h, m] = timeString.split(':').map(Number);
-        const utcHour = h - referenceOffsetHours;
 
-        let targetDate = new Date(now);
-        targetDate.setUTCHours(utcHour, m, 0, 0);
+        let targetDate = nowInRefTz.set({ hour: h, minute: m, second: 0, millisecond: 0 });
+        
+        // El weekday en Luxon es 1=Lunes, 7=Domingo.
+        const currentDay = nowInRefTz.weekday; 
+        const targetDayLuxon = targetDay === 0 ? 7 : targetDay; // Convertimos Domingo de 0 a 7
 
-        const currentDayUTC = targetDate.getUTCDay();
-        let daysToAdd = targetDay - currentDayUTC;
+        let daysToAdd = targetDayLuxon - currentDay;
 
-        if (daysToAdd < 0 || (daysToAdd === 0 && targetDate < now)) {
+        if (daysToAdd < 0 || (daysToAdd === 0 && targetDate < nowInRefTz)) {
             daysToAdd += 7;
         }
 
-        targetDate.setUTCDate(targetDate.getUTCDate() + daysToAdd);
-        return targetDate;
+        targetDate = targetDate.plus({ days: daysToAdd });
+        return targetDate.toJSDate();
     }
 };

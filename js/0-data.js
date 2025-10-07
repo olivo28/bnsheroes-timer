@@ -241,6 +241,7 @@ function getSystemTimezoneOffset() {
  * Sirve como base y para restaurar valores si la configuración del usuario está corrupta.
  */
 const DEFAULT_CONFIG = {
+    referenceTimezone: 'America/Caracas', // Esto corresponde a GMT-4
     dailyResetTime: '18:30',
     dailyResetImageUrl: 'style/bnsheroes.webp',
     showdownTicketImageUrl: 'style/ticket-icon.png',
@@ -278,17 +279,15 @@ const DEFAULT_CONFIG = {
         {
             id: "halloween_milo_2025",
             name: "CM Milo",
-            // La nueva imagen de banner que proporcionaste
             imageUrl: "style/spookymilobanner.jpg",
-            twitchChannel: "bladeandsoul", // ¡Asegúrate de que este sea el canal correcto!
-            title: { // Este título ahora no se muestra, pero es bueno tenerlo por si acaso.
+            twitchChannel: "bnsheroes",
+            title: {
                 es: "Mischief with Milo: SPOOKY EDITION",
                 en: "Mischief with Milo: SPOOKY EDITION"
             },
             // Martes, 7 de Octubre de 2025 a las 11:00 AM PDT (que es 18:00 UTC)
             streamTimeUTC: "2025-10-07T18:00:00Z",
-            durationHours: 2 // <-- AÑADE ESTA LÍNEA (Duración de 2 horas)
-
+            durationHours: 2
         }
     ]
 };
