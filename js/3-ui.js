@@ -429,15 +429,35 @@ const UI = {
      * Abre y rellena el panel de detalles de un evento.
      * @param {string} eventId - El ID del evento a mostrar.
      */
-    openEventDetailsPanel: function(eventId) {
+openEventDetailsPanel: function(eventId) {
         this.closeWeeklyDetailsPanel();
         const lang = App.state.config.currentLanguage;
         const langData = I18N_STRINGS[lang];
-        const eventData = App.state.allEventsData[eventId];
+        const eventData = App.state.allEventsData.events[eventId];
+        
         if (!eventData) {
             console.error(`Event data not found for ID: ${eventId}`);
             return;
         }
+
+        const getItemDisplay = (itemId, quantity) => {
+            const itemDef = App.state.allEventsData.itemDefinitions[itemId];
+            const name = itemDef?.name[lang] || itemId;
+            const icon = itemDef?.icon ? `<img src="assets/items/${itemDef.icon}.png" class="reward-icon">` : '';
+            return `<span class="reward-item">${icon}${name} x${quantity}</span>`;
+        };
+
+        const getItemGridDisplay = (itemId, quantity) => {
+            const itemDef = App.state.allEventsData.itemDefinitions[itemId];
+            if (!itemDef || !itemDef.icon) return ''; // No renderizar si no hay ícono
+            
+            const name = itemDef.name[lang] || itemId;
+            const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
+            return `<div class="reward-grid-item ${sizeClass}" title="${name} x${quantity}">
+                        <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                        <span class="reward-quantity">${quantity}</span>
+                    </div>`;
+        };
 
         let contentHTML = `
             <div class="details-header">
@@ -452,92 +472,65 @@ const UI = {
         `;
 
         if (eventData.missions) {
-            contentHTML += `
-                <div class="details-section">
-                    <h3>${langData.eventMissionsTitle}</h3>
-                    <table class="details-table">
-                        <tbody>
-                            ${eventData.missions.map(m => `<tr><td>${m.description[lang]}</td><td>+${m.points} ${langData.pointsSuffix}</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            contentHTML += `<div class="details-section"><h3>${langData.eventMissionsTitle}</h3><table class="details-table"><tbody>`;
+            eventData.missions.forEach(m => {
+                contentHTML += `<tr><td>${m.description[lang]}</td><td>+${m.points} ${langData.pointsSuffix}</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
         }
 
         if (eventData.missions_and_rewards) {
-             contentHTML += `
-                <div class="details-section">
-                    <h3>${langData.eventMissionsAndRewardsTitle}</h3>
-                    <table class="details-table">
-                        <tbody>
-                            ${eventData.missions_and_rewards.map(m => `<tr><td>${m.mission[lang]}</td><td>${m.reward_item[lang]} x${m.reward_count}</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+             contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3><table class="details-table"><tbody>`;
+             eventData.missions_and_rewards.forEach(m => {
+                 contentHTML += `<tr><td>${m.mission[lang]}</td><td>${getItemDisplay(m.itemId, m.quantity)}</td></tr>`;
+             });
+             contentHTML += `</tbody></table></div>`;
         }
         
         if (eventData.boss_details && eventData.boss_details.ranking_rewards) {
             contentHTML += `<div class="details-section"><h3>${langData.eventBossRankingRewardsTitle}</h3>`;
-            
             const participation = eventData.boss_details.ranking_rewards.base_on_participation;
             if (participation) {
-                const rewardText = participation.rewards.map(rew => `${rew.item[lang]} x${rew.quantity}`).join(', ');
-                contentHTML += `
-                    <div class="participation-reward">
-                        <strong>${langData.eventParticipationRewardTitle}</strong>
-                        <span>${participation.description[lang]} <strong>(${rewardText})</strong></span>
-                    </div>
-                `;
+                const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity)).join('');
+                contentHTML += `<div class="participation-reward"><strong>${langData.eventParticipationRewardTitle}</strong><span>${participation.description[lang]}</span><div class="reward-grid">${rewardsGrid}</div></div>`;
             }
-
             const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
             if (ranking) {
-                contentHTML += `
-                    <table class="details-table">
-                        <thead><tr><th>${langData.eventRankHeader}</th><th>${langData.eventRewardHeader}</th></tr></thead>
-                        <tbody>
-                            ${ranking.map(r => `<tr><td>${r.tier_name[lang]}</td><td>${r.rewards.map(rew => `${rew.item[lang]} x${rew.quantity}`).join(', ')}</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                `;
+                contentHTML += `<table class="details-table"><thead><tr><th>${langData.eventRankHeader}</th><th>${langData.eventRewardHeader}</th></tr></thead><tbody>`;
+                ranking.forEach(r => {
+                    const rewardsGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity)).join('');
+                    contentHTML += `<tr><td>${r.tier_name[lang]}</td><td><div class="reward-grid">${rewardsGrid}</div></td></tr>`;
+                });
+                contentHTML += `</tbody></table>`;
             }
             contentHTML += `</div>`;
         }
         
         if (eventData.rewards && eventData.rewards.wheel_of_fate) {
-            contentHTML += `
-                <div class="details-section">
-                    <h3>${langData.eventWheelRewardsTitle}</h3>
-                    <ul class="details-list">
-                        ${eventData.rewards.wheel_of_fate.map(r => `<li><span>${r.item[lang]}</span><span>x${r.count}</span></li>`).join('')}
-                    </ul>
-                </div>
-            `;
+            contentHTML += `<div class="details-section"><h3>${langData.eventWheelRewardsTitle}</h3><ul class="details-list">`;
+            eventData.rewards.wheel_of_fate.forEach(r => {
+                const name = App.state.allEventsData.itemDefinitions[r.itemId]?.name[lang] || r.itemId;
+                contentHTML += `<li><span>${name}</span><span>x${r.quantity}</span></li>`;
+            });
+            contentHTML += `</ul></div>`;
         }
 
          if (eventData.rewards && eventData.rewards.cumulative_spins) {
-            contentHTML += `
-                <div class="details-section">
-                    <h3>${langData.eventCumulativeRewardsTitle}</h3>
-                    <table class="details-table">
-                        <tbody>
-                            ${eventData.rewards.cumulative_spins.map(r => `<tr><td>${r.condition[lang]}</td><td>${r.item[lang]}</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            contentHTML += `<div class="details-section"><h3>${langData.eventCumulativeRewardsTitle}</h3><table class="details-table"><tbody>`;
+            eventData.rewards.cumulative_spins.forEach(r => {
+                const name = App.state.allEventsData.itemDefinitions[r.itemId]?.name[lang] || r.itemId;
+                contentHTML += `<tr><td>${r.condition[lang]}</td><td>${name}</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
         }
 
         if (eventData.rewards && eventData.rewards.reward_pool) {
-            contentHTML += `
-                <div class="details-section">
-                    <h3>${langData.eventPossibleRewardsTitle}</h3>
-                     <ul class="details-list">
-                        ${eventData.rewards.reward_pool.map(r => `<li><span>${r.item[lang]}</span><span>x${r.count}</span></li>`).join('')}
-                    </ul>
-                </div>
-            `;
+            contentHTML += `<div class="details-section"><h3>${langData.eventPossibleRewardsTitle}</h3><ul class="details-list">`;
+            eventData.rewards.reward_pool.forEach(r => {
+                 const name = App.state.allEventsData.itemDefinitions[r.itemId]?.name[lang] || r.itemId;
+                contentHTML += `<li><span>${name}</span><span>x${r.quantity}</span></li>`;
+            });
+            contentHTML += `</ul></div>`;
         }
 
         contentHTML += `</div>`; // Close details-content

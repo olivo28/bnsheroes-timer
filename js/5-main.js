@@ -254,7 +254,7 @@
         .then(([heroesData, eventsData, weeklyData]) => {
             // Una vez cargados los datos, los guardamos en el estado.
             App.state.allHeroesData = heroesData;
-            App.state.allEventsData = eventsData.events;
+            App.state.allEventsData = eventsData.gameData;
             App.state.weeklyResetsData = weeklyData.gameData;
             
             // Ahora que los datos están listos, podemos inicializar la aplicación.

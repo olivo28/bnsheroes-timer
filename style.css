@@ -1232,7 +1232,6 @@ select.settings-input option {
 }
 .streams-modal-footer .checkbox-group { justify-content: space-around; }
 
-
 /* --- 3.9. Panel de Detalles de Evento (Lateral Derecho) --- */
 #event-details-panel,
 #weekly-details-panel {
@@ -1370,7 +1369,6 @@ select.settings-input option {
     line-height: 1.6;
 }
 
-
 .participation-reward {
     font-size: 0.9em;
     background-color: rgba(255, 255, 255, 0.04);
@@ -1391,6 +1389,10 @@ select.settings-input option {
 .participation-reward span strong {
     display: inline;
     color: var(--color-warning);
+}
+
+.participation-reward .reward-grid {
+    margin-top: 10px;
 }
 
 .buff-item {
@@ -1491,7 +1493,8 @@ select.settings-input option {
 .reward-tier {
     margin-bottom: 10px;
 }
-.reward-grid {
+.reward-grid,
+.event-reward-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -1518,7 +1521,7 @@ select.settings-input option {
     position: absolute;
     bottom: 2px;
     right: 4px;
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: bold;
     color: white;
     text-shadow: 
@@ -1530,6 +1533,21 @@ select.settings-input option {
 }
 .details-table .reward-grid {
     justify-content: flex-end;
+}
+.reward-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    vertical-align: middle;
+}
+.reward-icon {
+    width: 20px;
+    height: 20px;
+}
+.details-list-item-fallback {
+    list-style-type: none;
+    padding: 8px 5px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .boss-info-header {
