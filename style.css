@@ -1823,6 +1823,7 @@ select.settings-input option {
     #weekly-details-panel.visible {
         top: 0;
         width: 100%;
+        margin-left: 0px;
     }
 
     /* --- 6.3. Estilos del Swiper (Específico para Móvil) --- */
