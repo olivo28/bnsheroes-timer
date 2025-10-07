@@ -14,6 +14,7 @@ const I18N_STRINGS = {
         timersSettingsLabel: "Timers:",
         bossToggleLabel: "Jefes",
         eventsToggleLabel: "Eventos",
+        weeklyToggleLabel: "Semanal", // <-- AÑADE ESTA LÍNEA
         preAlertLabel: "Minutos de Pre-Alerta (para jefes):",
         notificationTypeLabel: "Tipos de Notificación:",
         soundToggleLabel: "Sonido",
@@ -56,10 +57,10 @@ const I18N_STRINGS = {
         aboutDisclaimerBody: "Esta es una herramienta no oficial creada por un fan y no está afiliada, respaldada ni patrocinada por NCSoft o el equipo de desarrollo del juego. Todos los nombres, imágenes y marcas registradas del juego son propiedad de sus respectivos dueños.",
         aboutCloseButton: "Cerrar",
         eventsTitle: "Eventos Activos",
-        weeklyTitle: "Resets Semanales", // <-- AÑADE ESTA LÍNEA
+        weeklyTitle: "Resets Semanales",
         eventEndsIn: (d) => `termina en ${d}`,
         eventEndsToday: "termina hoy",
-        weeklyResetsIn: (d) => `reinicia en ${d}`, // <-- AÑADE ESTA LÍNEA
+        weeklyResetsIn: (d) => `reinicia en ${d}`,
         eventTip: "Evento",
         activeBannersTitle: "Banner Activo",
         nextBannerTitle: "Próximo Banner",
@@ -84,14 +85,14 @@ const I18N_STRINGS = {
         eventCumulativeRewardsTitle: "Recompensas Acumulativas",
         eventPossibleRewardsTitle: "Posibles Recompensas",
         pointsSuffix: "Puntos",
-        weeklySeasonBuffsTitle: "Potenciadores de Temporada", // <-- AÑADE ESTA LÍNEA
-        weeklyChosenBuffsTitle: "Potenciadores Elegidos", // <-- AÑADE ESTA LÍNEA
-        weeklyStagesTitle: "Etapas", // <-- AÑADE ESTA LÍNEA
-        weeklyCompletionRewardsTitle: "Recompensas por Finalización", // <-- AÑADE ESTA LÍNEA
-        weeklyScoreRewardsTitle: "Recompensas por Puntuación", // <-- AÑADE ESTA LÍNEA
-        weeklyTipsTitle: "Consejos", // <-- AÑADE ESTA LÍNEA
-        weeklyBossInfoTitle: "Información del Jefe", // <-- AÑADE ESTA LÍNEA
-        weeklyModifiersTitle: "Modificadores de Dificultad", // <-- AÑADE ESTA LÍNEA
+        weeklySeasonBuffsTitle: "Potenciadores de Temporada",
+        weeklyChosenBuffsTitle: "Potenciadores Elegidos",
+        weeklyStagesTitle: "Etapas",
+        weeklyCompletionRewardsTitle: "Recompensas por Finalización",
+        weeklyScoreRewardsTitle: "Recompensas por Puntuación",
+        weeklyTipsTitle: "Consejos",
+        weeklyBossInfoTitle: "Información del Jefe",
+        weeklyModifiersTitle: "Modificadores de Dificultad",
         streamWidgetTitle: "Stream de Twitch",
         streamsModalTitle: "Próximos Streams",
         noStreamsMessage: "No hay streams programados por el momento.",
@@ -114,6 +115,7 @@ const I18N_STRINGS = {
         timersSettingsLabel: "Timers:",
         bossToggleLabel: "Bosses",
         eventsToggleLabel: "Events",
+        weeklyToggleLabel: "Weekly", // <-- AÑADE ESTA LÍNEA
         preAlertLabel: "Pre-Alert Minutes (for bosses):",
         notificationTypeLabel: "Notification Types:",
         soundToggleLabel: "Sound",
@@ -156,10 +158,10 @@ const I18N_STRINGS = {
         aboutDisclaimerBody: "This is an unofficial fan-made tool and is not affiliated with, endorsed, or sponsored by NCSoft or the game's development team. All in-game names, images, and trademarks are the property of their respective owners.",
         aboutCloseButton: "Close",
         eventsTitle: "Active Events",
-        weeklyTitle: "Weekly Resets", // <-- AÑADE ESTA LÍNEA
+        weeklyTitle: "Weekly Resets",
         eventEndsIn: (d) => `ends in ${d} days`,
         eventEndsToday: "ends today",
-        weeklyResetsIn: (d) => `resets in ${d}`, // <-- AÑADE ESTA LÍNEA
+        weeklyResetsIn: (d) => `resets in ${d}`,
         eventTip: "Event",
         activeBannersTitle: "Active Banner",
         nextBannerTitle: "Next Banner",
@@ -184,14 +186,14 @@ const I18N_STRINGS = {
         eventCumulativeRewardsTitle: "Cumulative Rewards",
         eventPossibleRewardsTitle: "Possible Rewards",
         pointsSuffix: "Points",
-        weeklySeasonBuffsTitle: "Season Buffs", // <-- AÑADE ESTA LÍNEA
-        weeklyChosenBuffsTitle: "Chosen Buffs", // <-- AÑADE ESTA LÍNEA
-        weeklyStagesTitle: "Stages", // <-- AÑADE ESTA LÍNEA
-        weeklyCompletionRewardsTitle: "Completion Rewards", // <-- AÑADE ESTA LÍNEA
-        weeklyScoreRewardsTitle: "Score Rewards", // <-- AÑADE ESTA LÍNEA
-        weeklyTipsTitle: "Tips", // <-- AÑADE ESTA LÍNEA
-        weeklyBossInfoTitle: "Boss Info", // <-- AÑADE ESTA LÍNEA
-        weeklyModifiersTitle: "Difficulty Modifiers", // <-- AÑADE ESTA LÍNEA
+        weeklySeasonBuffsTitle: "Season Buffs",
+        weeklyChosenBuffsTitle: "Chosen Buffs",
+        weeklyStagesTitle: "Stages",
+        weeklyCompletionRewardsTitle: "Completion Rewards",
+        weeklyScoreRewardsTitle: "Score Rewards",
+        weeklyTipsTitle: "Tips",
+        weeklyBossInfoTitle: "Boss Info",
+        weeklyModifiersTitle: "Difficulty Modifiers",
         streamWidgetTitle: "Twitch Stream",
         streamsModalTitle: "Upcoming Streams",
         noStreamsMessage: "No streams scheduled at the moment.",
@@ -228,6 +230,7 @@ const DEFAULT_CONFIG = {
     showdownTicketImageUrl: 'style/ticket-icon.png',
     showBossTimers: false,
     showEvents: false,
+    showWeekly: true, // <-- AÑADE ESTA LÍNEA
     bosses: [
         {
             id: "stalker_jiangshi",

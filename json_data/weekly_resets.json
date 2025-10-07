@@ -52,7 +52,7 @@
         ],
         "seasonBuffs": [
           { "name": { "en": "Season Buff", "es": "Potenciamiento de la temporada" }, "description": { "en": "Increases Fire Damage and All Type Damage of Season-Limited Heroes.", "es": "Aumenta el daño de tipo Fuego y el daño de todo tipo de los héroes de temporada limitada." }, "icon": "passive_fire_state_up", "note": { "en": "Make sure to check the Seasonal Heroes", "es": "Asegúrate de revisar los Héroes de Temporada" } },
-          { "name": { "en": "Blessed Challenge", "es": "Desafío bendito" }, "effects": [ { "en": "Reduces Sacred Skill Cooldown", "es": "Reduce el enfriamiento de habilidad sagrada" }, { "en": "Increases Focus Recovery Rate", "es": "Aumenta la tasa de recuperación de Concentración" }, { "en": "Reduces Healing Received and HP Drain", "es": "Reduce la curación recibida y la absorción de PS" } ], "icon": "icon_buff_dungeon_type03" },
+          { "name": { "en": "Blessed Challenge", "es": "Desafío bendito" }, "description": [ { "en": "Reduces Sacred Skill Cooldown", "es": "Reduce el enfriamiento de habilidad sagrada" }, { "en": "Increases Focus Recovery Rate", "es": "Aumenta la tasa de recuperación de Concentración" }, { "en": "Reduces Healing Received and HP Drain", "es": "Reduce la curación recibida y la absorción de PS" } ], "icon": "icon_buff_dungeon_type03" },
           { "name": { "en": "Season Secret Art Boost – Recover", "es": "Mejora del arte secreto de la temporada - Recuperar" }, "description": { "en": "Cooldown for this Clan Skill is reduced by 80%.", "es": "El tiempo de enfriamiento de esta habilidad de clan se reduce en un 80 %." }, "icon": "icon_bigi_heal" }
         ],
         "chosenBuffs": [

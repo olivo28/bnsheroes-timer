@@ -27,7 +27,7 @@ const UI = {
         const lastReset = new Date(dailyResetTimer.targetDate.getTime() - (24 * 60 * 60 * 1000));
         const showdownTicketTimer = Logic.getShowdownTicketTimer(now, lastReset);
         
-        const showSecondaryPanel = config.showBossTimers || config.showEvents;
+        const showSecondaryPanel = config.showBossTimers || config.showEvents || config.showWeekly;
     
         // ESTA LÓGICA AHORA ES SOLO PARA ESCRITORIO
         if (!App.state.isMobile) {
@@ -67,15 +67,20 @@ const UI = {
     
         if (config.showEvents) {
             App.dom.eventsContainer.innerHTML = this.renderEventsPanel();
-            App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
             App.dom.eventsContainer.style.display = 'block';
-            App.dom.weeklyContainer.style.display = 'block';
         } else {
             App.dom.eventsContainer.innerHTML = '';
-            App.dom.weeklyContainer.innerHTML = '';
             App.dom.eventsContainer.style.display = 'none';
-            App.dom.weeklyContainer.style.display = 'none';
             this.closeEventDetailsPanel();
+        }
+
+        if (config.showWeekly) {
+            App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
+            App.dom.weeklyContainer.style.display = 'block';
+        }
+        else {
+            App.dom.weeklyContainer.innerHTML = '';
+            App.dom.weeklyContainer.style.display = 'none';
             this.closeWeeklyDetailsPanel();
         }
         
@@ -572,7 +577,7 @@ const UI = {
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </div>
                 <h2>${eventData.eventName[lang]}</h2>
-                <p>${eventData.description[lang]}</p>
+                <p>${eventData.description ? eventData.description[lang] : ''}</p>
             </div>
             <div class="details-content">
         `;
@@ -580,8 +585,25 @@ const UI = {
         // Para Hall of Challenge
         if (eventData.seasonBuffs) {
             contentHTML += `<div class="details-section"><h3>${langData.weeklySeasonBuffsTitle}</h3>`;
-            eventData.seasonBuffs.forEach(buff => {
-                contentHTML += `<div class="buff-item"><img src="assets/spells_icons/${buff.icon}.png"><div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div></div>`;
+            eventData.seasonBuffs.forEach((buff, index) => {
+                let buffDescription = '';
+                if (buff.description) {
+                    if (Array.isArray(buff.description)) {
+                        buffDescription = buff.description.map(d => d[lang]).join('<br>');
+                    } else {
+                        buffDescription = buff.description[lang];
+                    }
+                }
+                contentHTML += `<div class="buff-item">
+                                  <img src="assets/spells_icons/${buff.icon}.png">
+                                  <div>
+                                    <strong>${buff.name[lang]}</strong>
+                                    <p>${buffDescription}</p>
+                                  </div>
+                                </div>`;
+                if (index < eventData.seasonBuffs.length - 1) {
+                    contentHTML += '<hr class="buff-separator">';
+                }
             });
             contentHTML += `</div>`;
         }
@@ -654,6 +676,7 @@ const UI = {
         const config = App.state.config;
         App.dom.bossTimersToggle.checked = config.showBossTimers;
         App.dom.eventsToggle.checked = config.showEvents;
+        App.dom.weeklyToggle.checked = config.showWeekly;
         App.dom.preAlertInput.value = config.preAlertMinutes.join(', ');
         App.dom.soundToggle.checked = config.notificationTypes.sound;
         App.dom.desktopToggle.checked = config.notificationTypes.desktop;

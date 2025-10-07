@@ -14,7 +14,7 @@ const App = {
         allEventsData: {},
         weeklyResetsData: null,
         currentOpenEventId: null,
-        currentOpenWeeklyId: null, // <-- AÑADE ESTA LÍNEA
+        currentOpenWeeklyId: null,
         swiper: null
     },
     
@@ -26,7 +26,7 @@ const App = {
         primaryTimersContainer: null,
         timersContainer: null,
         eventsContainer: null,
-        weeklyContainer: null, // <-- AÑADE ESTA LÍNEA
+        weeklyContainer: null,
         bannersContainer: null,
         statusBar: null,
         modalOverlay: null,
@@ -35,6 +35,7 @@ const App = {
         closeSettingsBtn: null,
         bossTimersToggle: null,
         eventsToggle: null,
+        weeklyToggle: null, // <-- AÑADE ESTA LÍNEA
         preAlertInput: null,
         soundToggle: null,
         desktopToggle: null,
@@ -64,7 +65,7 @@ const App = {
         heroModalElementIcon: null,
         heroModalRoleIcon: null,
         eventDetailsPanel: null,
-        weeklyDetailsPanel: null, // <-- AÑADE ESTA LÍNEA
+        weeklyDetailsPanel: null,
         twitchFab: null,
         streamsModalOverlay: null,
         streamsModalContent: null,
@@ -99,6 +100,7 @@ const App = {
         this.dom.closeSettingsBtn = document.getElementById('close-settings-btn');
         this.dom.bossTimersToggle = document.getElementById('boss-timers-toggle');
         this.dom.eventsToggle = document.getElementById('events-toggle');
+        this.dom.weeklyToggle = document.getElementById('weekly-toggle');
         this.dom.preAlertInput = document.getElementById('pre-alert-input');
         this.dom.soundToggle = document.getElementById('sound-toggle');
         this.dom.desktopToggle = document.getElementById('desktop-toggle');

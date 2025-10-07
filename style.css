@@ -22,7 +22,7 @@
 *      3.3. Barra de Estado (Inferior Izquierda)
 *      3.4. Lista de Spawns (Panel Derecho)
 *      3.5. Banners de Héroes
-*      3.6. Lista de Eventos y Semanales (Panel Derecho)
+*      3.6. Lista de Eventos (Panel Derecho)
 *      3.7. Botones e Iconos Interactivos
 *      3.8. Modales (Estructura General)
 *          3.8.1. Modal de Héroe
@@ -662,7 +662,7 @@ input:checked+.slider:before {
 .banner-bg-dark::before { background: radial-gradient(ellipse, transparent 20%, rgba(171, 71, 188, 0.2) 100%); }
 
 
-/* --- 3.6. Lista de Eventos y Semanales (Panel Derecho) --- */
+/* --- 3.6. Lista de Eventos (Panel Derecho) --- */
 #events-container,
 #weekly-container {
     padding: 0 18px 10px 18px;
@@ -1069,8 +1069,9 @@ select.settings-input option {
 
 .checkbox-group {
     display: flex;
-    gap: 30px;
+    gap: 20px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .checkbox-label {
@@ -1391,7 +1392,6 @@ select.settings-input option {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 15px;
     font-size: 0.9em;
 }
 .buff-item img {
@@ -1408,6 +1408,14 @@ select.settings-input option {
     margin: 5px 0 0 0;
     font-size: 0.9em;
 }
+
+.buff-separator {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 15px 0;
+}
+
 
 .stage-item {
     padding: 10px;

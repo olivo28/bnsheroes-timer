@@ -41,6 +41,7 @@ const Logic = {
     saveSettings: function() {
         App.state.config.showBossTimers = App.dom.bossTimersToggle.checked;
         App.state.config.showEvents = App.dom.eventsToggle.checked;
+        App.state.config.showWeekly = App.dom.weeklyToggle.checked;
         const alerts = App.dom.preAlertInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
         App.state.config.preAlertMinutes = alerts.length ? alerts.sort((a, b) => b - a) : DEFAULT_CONFIG.preAlertMinutes;
         App.state.config.notificationTypes = { sound: App.dom.soundToggle.checked, desktop: App.dom.desktopToggle.checked };
@@ -217,7 +218,6 @@ const Logic = {
                     type: 'weekly',
                     id: event.id,
                     name: event.eventName[lang],
-                    // CORRECCIÓN: Acceso seguro a eventCategory. Si no existe, devuelve una cadena vacía.
                     category: event.eventCategory ? event.eventCategory[lang] : '',
                     targetDate: targetDate,
                     secondsLeft: Math.floor((targetDate - now) / 1000)
