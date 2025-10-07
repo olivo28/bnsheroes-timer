@@ -38,11 +38,7 @@
           "es": "El Salón del Desafío es donde superas mazmorras rápidamente bajo diferentes condiciones cada temporada. Como cada capítulo presenta diferentes mecánicas de batalla, la clave es diseñar la estrategia correcta para minimizar tu tiempo."
         },
         "status": {
-          "resetSchedule": {
-            "dayOfWeek": { "en": "Tuesday", "es": "Martes" },
-            "time": "18:30",
-            "timezone": "GMT-4"
-          },
+          "resetSchedule": { "dayOfWeek": { "en": "Tuesday", "es": "Martes" }, "time": "18:30", "timezone": "GMT-4" },
           "playerProgress": { "maxDifficulty": null, "clearTime": null }
         },
         "mainRewards": [
@@ -71,47 +67,75 @@
         "eventName": { "en": "Tactical Trial", "es": "Prueba Táctica" },
         "eventType": { "en": "Recurring Boss Trial", "es": "Prueba de Jefe Recurrente" },
         "status": {
-          "resetSchedule": {
-            "dayOfWeek": { "en": "Tuesday", "es": "Martes" },
-            "time": "18:30",
-            "timezone": "GMT-4"
-          },
+          "resetSchedule": { "dayOfWeek": { "en": "Tuesday", "es": "Martes" }, "time": "18:30", "timezone": "GMT-4" },
           "playerScore": { "currentScore": 2000, "bestScore": 2000 }
         },
-        "bossInfo": {
+        "currentBoss": {
+          "bossId": "talus_army_investigator",
           "name": { "en": "Talus Army Investigator", "es": "Investigador del ejército de los Talus" },
           "enemyIcon": "gotuli-named_a_bm",
-          "recommendedPower": { "base": 29000, "max": 62000 },
           "description": { "en": "The Investigation Team, one of the special forces of the Talus Dominion, is tasked with traveling around the continent to investigate the Naryu Automaton Ruins.\n\nAs a result, Tu Riki, the leader of the Investigation Team, is an experienced general who has faced countless hardships. He swings the flag and commands the team.\n\nTu Riki guards the first floor of the Automaton Ruins with the Investigation Team. No one will be able to enter the ruins without defeating him first.", "es": "Como resultado, Tu Riki, líder del Equipo de investigación, es un general experimentado que ha enfrentado innumerables adversidades, flamea la bandera y dirige al equipo.\n\nTu Riki custodia el primer piso de las ruinas de los autómatas con el Equipo de investigación. Nadie puede entrar en las ruinas sin derrotarlo primero." },
-          "turnLimit": 60
+          "turnLimit": 60,
+          "difficultyTiers": {
+            "1-star": {
+              "modifiers": [
+                { "name": { "en": "Action", "es": "Acción" }, "description": { "en": "Enemy's Block Rate +15%", "es": "Tasa de Bloqueo del enemigo +15%" }, "points": 500 },
+                { "name": { "en": "Near Death", "es": "Cerca de la muerte" }, "description": { "en": "Ally's Ultimate Skill Gauge Gain -40%", "es": "Reducción del medidor de la habilidad definitiva de aliado" }, "points": 500 }
+              ],
+              "progression": [
+                { "modifiersSelected": 0, "cumulativeScore": 1000, "recommendedPower": 29000 },
+                { "modifiersSelected": 1, "cumulativeScore": 1500, "recommendedPower": 29500 },
+                { "modifiersSelected": 2, "cumulativeScore": 2000, "recommendedPower": 30000 }
+              ]
+            },
+            "2-star": {
+              "modifiers": [
+                { "name": { "en": "Book of Strategies", "es": "Libro de estrategias" }, "description": { "en": "Enhance Tu Riki's 'Commence Operation' Skill", "es": "Mejora la habilidad 'Iniciar operación'" }, "points": 1000 },
+                { "name": { "en": "Command", "es": "Dirigir" }, "description": { "en": "Enhance Tu Riki's 'Command and Control' Skill", "es": "Mejora la habilidad 'Comando y contro'" }, "points": 1000 }
+              ],
+              "progression": [
+                { "modifiersSelected": 0, "cumulativeScore": 2000, "recommendedPower": 38000 },
+                { "modifiersSelected": 1, "cumulativeScore": 3000, "recommendedPower": 38000 },
+                { "modifiersSelected": 2, "cumulativeScore": 4000, "recommendedPower": 39000 }
+              ]
+            },
+            "3-star": {
+              "modifiers": [
+                { "name": { "en": "Gambit", "es": "Táctica" }, "description": { "en": "Add 'Final Gambit' Skill to Tu Riki", "es": "Añade la habilidad 'Táctica final' a Tu Riki" }, "points": 2000 },
+                { "name": { "en": "Favorable Treatment", "es": "Trato favorable" }, "description": { "en": "Can't place more than 1 Tactician Hero", "es": "No se puede designar más de un héroe Táctico" }, "points": 2000 }
+              ],
+              "progression": [
+                { "modifiersSelected": 0, "cumulativeScore": 4000, "recommendedPower": 58000 },
+                { "modifiersSelected": 1, "cumulativeScore": 9000, "recommendedPower": 60000 },
+                { "modifiersSelected": 2, "cumulativeScore": 11000, "recommendedPower": 62000 }
+              ]
+            }
+          },
+          "scoreRewards": [
+            { "scoreThreshold": 2000, "rewards": [ { "itemId": "victory_token", "quantity": 200 } ] },
+            { "scoreThreshold": 5000, "rewards": [ { "itemId": "victory_token", "quantity": 300 } ] },
+            { "scoreThreshold": 9000, "rewards": [ { "itemId": "victory_token", "quantity": 500 } ] },
+            { "scoreThreshold": 11000, "rewards": [ { "itemId": "victory_token", "quantity": 1000 } ] }
+          ],
+          "tips": [
+            { "en": "Tu Riki uses the [Commence Operation] Skill and [Command and Control] Skill to control the Talus army.", "es": "Tu Riki usa las habilidades [Iniciar operación] y [Mando y control] para controlar el ejército de los Talus." },
+            { "en": "When the [Marked for Hunt] target dies, Tu Riki uses the [Masterful Commander] Skill.", "es": "Cuando el objetivo con [Marca de caza] muere, Tu Riki usa la habilidad [Comandante experto]." },
+            { "en": "Use Fire-type Heroes' attacks to Incapacitate Tu Riki more easily.", "es": "Usa ataques de Héroes de tipo Fuego para incapacitar a Tu Riki más fácilmente." },
+            { "en": "Proceed with caution as upon a successful Block, the Talus army will counter.", "es": "Procede con cautela, ya que tras un bloqueo exitoso, el ejército de los Talus contraatacará." }
+          ],
+          "recommendedHeroes": {
+            "description": { "en": "A Hero who can weaken block can prevent the Talus Army from countering. It's also best to use a Hero who can protect allies marked with [Marked for Hunt].", "es": "Un héroe que pueda debilitar el bloqueo puede impedir que el ejército de los Talus contraataque. También es mejor usar un héroe que pueda proteger a los aliados marcados con [Marca de caza]." },
+            "tags": [ { "en": "#Block Resistance", "es": "#Resistencia al bloqueo" }, { "en": "#Ally Protection", "es": "#Protección de aliados" } ],
+            "heroesByTag": [
+              { "tag": { "en": "Block Resistance", "es": "Resistencia al bloqueo" }, "heroList": [ { "name": "Gwen" } ] },
+              { "tag": { "en": "Ally Protection", "es": "Protección de aliados" }, "heroList": [ { "name": "Dochun" }, { "name": "Gwon" }, { "name": "Boryn" } ] }
+            ]
+          }
         },
-        "difficultyModifiers": [
-          { "stars": 1, "name": { "en": "Action", "es": "Acción" }, "description": { "en": "Enemy's Block Rate +15%", "es": "Tasa de Bloqueo del enemigo +15%" }, "points": 500 },
-          { "stars": 1, "name": { "en": "Near Death", "es": "Cerca de la muerte" }, "description": { "en": "Ally's Ultimate Skill Gauge Gain -40%", "es": "Reducción del medidor de la habilidad definitiva de aliado" }, "points": 500 },
-          { "stars": 2, "name": { "en": "Book of Strategies", "es": "Libro de estrategias" }, "description": { "en": "Enhance Tu Riki's 'Commence Operation' Skill", "es": "Mejora la habilidad 'Iniciar operación'" }, "points": 1000 },
-          { "stars": 2, "name": { "en": "Command", "es": "Dirigir" }, "description": { "en": "Enhance Tu Riki's 'Command and Control' Skill", "es": "Mejora la habilidad 'Comando y contro'" }, "points": 1000 },
-          { "stars": 3, "name": { "en": "Gambit", "es": "Táctica" }, "description": { "en": "Add 'Final Gambit' Skill to Tu Riki", "es": "Añade la habilidad 'Táctica final' a Tu Riki" }, "points": 2000 },
-          { "stars": 3, "name": { "en": "Favorable Treatment", "es": "Trato favorable" }, "description": { "en": "Can't place more than 1 Tactician Hero", "es": "No se puede designar más de un héroe Táctico" }, "points": 2000 }
-        ],
-        "scoreRewards": [
-          { "scoreThreshold": 2000, "rewards": [ { "itemId": "victory_token", "quantity": 200 } ] },
-          { "scoreThreshold": 5000, "rewards": [ { "itemId": "victory_token", "quantity": 300 } ] },
-          { "scoreThreshold": 9000, "rewards": [ { "itemId": "victory_token", "quantity": 500 } ] },
-          { "scoreThreshold": 11000, "rewards": [ { "itemId": "victory_token", "quantity": 1000 } ] }
-        ],
-        "tips": [
-          { "en": "Tu Riki uses the [Commence Operation] Skill and [Command and Control] Skill to control the Talus army.", "es": "Tu Riki usa las habilidades [Iniciar operación] y [Mando y control] para controlar el ejército de los Talus." },
-          { "en": "When the [Marked for Hunt] target dies, Tu Riki uses the [Masterful Commander] Skill.", "es": "Cuando el objetivo con [Marca de caza] muere, Tu Riki usa la habilidad [Comandante experto]." },
-          { "en": "Use Fire-type Heroes' attacks to Incapacitate Tu Riki more easily.", "es": "Usa ataques de Héroes de tipo Fuego para incapacitar a Tu Riki más fácilmente." },
-          { "en": "Proceed with caution as upon a successful Block, the Talus army will counter.", "es": "Procede con cautela, ya que tras un bloqueo exitoso, el ejército de los Talus contraatacará." }
-        ],
-        "recommendedHeroes": {
-          "description": { "en": "A Hero who can weaken block can prevent the Talus Army from countering. It's also best to use a Hero who can protect allies marked with [Marked for Hunt].", "es": "Un héroe que pueda debilitar el bloqueo puede impedir que el ejército de los Talus contraataque. También es mejor usar un héroe que pueda proteger a los aliados marcados con [Marca de caza]." },
-          "tags": [ { "en": "#Block Resistance", "es": "#Resistencia al bloqueo" }, { "en": "#Ally Protection", "es": "#Protección de aliados" } ],
-          "heroesByTag": [
-            { "tag": { "en": "Block Resistance", "es": "Resistencia al bloqueo" }, "heroList": [ { "name": "Gwen" } ] },
-            { "tag": { "en": "Ally Protection", "es": "Protección de aliados" }, "heroList": [ { "name": "Dochun" }, { "name": "Gwon" }, { "name": "Boryn" } ] }
-          ]
+        "nextBoss": {
+          "name": { "en": "Altered Beast #9", "es": "Bestia Alterada #9" },
+          "description": { "en": "Upcoming Boss", "es": "Próximo Jefe" },
+          "icon": "mechaeungeomho-named_a_cr.png"
         }
       }
     ]

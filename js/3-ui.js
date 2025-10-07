@@ -667,49 +667,84 @@ const UI = {
             contentHTML += `</div>`;
         }
 
-        // Para Tactical Trial
-        if (eventData.bossInfo) {
-            const boss = eventData.bossInfo;
+        // --- INICIO: LÓGICA MEJORADA PARA TACTICAL TRIAL ---
+        if (eventData.currentBoss) {
+            const boss = eventData.currentBoss;
             contentHTML += `<div class="details-section"><h3>${langData.weeklyBossInfoTitle}</h3>
                 <div class="boss-info-header">
                     <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
-                    <h4>${boss.name[lang]}</h4>
+                    <div class="boss-info-details">
+                        <h4>${boss.name[lang]}</h4>
+                         <div class="stage-info-grid">
+                            <div class="stage-info-item">
+                                <span class="stage-info-label">${langData.weeklyTimeLimit}</span>
+                                <div class="stage-info-value">🕒 ${boss.turnLimit} Turns</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <p class="details-summary">${boss.description[lang]}</p>
             </div>`;
-        }
-        
-        if (eventData.recommendedHeroes && eventData.recommendedHeroes.description) {
-            contentHTML += `<div class="details-section">
-                                <div class="recommendation-box"><p>${eventData.recommendedHeroes.description[lang]}</p></div>
-                            </div>`;
-        }
+            
+            if (boss.recommendedHeroes && boss.recommendedHeroes.description) {
+                contentHTML += `<div class="details-section">
+                                    <div class="recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
+                if (boss.recommendedHeroes.heroesByTag) {
+                    boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
+                        const heroNames = tagGroup.heroList.map(h => h.name).join(', ');
+                        contentHTML += `<p class="recommended-heroes-list"><strong>${tagGroup.tag[lang]}:</strong> ${heroNames}</p>`;
+                    });
+                }
+                contentHTML += `</div>`;
+            }
 
+            if (boss.difficultyTiers) {
+                contentHTML += `<div class="details-section"><h3>${langData.weeklyModifiersTitle}</h3>`;
+                Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
+                    contentHTML += `<div class="difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
+                    data.modifiers.forEach(mod => {
+                        contentHTML += `<div class="modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
+                    });
+                    contentHTML += `<table class="details-table progression-table">`;
+                    data.progression.forEach(prog => {
+                        contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
+                    });
+                    contentHTML += `</table></div>`;
+                });
+                contentHTML += `</div>`;
+            }
+            
+            if (boss.scoreRewards) {
+                contentHTML += `<div class="details-section"><h3>${langData.weeklyScoreRewardsTitle}</h3><table class="details-table"><tbody>`;
+                boss.scoreRewards.forEach(tier => {
+                    const rewardsText = tier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
+                    contentHTML += `<tr><td>${tier.scoreThreshold.toLocaleString()} Pts</td><td>${rewardsText}</td></tr>`;
+                });
+                contentHTML += `</tbody></table></div>`;
+            }
 
-        if (eventData.difficultyModifiers) {
-            contentHTML += `<div class="details-section"><h3>${langData.weeklyModifiersTitle}</h3><table class="details-table"><tbody>`;
-            eventData.difficultyModifiers.forEach(mod => {
-                contentHTML += `<tr><td>${'★'.repeat(mod.stars)} ${mod.name[lang]}</td><td>${mod.description[lang]} (+${mod.points})</td></tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
-        }
+            if (boss.tips && boss.tips.length > 0) {
+                contentHTML += `<div class="details-section"><h3>${langData.weeklyTipsTitle}</h3><ul class="details-list-bullet">`;
+                boss.tips.forEach(tip => {
+                    contentHTML += `<li>${tip[lang]}</li>`;
+                });
+                contentHTML += `</ul></div>`;
+            }
 
-        if (eventData.scoreRewards) {
-            contentHTML += `<div class="details-section"><h3>${langData.weeklyScoreRewardsTitle}</h3><table class="details-table"><tbody>`;
-            eventData.scoreRewards.forEach(tier => {
-                const rewardsText = tier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
-                contentHTML += `<tr><td>${tier.scoreThreshold.toLocaleString()} Pts</td><td>${rewardsText}</td></tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
+            if (eventData.nextBoss) {
+                 contentHTML += `<div class="details-section"><h3>Próximo Jefe</h3>
+                    <div class="buff-item">
+                        <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
+                        <div>
+                            <strong>${eventData.nextBoss.name[lang]}</strong>
+                            <p>${eventData.nextBoss.description[lang]}</p>
+                        </div>
+                    </div>
+                 </div>`;
+            }
         }
+        // --- FIN: LÓGICA MEJORADA PARA TACTICAL TRIAL ---
 
-        if (eventData.tips) {
-            contentHTML += `<div class="details-section"><h3>${langData.weeklyTipsTitle}</h3><ul class="details-list-bullet">`;
-            eventData.tips.forEach(tip => {
-                contentHTML += `<li>${tip[lang]}</li>`;
-            });
-            contentHTML += `</ul></div>`;
-        }
 
         contentHTML += `</div>`; // Close details-content
         App.dom.weeklyDetailsPanel.innerHTML = contentHTML;

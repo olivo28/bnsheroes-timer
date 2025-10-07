@@ -1250,11 +1250,18 @@ select.settings-input option {
     flex-direction: column;
 }
 
-#event-details-panel.visible,
+#event-details-panel.visible
+{
+    width: 450px;
+    opacity: 1;
+    height: 827px;
+}
+
 #weekly-details-panel.visible {
     width: 450px;
     opacity: 1;
     height: 827px;
+    margin-left: -17px
 }
 
 .details-header {
@@ -1489,7 +1496,7 @@ select.settings-input option {
 
 .boss-info-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 15px;
     margin-bottom: 15px;
 }
@@ -1498,11 +1505,60 @@ select.settings-input option {
     height: 60px;
     border-radius: 50%;
     border: 2px solid var(--border-color);
+    flex-shrink: 0;
+}
+.boss-info-details {
+    flex-grow: 1;
 }
 .boss-info-header h4 {
-    margin: 0;
+    margin: 0 0 10px 0;
     font-size: 1.3em;
     color: var(--color-urgent);
+}
+.recommended-heroes-list {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    margin-top: 10px;
+}
+.recommended-heroes-list strong {
+    color: var(--color-normal);
+}
+
+.difficulty-tier {
+    margin-bottom: 20px;
+}
+.difficulty-tier h4 {
+    font-size: 1.3em;
+    color: var(--color-warning);
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+.modifier-item {
+    background-color: rgba(255,255,255,0.04);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.modifier-item strong {
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+.modifier-item p {
+    font-size: 0.8em;
+    color: var(--text-muted-color);
+    margin: 4px 0 0 0;
+}
+.progression-table {
+    margin-top: 10px;
+}
+.progression-table td:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.progression-table td:last-child {
+    text-align: right;
+    color: var(--text-color);
 }
 
 
