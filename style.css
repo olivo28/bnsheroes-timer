@@ -511,6 +511,18 @@ input:checked+.slider:before {
     font-family: 'Courier New', monospace;
 }
 
+#sticky-ticket-container {
+    padding: 0 18px; /* Coincide con el padding horizontal de los spawn-item */
+}
+
+#sticky-ticket-container .ticket-item {
+    /* Ajusta el padding para que no se duplique y elimina el borde superior */
+    padding-left: 0;
+    padding-right: 0;
+    /* Mantenemos el borde inferior para separarlo de la lista de jefes */
+    border-bottom: 1px solid var(--border-color);
+}
+
 /* --- Ticket Items (Variación de Spawn Item) --- */
 .ticket-item {
     border-bottom: 1px solid var(--border-color);

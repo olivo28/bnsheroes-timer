@@ -77,6 +77,7 @@ const App = {
         closeStreamsModal: null,
         preStreamAlertToggle: null,
         postStreamAlertToggle: null,
+        stickyTicketContainer: null,
         // --- NUEVAS REFERENCIAS AÑADIDAS ---
         heroModalContent: null,
         heroModalInfo: null,
@@ -149,6 +150,7 @@ const App = {
         this.dom.closeStreamsModal = document.getElementById('close-streams-modal');
         this.dom.preStreamAlertToggle = document.getElementById('pre-stream-alert-toggle');
         this.dom.postStreamAlertToggle = document.getElementById('post-stream-alert-toggle');
+        this.dom.stickyTicketContainer = document.getElementById('sticky-ticket-container');
         
         // --- NUEVAS REFERENCIAS AÑADIDAS ---
         this.dom.heroModalContent = document.getElementById('hero-modal-content');

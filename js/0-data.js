@@ -265,7 +265,7 @@ const DEFAULT_CONFIG = {
     ],
     banner: [
         { element: "fire", heroes: "Poharan, Sansu, Yunma Fei", startDate: "2025-09-25", endDate: "2025-10-14" },
-        { element: "water", heroes: "", startDate: "2025-10-14", endDate: "" },
+        { element: "water", heroes: "Baek Buyong, Soha, Hansu", startDate: "2025-10-14", endDate: "2025-11-04" },
     ],
     displayTimezone: getSystemTimezoneOffset(),
     preAlertMinutes: [15, 5, 1],

@@ -84,23 +84,32 @@ const UI = {
         
         const primaryTimers = [dailyResetTimer];
         let bossTimers = [];
-        let secondaryTimers = [];
+    
+        // Limpiamos los contenedores de timers secundarios al inicio de cada actualización
+        App.dom.stickyTicketContainer.innerHTML = '';
+        App.dom.timersContainer.innerHTML = '';
     
         if (config.showBossTimers) {
-             bossTimers = Logic.getBossTimers(now);
+            // Caso 1: Los timers de jefes están ACTIVOS
+            bossTimers = Logic.getBossTimers(now);
             const nextActiveBoss = bossTimers.filter(s => s.isAlertEnabled && s.secondsLeft >= 0).sort((a, b) => a.secondsLeft - b.secondsLeft)[0];
             if (nextActiveBoss) {
                 primaryTimers.push(nextActiveBoss);
             }
             
-            secondaryTimers.push(showdownTicketTimer);
-            secondaryTimers.push(...bossTimers);
+            // Renderiza el ticket en su propio contenedor "fijo"
+            App.dom.stickyTicketContainer.innerHTML = this.renderSecondaryTimers([showdownTicketTimer]);
+            
+            // Renderiza la lista de jefes en el contenedor con scroll
+            App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(bossTimers);
+
         } else {
+            // Caso 2: Los timers de jefes están OCULTOS
+            // El ticket de showdown va al panel principal, como antes
             primaryTimers.push(showdownTicketTimer);
         }
     
         this.renderPrimaryPanel(primaryTimers);
-        App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(secondaryTimers);
     
         Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer);
 

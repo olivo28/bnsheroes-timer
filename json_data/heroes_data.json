@@ -328,8 +328,8 @@
         "available": false,
         "short_image": "hongsam_a_fm.png",
         "long_image": "full_illust_hero_hongsam_base.png",
-        "role": "",
-        "element": ""
+        "role": "tactician",
+        "element": "water"
     },
     {
         "asset_name": "hwajung",
@@ -384,8 +384,18 @@
         "available": false,
         "short_image": "jinsoa_a_gm.png",
         "long_image": "full_illust_hero_jinsoa_base.png",
-        "role": "",
-        "element": ""
+        "role": "attacker",
+        "element": "typeless"
+    },
+    {
+        "asset_name": "baekbuyong",
+        "game_name": "Baek Buyong",
+        "rarity": 1,
+        "available": false,
+        "short_image": "baekbuyong_a_fm.png",
+        "long_image": "full_illust_hero_baekbuyong_base.png",
+        "role": "tactician",
+        "element": "water"
     },
     {
         "asset_name": "jinung",
