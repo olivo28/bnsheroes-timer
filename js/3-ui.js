@@ -608,15 +608,61 @@ const UI = {
             contentHTML += `</div>`;
         }
 
+        if (eventData.chosenBuffs) {
+            contentHTML += `<div class="details-section"><h3>${langData.weeklyChosenBuffsTitle}</h3>`;
+            eventData.chosenBuffs.forEach((buff, index) => {
+                contentHTML += `<div class="buff-item">
+                                  <img src="assets/spells_icons/${buff.icon}.png">
+                                  <div>
+                                    <strong>${buff.name[lang]}</strong>
+                                    <p>${buff.description[lang]}</p>
+                                  </div>
+                                </div>`;
+                if (index < eventData.chosenBuffs.length - 1) {
+                    contentHTML += '<hr class="buff-separator">';
+                }
+            });
+            contentHTML += `</div>`;
+        }
+
         if (eventData.stages) {
             contentHTML += `<div class="details-section"><h3>${langData.weeklyStagesTitle}</h3>`;
-            eventData.stages.forEach(stage => {
-                contentHTML += `<div class="stage-item"><h4>${stage.stageName[lang]}</h4>`;
+
+            if (eventData.stages[0].recommendedHeroes) {
+                const rh = eventData.stages[0].recommendedHeroes;
+                contentHTML += `<div class="recommendation-box"><p>${rh.description[lang]}</p></div>`;
+            }
+
+            eventData.stages.forEach((stage, index) => {
+                const elementalIcons = stage.elementalWeakness.map(el => 
+                    `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="element-icon" alt="${el}">`
+                ).join('');
+
+                contentHTML += `<div class="stage-item">
+                                    <h4 class="stage-title">${stage.stageName[lang]}</h4>
+                                    <div class="stage-info-grid">
+                                        <div class="stage-info-item">
+                                            <span class="stage-info-label">${langData.weeklyCombatPower}</span>
+                                            <div class="stage-info-value"><img src="assets/combat_power.png" class="combat-power-icon" /> ${stage.recommendedPower}</div>
+                                        </div>
+                                        <div class="stage-info-item">
+                                            <span class="stage-info-label">${langData.weeklyTimeLimit}</span>
+                                            <div class="stage-info-value">🕒 ${stage.timeLimit[lang]}</div>
+                                        </div>
+                                        <div class="stage-info-item">
+                                            <span class="stage-info-label">${langData.weeklyWeakness}</span>
+                                            <div class="stage-info-value elemental-weakness">${elementalIcons}</div>
+                                        </div>
+                                    </div>
+                                    <div class="stage-rewards">`;
                 stage.completionRewards.forEach(rewardTier => {
                     const rewardsText = rewardTier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
                     contentHTML += `<p><strong>${langData.eventRankHeader} ${rewardTier.stageLevel}:</strong> ${rewardsText}</p>`;
                 });
-                contentHTML += `</div>`;
+                contentHTML += `</div></div>`;
+                if (index < eventData.stages.length - 1) {
+                    contentHTML += '<hr class="buff-separator">';
+                }
             });
             contentHTML += `</div>`;
         }
@@ -632,6 +678,13 @@ const UI = {
                 <p class="details-summary">${boss.description[lang]}</p>
             </div>`;
         }
+        
+        if (eventData.recommendedHeroes && eventData.recommendedHeroes.description) {
+            contentHTML += `<div class="details-section">
+                                <div class="recommendation-box"><p>${eventData.recommendedHeroes.description[lang]}</p></div>
+                            </div>`;
+        }
+
 
         if (eventData.difficultyModifiers) {
             contentHTML += `<div class="details-section"><h3>${langData.weeklyModifiersTitle}</h3><table class="details-table"><tbody>`;

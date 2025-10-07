@@ -14,7 +14,7 @@ const I18N_STRINGS = {
         timersSettingsLabel: "Timers:",
         bossToggleLabel: "Jefes",
         eventsToggleLabel: "Eventos",
-        weeklyToggleLabel: "Semanal", // <-- AÑADE ESTA LÍNEA
+        weeklyToggleLabel: "Semanal",
         preAlertLabel: "Minutos de Pre-Alerta (para jefes):",
         notificationTypeLabel: "Tipos de Notificación:",
         soundToggleLabel: "Sonido",
@@ -93,6 +93,9 @@ const I18N_STRINGS = {
         weeklyTipsTitle: "Consejos",
         weeklyBossInfoTitle: "Información del Jefe",
         weeklyModifiersTitle: "Modificadores de Dificultad",
+        weeklyCombatPower: "Poder de Combate", // <-- AÑADE ESTA LÍNEA
+        weeklyTimeLimit: "Tiempo Límite", // <-- AÑADE ESTA LÍNEA
+        weeklyWeakness: "Debilidad", // <-- AÑADE ESTA LÍNEA
         streamWidgetTitle: "Stream de Twitch",
         streamsModalTitle: "Próximos Streams",
         noStreamsMessage: "No hay streams programados por el momento.",
@@ -115,7 +118,7 @@ const I18N_STRINGS = {
         timersSettingsLabel: "Timers:",
         bossToggleLabel: "Bosses",
         eventsToggleLabel: "Events",
-        weeklyToggleLabel: "Weekly", // <-- AÑADE ESTA LÍNEA
+        weeklyToggleLabel: "Weekly",
         preAlertLabel: "Pre-Alert Minutes (for bosses):",
         notificationTypeLabel: "Notification Types:",
         soundToggleLabel: "Sound",
@@ -194,6 +197,9 @@ const I18N_STRINGS = {
         weeklyTipsTitle: "Tips",
         weeklyBossInfoTitle: "Boss Info",
         weeklyModifiersTitle: "Difficulty Modifiers",
+        weeklyCombatPower: "Combat Power", // <-- AÑADE ESTA LÍNEA
+        weeklyTimeLimit: "Time Limit", // <-- AÑADE ESTA LÍNEA
+        weeklyWeakness: "Weakness", // <-- AÑADE ESTA LÍNEA
         streamWidgetTitle: "Twitch Stream",
         streamsModalTitle: "Upcoming Streams",
         noStreamsMessage: "No streams scheduled at the moment.",
@@ -229,8 +235,8 @@ const DEFAULT_CONFIG = {
     dailyResetImageUrl: 'style/bnsheroes.webp',
     showdownTicketImageUrl: 'style/ticket-icon.png',
     showBossTimers: false,
-    showEvents: false,
-    showWeekly: true, // <-- AÑADE ESTA LÍNEA
+    showEvents: true,
+    showWeekly: true,
     bosses: [
         {
             id: "stalker_jiangshi",
