@@ -4,26 +4,32 @@
       "poharan_trial_token": {
         "name": { "en": "Poharan Trial Token", "es": "Ficha de prueba de Poharan" },
         "type": { "en": "Shop Coin", "es": "Comprar monedas" },
+        "icon": "item_money_herotoken_pohwalan",
         "expirationDate": "2025-10-21 18:30"
       },
       "choice_refined_potential_fruit_chest": {
         "name": { "en": "[Choice] Refined Fruit of Potential Chest", "es": "[Elección] Cofre de fruta de Potencial refinado" },
+        "icon": "shoppackage_box_package_product_dark_s2", 
         "type": { "en": "Consumables", "es": "Consumibles" }
       },
       "choice_refined_type_skill_book_chest_leather": {
         "name": { "en": "[Choice] Refined Type Skill Book Chest", "es": "[Elección] Cofre de Libro de habilidades de tipo refinado" },
+        "icon": "item_box_leather_square_normal_01",
         "type": { "en": "Consumables", "es": "Consumibles" }
       },
       "choice_refined_type_skill_book_chest_bookshelf": {
         "name": { "en": "[Choice] Refined Type Skill Book Chest", "es": "[Elección] Cofre de Libro de habilidades de tipo refinado" },
+        "icon": "item_box_hero_skill_book",
         "type": { "en": "Consumables", "es": "Consumibles" }
       },
       "choice_refined_sacred_ultimate_skill_book_chest": {
         "name": { "en": "[Choice] Refined Type Sacred Ultimate Skill Book Chest", "es": "[Opción] Cofre de libro de habilidad definitiva sagrada de tipo refinado" },
+        "icon": "item_box_hero_fskill_book",
         "type": { "en": "Consumables", "es": "Consumibles" }
       },
       "victory_token": {
         "name": { "en": "Victory Token", "es": "Ficha de victoria" },
+        "icon": "item_coin_festival_event",
         "type": { "en": "Shop Coin", "es": "Comprar monedas" }
       }
     },

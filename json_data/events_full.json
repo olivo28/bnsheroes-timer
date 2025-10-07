@@ -23,16 +23,16 @@
               "es": "Recompensa garantizada para todos los participantes que dañen al jefe."
             },
             "rewards": [
-              { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 1 }
+              { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 1 }
             ]
           },
           "bonus_by_rank": [
-            { "tier_name": { "en": "First Place", "es": "Primer Lugar" }, "rank_start": 1, "rank_end": 1, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 6 } ] },
-            { "tier_name": { "en": "Second Place", "es": "Segundo Lugar" }, "rank_start": 2, "rank_end": 2, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 5 } ] },
-            { "tier_name": { "en": "Third Place", "es": "Tercer Lugar" }, "rank_start": 3, "rank_end": 3, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 4 } ] },
-            { "tier_name": { "en": "Rank 4-7", "es": "Rango 4-7" }, "rank_start": 4, "rank_end": 7, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 3 } ] },
-            { "tier_name": { "en": "Rank 8-10", "es": "Rango 8-10" }, "rank_start": 8, "rank_end": 10, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 2 } ] },
-            { "tier_name": { "en": "Rank 11-50", "es": "Rango 11-50" }, "rank_start": 11, "rank_end": 50, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" }, "quantity": 1 } ] }
+            { "tier_name": { "en": "First Place", "es": "Primer Lugar" }, "rank_start": 1, "rank_end": 1, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 6 } ] },
+            { "tier_name": { "en": "Second Place", "es": "Segundo Lugar" }, "rank_start": 2, "rank_end": 2, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 5 } ] },
+            { "tier_name": { "en": "Third Place", "es": "Tercer Lugar" }, "rank_start": 3, "rank_end": 3, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 4 } ] },
+            { "tier_name": { "en": "Rank 4-7", "es": "Rango 4-7" }, "rank_start": 4, "rank_end": 7, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 3 } ] },
+            { "tier_name": { "en": "Rank 8-10", "es": "Rango 8-10" }, "rank_start": 8, "rank_end": 10, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 2 } ] },
+            { "tier_name": { "en": "Rank 11-50", "es": "Rango 11-50" }, "rank_start": 11, "rank_end": 50, "rewards": [ { "item": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino", "icon": "item_coin_roulette_ticket_01" }, "quantity": 1 } ] }
           ]
         }
       },

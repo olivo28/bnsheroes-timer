@@ -688,7 +688,7 @@ const UI = {
             
             if (boss.recommendedHeroes && boss.recommendedHeroes.description) {
                 contentHTML += `<div class="details-section">
-                                    <h3>Héroes Recomendados</h3>
+                                    <h3>${langData.weeklyRecommendedHeroes}</h3>
                                     <div class="recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
                 if (boss.recommendedHeroes.heroesByTag) {
                     contentHTML += '<div class="recommended-heroes-container">';
@@ -755,7 +755,7 @@ const UI = {
             }
 
             if (eventData.nextBoss) {
-                 contentHTML += `<div class="details-section"><h3>Próximo Jefe</h3>
+                 contentHTML += `<div class="details-section"><h3>${langData.weeklyNextBoss}</h3>
                     <div class="buff-item">
                         <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
                         <div>
@@ -850,26 +850,19 @@ const UI = {
     openHeroModal: function(heroData) {
         if (!heroData) return;
         const lang = I18N_STRINGS[App.state.config.currentLanguage];
-
-        // --- INICIO DE LA NUEVA LÓGICA ---
     
-        // 1. Establecer el color del borde según el elemento del héroe
         const elementColorVar = `--color-${heroData.element || 'default'}-role`;
         const elementColor = getComputedStyle(document.documentElement).getPropertyValue(elementColorVar).trim();
         App.dom.heroModalContent.style.borderColor = elementColor || 'var(--border-color)';
     
-        // 2. Establecer el color de fondo de la información según la rareza
         const rarityBgColorVar = `--rarity${heroData.rarity}-modal-bg`;
         App.dom.heroModalInfo.style.backgroundColor = `var(${rarityBgColorVar})`;
     
-        // 3. Establecer el color del nombre si el héroe es Exaltado (rareza 1)
         if (heroData.rarity === 1) {
             App.dom.heroModalName.style.color = 'var(--color-exalted-gold)';
         } else {
             App.dom.heroModalName.style.color = ''; 
         }
-        
-        // --- FIN DE LA NUEVA LÓGICA ---
 
         App.dom.heroModalImage.src = `assets/heroes_full/${heroData.long_image}`;
         App.dom.heroModalName.textContent = heroData.game_name;

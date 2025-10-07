@@ -93,9 +93,11 @@ const I18N_STRINGS = {
         weeklyTipsTitle: "Consejos",
         weeklyBossInfoTitle: "Información del Jefe",
         weeklyModifiersTitle: "Modificadores de Dificultad",
-        weeklyCombatPower: "Poder de Combate", // <-- AÑADE ESTA LÍNEA
-        weeklyTimeLimit: "Tiempo Límite", // <-- AÑADE ESTA LÍNEA
-        weeklyWeakness: "Debilidad", // <-- AÑADE ESTA LÍNEA
+        weeklyCombatPower: "Poder de Combate",
+        weeklyTimeLimit: "Tiempo Límite",
+        weeklyWeakness: "Debilidad",
+        weeklyRecommendedHeroes: "Héroes Recomendados", // <-- AÑADE ESTA LÍNEA
+        weeklyNextBoss: "Próximo Jefe", // <-- AÑADE ESTA LÍNEA
         streamWidgetTitle: "Stream de Twitch",
         streamsModalTitle: "Próximos Streams",
         noStreamsMessage: "No hay streams programados por el momento.",
@@ -197,9 +199,11 @@ const I18N_STRINGS = {
         weeklyTipsTitle: "Tips",
         weeklyBossInfoTitle: "Boss Info",
         weeklyModifiersTitle: "Difficulty Modifiers",
-        weeklyCombatPower: "Combat Power", // <-- AÑADE ESTA LÍNEA
-        weeklyTimeLimit: "Time Limit", // <-- AÑADE ESTA LÍNEA
-        weeklyWeakness: "Weakness", // <-- AÑADE ESTA LÍNEA
+        weeklyCombatPower: "Combat Power",
+        weeklyTimeLimit: "Time Limit",
+        weeklyWeakness: "Weakness",
+        weeklyRecommendedHeroes: "Recommended Heroes", // <-- AÑADE ESTA LÍNEA
+        weeklyNextBoss: "Next Boss", // <-- AÑADE ESTA LÍNEA
         streamWidgetTitle: "Twitch Stream",
         streamsModalTitle: "Upcoming Streams",
         noStreamsMessage: "No streams scheduled at the moment.",
