@@ -67,27 +67,27 @@
     function initialize() {
         App.initializeDOM();
         
-        // Solo reestructuramos el DOM y creamos el Swiper si es móvil
         if (App.state.isMobile) {
             setupMobileSwiper();
-            // Es crucial volver a buscar las referencias a los paneles, ya que los hemos movido en el DOM.
             App.dom.primaryPanel = document.querySelector('.primary-panel');
             App.dom.secondaryPanel = document.querySelector('.secondary-panel');
         }
         
         Logic.loadSettings();
         UI.populateSelects();
-        UI.updateLanguage();
-        Logic.requestNotificationPermission();
+        UI.updateLanguage(); // Muestra "Inicializando..."
         
-        addEventListeners();
-
-        // CORRECCIÓN: Retrasamos el inicio del bucle de actualización
-        // para dar tiempo a que Swiper se inicialice completamente.
-        setTimeout(() => {
-            UI.updateAll(); // Primera ejecución
-            setInterval(() => UI.updateAll(), 1000); // Bucle principal
-        }, 100); // Un pequeño retraso de 100ms es más que suficiente
+        // --- LLAMADA A LA SINCRONIZACIÓN ---
+        Logic.syncWithWorldTime().then(() => {
+            // Este código se ejecuta DESPUÉS de que la sincronización termine
+            Logic.requestNotificationPermission();
+            addEventListeners();
+            
+            setTimeout(() => {
+                UI.updateAll();
+                setInterval(() => UI.updateAll(), 1000);
+            }, 100);
+        });
     }
 
     /**

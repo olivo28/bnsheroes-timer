@@ -6,6 +6,9 @@
  */
 const I18N_STRINGS = {
     es: {
+        initializing: "Inicializando...", // <-- AÑADE ESTA LÍNEA
+        timeSynced: "Sincronizado con la hora mundial", // <-- AÑADE ESTA LÍNEA
+        timeSyncFailed: "Error de sincronización, usando hora local", // <-- AÑADE ESTA LÍNEA
         title: "BnS Hereos - HUB/Timer",
         alertsEnabled: "Alertas activadas",
         alertsDisabled: "Alertas denegadas",
@@ -112,6 +115,9 @@ const I18N_STRINGS = {
         goToChannel: "Ir al Canal"
     },
     en: {
+        initializing: "Initializing...", // <-- AÑADE ESTA LÍNEA
+        timeSynced: "Synced with world time", // <-- AÑADE ESTA LÍNEA
+        timeSyncFailed: "Sync failed, using local time", // <-- AÑADE ESTA LÍNEA
         title: "BnS Heroes - HUB/Timer",
         alertsEnabled: "Alerts enabled",
         alertsDisabled: "Alerts denied",
@@ -164,7 +170,7 @@ const I18N_STRINGS = {
         aboutCloseButton: "Close",
         eventsTitle: "Active Events",
         weeklyTitle: "Weekly Resets",
-        eventEndsIn: (d) => `ends in ${d} days`,
+        eventEndsIn: (d) => `ends in ${d}`,
         eventEndsToday: "ends today",
         weeklyResetsIn: (d) => `resets in ${d}`,
         eventTip: "Event",

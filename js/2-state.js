@@ -10,6 +10,7 @@ const App = {
         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
         alertsShownToday: {},
         lastResetCycleDay: null,
+        timeOffset: 0, // <-- AÑADE ESTA LÍNEA
         allHeroesData: [],
         allEventsData: {},
         weeklyResetsData: null,

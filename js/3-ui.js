@@ -10,7 +10,7 @@ const UI = {
      * Función principal que orquesta todas las actualizaciones de la UI en cada ciclo.
      */
     updateAll: function() {
-        const now = new Date();
+        const now = Logic.getCorrectedNow(); // <-- CAMBIO CLAVE
         const config = App.state.config;
     
         this.updateLanguage();
@@ -29,7 +29,6 @@ const UI = {
         
         const showSecondaryPanel = config.showBossTimers || config.showEvents || config.showWeekly;
     
-        // ESTA LÓGICA AHORA ES SOLO PARA ESCRITORIO
         if (!App.state.isMobile) {
             if (showSecondaryPanel) {
                 App.dom.mainWrapper.style.width = '860px'; 
@@ -46,8 +45,7 @@ const UI = {
                 App.dom.bannersContainer.style.width = '380px';
                 App.dom.bannersContainer.classList.remove('horizontal-layout');
             }
-        } else { // Comportamiento para Móvil
-            // CORRECCIÓN: Hacemos el código más seguro
+        } else {
             const secondaryPanelElement = document.querySelector('.secondary-panel');
             if (secondaryPanelElement) {
                 const secondarySlide = secondaryPanelElement.closest('.swiper-slide');
@@ -106,7 +104,6 @@ const UI = {
     
         Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer);
 
-        // Actualizar el widget de stream
         this.updateStreamsFeature();
     },
 

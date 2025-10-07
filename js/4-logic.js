@@ -6,6 +6,44 @@
 const Logic = {
 
     /**
+     * Realiza una única llamada a una API de tiempo mundial para calcular el desfase
+     * entre el reloj local del usuario y la hora UTC real.
+     */
+    syncWithWorldTime: async function() {
+        const statusBarSpan = App.dom.statusBar.querySelector('span');
+        try {
+            const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            const worldTimeMs = data.unixtime * 1000;
+            const localTimeMs = new Date().getTime();
+            
+            App.state.timeOffset = worldTimeMs - localTimeMs;
+
+            statusBarSpan.dataset.langKey = 'timeSynced';
+            UI.updateLanguage(); // Actualiza el texto inmediatamente
+            
+            console.log(`Time synced. Local clock offset is ${App.state.timeOffset}ms.`);
+        } catch (error) {
+            console.error("World time sync failed:", error);
+            App.state.timeOffset = 0; // Se revierte a 0 en caso de error
+            statusBarSpan.dataset.langKey = 'timeSyncFailed';
+            UI.updateLanguage(); // Actualiza el texto para mostrar el error
+        }
+    },
+    
+    /**
+     * Devuelve un objeto Date que representa la hora actual, corregida por el desfase
+     * calculado con la hora mundial.
+     * TODAS las funciones de tiempo deben usar esto en lugar de 'new Date()'.
+     * @returns {Date} La hora actual corregida.
+     */
+    getCorrectedNow: function() {
+        return new Date(new Date().getTime() + App.state.timeOffset);
+    },
+
+    /**
      * Carga la configuración del usuario desde una cookie o usa los valores por defecto.
      */
     loadSettings: function() {
@@ -25,9 +63,7 @@ const Logic = {
                 tempConfig.notificationTypes = { ...DEFAULT_CONFIG.notificationTypes, ...(savedConfig.notificationTypes || {}) };
                 tempConfig.events = DEFAULT_CONFIG.events;
                 tempConfig.banner = DEFAULT_CONFIG.banner;
-                // --- AÑADE ESTA LÍNEA AQUÍ ---
-                tempConfig.streams = DEFAULT_CONFIG.streams; // Forzar siempre los datos de streams más recientes del archivo.
-                // -----------------------------
+                tempConfig.streams = DEFAULT_CONFIG.streams;
             } catch (e) {
                 console.error("Error loading settings from cookie.", e);
             }
@@ -56,7 +92,6 @@ const Logic = {
      */
     saveConfigToCookie: function() {
         try {
-            // Se crea una copia para no guardar en la cookie datos que se recargan siempre desde el archivo.
             const configToSave = JSON.parse(JSON.stringify(App.state.config));
             delete configToSave.events;
             delete configToSave.banner;
@@ -89,7 +124,7 @@ const Logic = {
         const m = parseInt(App.dom.syncMinutes.value) || 0;
         const s = parseInt(App.dom.syncSeconds.value) || 0;
         const remainingSeconds = (h * 3600) + (m * 60) + s;
-        const now = new Date().getTime();
+        const now = this.getCorrectedNow().getTime();
         App.state.config.showdownTicketSync = now + (remainingSeconds * 1000);
         this.saveConfigToCookie();
         UI.closeSyncModal();
@@ -98,7 +133,7 @@ const Logic = {
 
     /**
      * Comprueba y resetea las alertas diarias si ha pasado el reset del juego.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      */
     checkAndPerformDailyReset: function(now) {
         const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime, -4);
@@ -119,7 +154,7 @@ const Logic = {
     
     /**
      * Calcula la información para el timer de Reset Diario.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      * @returns {object} El objeto del timer de reset.
      */
     getDailyResetTimer: function(now) {
@@ -136,7 +171,7 @@ const Logic = {
 
     /**
      * Calcula la información para el timer del Ticket de Showdown.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      * @param {Date} lastReset - La fecha del último reset.
      * @returns {object} El objeto del timer del ticket.
      */
@@ -170,7 +205,7 @@ const Logic = {
     
     /**
      * Obtiene una lista de todos los timers de jefes activos y futuros.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      * @returns {Array<object>} Una lista de objetos de timers de jefes.
      */
     getBossTimers: function(now) {
@@ -198,7 +233,7 @@ const Logic = {
 
     /**
      * Obtiene una lista de todos los timers de reinicio semanal.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      * @returns {Array<object>} Una lista de objetos de timers de reinicio semanal.
      */
     getWeeklyResetTimers: function(now) {
@@ -227,7 +262,7 @@ const Logic = {
 
     /**
      * Comprueba si deben dispararse alertas y las muestra.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      * @param {Array} bossTimers - Lista de timers de jefes.
      * @param {object} dailyResetTimer - Timer de reset.
      * @param {object} showdownTicketTimer - Timer de ticket.
@@ -252,7 +287,6 @@ const Logic = {
         const resetAlertKey = `${App.state.lastResetCycleDay}-reset`;
         if (dailyResetTimer.secondsLeft <= 0 && dailyResetTimer.secondsLeft > -5 && !App.state.alertsShownToday[resetAlertKey]) {
             const lang = I18N_STRINGS[config.currentLanguage];
-            // <-- CORRECCIÓN: Pasa config.use24HourFormat explícitamente
             const displayResetTime = Utils.formatDateToTimezoneString(dailyResetTimer.targetDate, config.displayTimezone, config.use24HourFormat);
             this.showFullAlert(lang.notificationReset, lang.notificationResetBody(displayResetTime), dailyResetTimer.imageUrl);
             App.state.alertsShownToday[resetAlertKey] = true;
@@ -270,7 +304,6 @@ const Logic = {
             App.state.config.streams.forEach(stream => {
                 const streamDate = new Date(stream.streamTimeUTC);
 
-                // Notificación PRE-STREAM (15 minutos antes)
                 if (streamConfig.preStream) {
                     const preStreamAlertTime = new Date(streamDate.getTime() - 15 * 60000);
                     const preStreamAlertKey = `prestream-${stream.id}`;
@@ -280,7 +313,6 @@ const Logic = {
                     }
                 }
 
-                // Notificación POST-STREAM
                 if (streamConfig.postStream && stream.durationHours) {
                     const postStreamAlertTime = new Date(streamDate.getTime() + stream.durationHours * 3600000);
                     const postStreamAlertKey = `poststream-${stream.id}`;
@@ -320,7 +352,7 @@ const Logic = {
 
     /** Comprueba si un evento está actualmente activo. */
     isEventActive: function(eventName) {
-        const now = new Date();
+        const now = this.getCorrectedNow();
         const event = App.state.config.events.find(e => e.id === eventName);
         if (!event) return false;
         
@@ -352,10 +384,10 @@ const Logic = {
      * @returns {Date} El objeto Date calculado.
      */
     getAbsoluteDateFromReferenceTimezone: function(timeString, referenceOffsetHours) {
-        const now = new Date();
+        const now = this.getCorrectedNow();
         const [h, m] = timeString.split(':').map(Number);
         const utcHour = h - referenceOffsetHours;
-        let targetDate = new Date();
+        let targetDate = new Date(now);
         targetDate.setUTCHours(utcHour, m, 0, 0);
         if (targetDate < now) {
             targetDate.setUTCDate(targetDate.getUTCDate() + 1);
@@ -365,7 +397,7 @@ const Logic = {
 
     /**
      * Calcula la próxima fecha de reinicio para un evento semanal.
-     * @param {Date} now - La fecha y hora actual.
+     * @param {Date} now - La fecha y hora actual (ya corregida).
      * @param {string} dayOfWeek - El día de la semana en inglés (ej. "Tuesday").
      * @param {string} timeString - La hora en formato "HH:MM".
      * @param {number} referenceOffsetHours - El offset de la zona horaria de referencia.
