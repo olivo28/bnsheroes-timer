@@ -557,19 +557,26 @@ const UI = {
      * Abre y rellena el panel de detalles de un evento semanal.
      * @param {string} weeklyId - El ID del evento semanal a mostrar.
      */
-    openWeeklyDetailsPanel: function(weeklyId) {
+    openWeeklyDetailsPanel: function (weeklyId) {
         this.closeEventDetailsPanel();
         const lang = App.state.config.currentLanguage;
         const langData = I18N_STRINGS[lang];
         const weeklyData = App.state.weeklyResetsData;
         const eventData = weeklyData.events.find(e => e.id === weeklyId);
-        
+
         if (!eventData) {
             console.error(`Weekly event data not found for ID: ${weeklyId}`);
             return;
         }
 
-        const getItemName = (itemId) => weeklyData.itemDefinitions[itemId]?.name[lang] || itemId;
+        const getItemDisplay = (itemId, quantity) => {
+            const itemDef = weeklyData.itemDefinitions[itemId];
+            if (!itemDef) return itemId;
+
+            const name = itemDef.name[lang] || itemId;
+            const icon = itemDef.icon ? `<img src="assets/items/${itemDef.icon}.png" class="reward-icon">` : '';
+            return `<span class="reward-item">${icon}${name} x${quantity}</span>`;
+        };
 
         let contentHTML = `
             <div class="details-header">
@@ -634,7 +641,7 @@ const UI = {
             }
 
             eventData.stages.forEach((stage, index) => {
-                const elementalIcons = stage.elementalWeakness.map(el => 
+                const elementalIcons = stage.elementalWeakness.map(el =>
                     `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="element-icon" alt="${el}">`
                 ).join('');
 
@@ -656,7 +663,7 @@ const UI = {
                                     </div>
                                     <div class="stage-rewards">`;
                 stage.completionRewards.forEach(rewardTier => {
-                    const rewardsText = rewardTier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
+                    const rewardsText = rewardTier.rewards.map(r => getItemDisplay(r.itemId, r.quantity)).join(', ');
                     contentHTML += `<p><strong>${langData.eventRankHeader} ${rewardTier.stageLevel}:</strong> ${rewardsText}</p>`;
                 });
                 contentHTML += `</div></div>`;
@@ -685,7 +692,7 @@ const UI = {
                 </div>
                 <p class="details-summary">${boss.description[lang]}</p>
             </div>`;
-            
+
             if (boss.recommendedHeroes && boss.recommendedHeroes.description) {
                 contentHTML += `<div class="details-section">
                                     <h3>${langData.weeklyRecommendedHeroes}</h3>
@@ -736,11 +743,11 @@ const UI = {
                 });
                 contentHTML += `</div>`;
             }
-            
+
             if (boss.scoreRewards) {
                 contentHTML += `<div class="details-section"><h3>${langData.weeklyScoreRewardsTitle}</h3><table class="details-table"><tbody>`;
                 boss.scoreRewards.forEach(tier => {
-                    const rewardsText = tier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
+                    const rewardsText = tier.rewards.map(r => getItemDisplay(r.itemId, r.quantity)).join(', ');
                     contentHTML += `<tr><td>${tier.scoreThreshold.toLocaleString()} Pts</td><td>${rewardsText}</td></tr>`;
                 });
                 contentHTML += `</tbody></table></div>`;
@@ -755,7 +762,7 @@ const UI = {
             }
 
             if (eventData.nextBoss) {
-                 contentHTML += `<div class="details-section"><h3>${langData.weeklyNextBoss}</h3>
+                contentHTML += `<div class="details-section"><h3>${langData.weeklyNextBoss}</h3>
                     <div class="buff-item">
                         <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
                         <div>

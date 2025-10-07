@@ -1571,6 +1571,16 @@ select.settings-input option {
     margin: 0 0 10px 0;
 }
 
+.reward-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    vertical-align: middle;
+}
+.reward-icon {
+    width: 20px;
+    height: 20px;
+}
 
 /* --- 3.10. Botón Flotante (FAB) de Twitch --- */
 #twitch-fab {
