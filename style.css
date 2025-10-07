@@ -873,16 +873,16 @@ input:checked+.slider:before {
     color: var(--color-primary);
 }
 
-
 /* --- 3.8.1. Modal de Héroe --- */
 #hero-modal-overlay {
     background-color: rgba(0, 0, 0, 0.85);
-    cursor: pointer;
+    cursor: default;
 }
 
 #hero-modal-content {
+    position: relative; 
     max-width: 450px;
-    max-height: 85vh;
+    max-height: 95vh; 
     padding: 10px;
     text-align: center;
     cursor: default;
@@ -893,20 +893,93 @@ input:checked+.slider:before {
     transition: border-color 0.3s ease;
 }
 
+/* --- REDISEÑO DE BOTONES DE NAVEGACIÓN Y CIERRE --- */
+#hero-modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+#hero-modal-close-btn:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+#hero-modal-close-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.hero-modal-nav-btn {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(20, 20, 20, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: none; 
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+.hero-modal-nav-btn.visible {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-modal-nav-btn:hover {
+    opacity: 1;
+    background-color: rgba(20, 20, 20, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.05);
+}
+.hero-modal-nav-btn svg {
+    width: 28px;
+    height: 28px;
+}
+.hero-modal-nav-btn.prev {
+    left: 15px;
+}
+.hero-modal-nav-btn.next {
+    right: 15px;
+}
+
+
 #hero-modal-image {
     display: block;
     width: auto; height: auto;
     max-width: 100%;
-    max-height: calc(85vh - 120px);
+    max-height: calc(95vh - 220px); 
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 #hero-modal-info {
     margin-top: 15px;
-    padding: 15px;
+    padding: 10px 15px;
     border-radius: 8px;
     transition: background-color 0.3s ease;
+}
+
+#hero-modal-tag {
+    color: var(--color-normal);
+    font-size: 1em;
+    margin: 0 0 8px 0;
+    font-weight: bold;
+    display: none;
+}
+#hero-modal-tag.visible {
+    display: block;
 }
 
 #hero-modal-name {
@@ -930,19 +1003,39 @@ input:checked+.slider:before {
     gap: 8px;
 }
 
-.hero-modal-details img {
-    width: 28px;
-    height: 28px;
-    filter: none;
-}
+.hero-modal-details img { width: 28px; height: 28px; filter: none; }
+#hero-modal-element-icon { width: 32px; height: 32px; }
+.hero-modal-details span { font-weight: bold; }
 
-#hero-modal-element-icon {
-    width: 32px;
-    height: 32px;
+#hero-modal-previews {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap; 
 }
-
-.hero-modal-details span {
-    font-weight: bold;
+.hero-preview-item {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.hero-preview-item:hover {
+    transform: scale(1.1);
+}
+.hero-preview-item.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary);
+}
+.hero-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* --- 3.8.2. Modal de Información y 'Acerca de' --- */

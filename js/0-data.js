@@ -265,7 +265,7 @@ const DEFAULT_CONFIG = {
     ],
     banner: [
         { element: "fire", heroes: "Poharan, Sansu, Yunma Fei", startDate: "2025-09-25", endDate: "2025-10-14" },
-        { element: "dark", heroes: "", startDate: "2025-10-14", endDate: "" },
+        { element: "water", heroes: "", startDate: "2025-10-14", endDate: "" },
     ],
     displayTimezone: getSystemTimezoneOffset(),
     preAlertMinutes: [15, 5, 1],
@@ -275,7 +275,7 @@ const DEFAULT_CONFIG = {
     showdownTicketSync: null,
     use24HourFormat: false,
 
-    streams: [
+    streams: [ /*
         {
             id: "halloween_milo_2025",
             name: "CM Milo",
@@ -289,5 +289,5 @@ const DEFAULT_CONFIG = {
             streamTimeUTC: "2025-10-07T18:00:00Z",
             durationHours: 2
         }
-    ]
+     */ ]
 };

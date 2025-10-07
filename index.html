@@ -200,10 +200,29 @@
         </div>
     </div>
 
-    <div id="hero-modal-overlay">
+<div id="hero-modal-overlay">
         <div id="hero-modal-content">
+            <!-- BOTÓN DE CERRAR CON SVG -->
+            <button id="hero-modal-close-btn" class="modal-close-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <!-- BOTONES DE NAVEGACIÓN CON SVG -->
+            <button id="hero-modal-prev-btn" class="hero-modal-nav-btn prev">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+            </button>
+            <button id="hero-modal-next-btn" class="hero-modal-nav-btn next">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </button>
+
             <img id="hero-modal-image" src="" alt="Hero Image">
             <div id="hero-modal-info">
+                <h4 id="hero-modal-tag"></h4>
                 <h3 id="hero-modal-name"></h3>
                 <div class="hero-modal-details">
                     <div>
@@ -215,6 +234,7 @@
                         <span id="hero-modal-role"></span>
                     </div>
                 </div>
+                <div id="hero-modal-previews"></div>
             </div>
         </div>
     </div>

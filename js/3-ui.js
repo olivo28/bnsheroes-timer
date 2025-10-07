@@ -174,7 +174,7 @@ const UI = {
         let activeEventCount = 0;
         
         config.events.forEach(event => {
-            const endDate = Logic.getAbsoluteDateWithCustomDate(event.endDate, config.dailyResetTime, -4);
+            const endDate = Logic.getAbsoluteDateWithCustomDate(event.endDate, config.dailyResetTime);
             if (now > endDate) return;
             
             activeEventCount++;
@@ -246,12 +246,12 @@ const UI = {
 
         const activeBanner = config.banner.find(b => {
             if (!b.startDate || !b.endDate) return false;
-            const start = Logic.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime, -4);
-            const end = Logic.getAbsoluteDateWithCustomDate(b.endDate, config.dailyResetTime, -4);
+            const start = Logic.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime);
+            const end = Logic.getAbsoluteDateWithCustomDate(b.endDate, config.dailyResetTime);
             return now >= start && now <= end;
         });
 
-        const futureBanners = config.banner.filter(b => b.startDate && Logic.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime, -4) > now).sort((a,b) => new Date(a.startDate) - new Date(b.startDate));
+        const futureBanners = config.banner.filter(b => b.startDate && Logic.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime) > now).sort((a,b) => new Date(a.startDate) - new Date(b.startDate));
         const nextBanner = futureBanners[0];
         
         const createBannerHTML = (banner, type) => {
@@ -260,8 +260,8 @@ const UI = {
             
             if (banner && ( (type === 'active' && banner.endDate) || (type === 'next' && banner.startDate) )) {
                 const targetDate = type === 'active' 
-                    ? Logic.getAbsoluteDateWithCustomDate(banner.endDate, config.dailyResetTime, -4)
-                    : Logic.getAbsoluteDateWithCustomDate(banner.startDate, config.dailyResetTime, -4);
+                    ? Logic.getAbsoluteDateWithCustomDate(banner.endDate, config.dailyResetTime)
+                    : Logic.getAbsoluteDateWithCustomDate(banner.startDate, config.dailyResetTime);
 
                 const secondsLeft = Math.floor((targetDate - now) / 1000);
                 
@@ -335,7 +335,6 @@ const UI = {
 
         const upcomingStreams = config.streams
             .map(stream => ({ ...stream, date: new Date(stream.streamTimeUTC) }))
-            // Mantenemos streams en la lista hasta 2h después de que terminen para mostrar el modal
             .filter(stream => {
                 const durationMs = (stream.durationHours || 2) * 3600 * 1000;
                 const endTime = stream.date.getTime() + durationMs;
@@ -343,30 +342,25 @@ const UI = {
             })
             .sort((a, b) => a.date - b.date);
 
-        // Primero, removemos todos los estados para empezar de cero en cada ciclo.
         App.dom.twitchFab.classList.remove('alert-active', 'live-active');
 
         if (upcomingStreams.length > 0) {
             App.dom.twitchFab.classList.add('visible');
             this.renderStreamsModal(upcomingStreams, now);
 
-            // Buscamos si hay algún stream actualmente en vivo
             const liveStream = upcomingStreams.find(stream => {
                 const startTime = stream.date.getTime();
-                const durationMs = (stream.durationHours || 2) * 3600 * 1000; // Asumir 2h si no está definido
+                const durationMs = (stream.durationHours || 2) * 3600 * 1000;
                 const endTime = startTime + durationMs;
                 return now.getTime() >= startTime && now.getTime() < endTime;
             });
 
             if (liveStream) {
-                // Si hay un stream en vivo, activamos el pulso rojo
                 App.dom.twitchFab.classList.add('live-active');
             } else {
-                // Si no hay ninguno en vivo, comprobamos si el próximo está por empezar
                 const nextStream = upcomingStreams.find(s => s.date > now);
                 if (nextStream) {
                     const secondsLeft = Math.floor((nextStream.date.getTime() - now.getTime()) / 1000);
-                    // Muestra la alerta amarilla si falta 1 hora o menos
                     if (secondsLeft <= 3600 && secondsLeft > 0) {
                         App.dom.twitchFab.classList.add('alert-active');
                     }
@@ -437,6 +431,28 @@ const UI = {
             return;
         }
 
+        const eventConfig = App.state.config.events.find(e => e.id === eventId);
+        let periodString = '';
+        if (eventConfig) {
+            const { DateTime } = luxon;
+            const { startDate, endDate } = eventConfig;
+            const time = App.state.config.dailyResetTime;
+            const refTz = App.state.config.referenceTimezone;
+
+            const startDt = DateTime.fromISO(startDate).setLocale(lang);
+            const endDt = DateTime.fromISO(endDate).setLocale(lang);
+
+            const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
+
+            const timeObj = DateTime.fromISO(`2000-01-01T${time}`);
+            const formattedTime = timeObj.toFormat('h:mm a');
+
+            const refTzOffset = DateTime.now().setZone(refTz).toFormat('ZZ');
+            const refTzAbbr = `(UTC${refTzOffset.replace(':00','')})`;
+
+            periodString = `${datePart}, ${formattedTime} ${refTzAbbr}`;
+        }
+
         const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
 
         const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
@@ -496,7 +512,7 @@ const UI = {
             <div class="details-header">
                 <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
                 <h2>${eventData.name[lang]}</h2>
-                <p>${eventData.period}</p>
+                <p>${periodString}</p>
             </div>
             <div class="details-content">
                 <p class="details-summary">${eventData.summary[lang]}</p>
@@ -580,7 +596,6 @@ const UI = {
         App.dom.eventDetailsPanel.classList.add('visible');
         App.dom.eventDetailsPanel.dataset.renderedLang = lang;
         App.state.currentOpenEventId = eventId;
-        // --- AÑADIDO: Bloquea el scroll del fondo en móvil ---
         if (App.state.isMobile) {
             document.body.classList.add('no-scroll');
         }
@@ -590,7 +605,6 @@ const UI = {
     closeEventDetailsPanel: function() {
         App.dom.eventDetailsPanel.classList.remove('visible');
         App.state.currentOpenEventId = null;
-        // --- AÑADIDO: Desbloquea el scroll del fondo en móvil ---
         if (App.state.isMobile) {
             document.body.classList.remove('no-scroll');
         }
@@ -773,7 +787,6 @@ const UI = {
         App.dom.weeklyDetailsPanel.classList.add('visible');
         App.dom.weeklyDetailsPanel.dataset.renderedLang = lang;
         App.state.currentOpenWeeklyId = weeklyId;
-        // --- AÑADIDO: Bloquea el scroll del fondo en móvil ---
         if (App.state.isMobile) {
             document.body.classList.add('no-scroll');
         }
@@ -783,7 +796,6 @@ const UI = {
     closeWeeklyDetailsPanel: function() {
         App.dom.weeklyDetailsPanel.classList.remove('visible');
         App.state.currentOpenWeeklyId = null;
-        // --- AÑADIDO: Desbloquea el scroll del fondo en móvil ---
         if (App.state.isMobile) {
             document.body.classList.remove('no-scroll');
         }
@@ -859,45 +871,105 @@ const UI = {
     /** Cierra el modal "Acerca de". */
     closeAboutModal: function() { App.dom.aboutModalOverlay.classList.remove('visible'); },
 
-    /** Abre el modal con detalles de un héroe. */
-    openHeroModal: function(heroData) {
+    /**
+     * Abre el modal con detalles de un héroe y configura el contexto de navegación.
+     * @param {object} heroData - Los datos del héroe a mostrar.
+     * @param {Array<object>} [contextHeroes=[]] - Array de objetos {name, tag} para navegación.
+     * @param {number} [index=-1] - El índice del héroe actual en el array de contexto.
+     */
+    openHeroModal: function(heroData, contextHeroes = [], index = -1) {
         if (!heroData) return;
+
+        App.state.heroModalContext.heroes = contextHeroes;
+        App.state.heroModalContext.currentIndex = index;
+
+        App.dom.heroModalPreviews.innerHTML = '';
+        if (contextHeroes.length > 1) {
+            App.dom.heroModalPrevBtn.classList.add('visible');
+            App.dom.heroModalNextBtn.classList.add('visible');
+
+            contextHeroes.forEach((heroContext, i) => {
+                const hero = Logic.findHeroByName(heroContext.name);
+                if (hero) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'hero-preview-item';
+                    if (i === index) {
+                        previewDiv.classList.add('active');
+                    }
+                    previewDiv.dataset.heroName = hero.game_name;
+                    previewDiv.innerHTML = `<img src="assets/heroes_icon/${hero.short_image}" alt="${hero.game_name}">`;
+                    App.dom.heroModalPreviews.appendChild(previewDiv);
+                }
+            });
+        } else {
+            App.dom.heroModalPrevBtn.classList.remove('visible');
+            App.dom.heroModalNextBtn.classList.remove('visible');
+        }
+        
+        const currentHeroContext = contextHeroes[index] || {};
+        if (currentHeroContext.tag) {
+            App.dom.heroModalTag.textContent = currentHeroContext.tag;
+            App.dom.heroModalTag.classList.add('visible');
+        } else {
+            App.dom.heroModalTag.classList.remove('visible');
+        }
+
         const lang = I18N_STRINGS[App.state.config.currentLanguage];
-    
         const elementColorVar = `--color-${heroData.element || 'default'}-role`;
         const elementColor = getComputedStyle(document.documentElement).getPropertyValue(elementColorVar).trim();
         App.dom.heroModalContent.style.borderColor = elementColor || 'var(--border-color)';
-    
         const rarityBgColorVar = `--rarity${heroData.rarity}-modal-bg`;
         App.dom.heroModalInfo.style.backgroundColor = `var(${rarityBgColorVar})`;
-    
-        if (heroData.rarity === 1) {
-            App.dom.heroModalName.style.color = 'var(--color-exalted-gold)';
-        } else {
-            App.dom.heroModalName.style.color = ''; 
-        }
-
+        if (heroData.rarity === 1) { App.dom.heroModalName.style.color = 'var(--color-exalted-gold)'; } else { App.dom.heroModalName.style.color = ''; }
         App.dom.heroModalImage.src = `assets/heroes_full/${heroData.long_image}`;
         App.dom.heroModalName.textContent = heroData.game_name;
-        
         const rarityKey = `rarity${heroData.rarity}`;
         App.dom.heroModalRarity.textContent = lang[rarityKey] || `Rarity ${heroData.rarity}`;
         App.dom.heroModalRarity.className = `rarity-text-${heroData.rarity}`;
-
         const roleKey = `role${heroData.role.charAt(0).toUpperCase() + heroData.role.slice(1)}`;
         App.dom.heroModalRole.textContent = lang[roleKey] || heroData.role;
-
         App.dom.heroModalElementIcon.src = `assets/elements/${heroData.element}_icon.png`;
         App.dom.heroModalElementIcon.alt = heroData.element;
         App.dom.heroModalRoleIcon.src = `assets/roles/${heroData.role}_icon.png`;
-        App.dom.heroModalRoleIcon.className = "role-icon"
-
+        App.dom.heroModalRoleIcon.className = "role-icon";
         App.dom.heroModalOverlay.classList.add('visible');
     },
 
-    /** Cierra el modal del héroe. */
-    closeHeroModal: function() { App.dom.heroModalOverlay.classList.remove('visible'); },
+    /** Cierra el modal del héroe y resetea el contexto. */
+    closeHeroModal: function() {
+        App.dom.heroModalOverlay.classList.remove('visible');
+        App.state.heroModalContext = { heroes: [], currentIndex: -1 };
+    },
 
+    /**
+     * Navega al héroe anterior o siguiente en el modal.
+     * @param {string|number} instruction - 'next', 'prev', o un índice numérico directo.
+     */
+    navigateHeroModal: function(instruction) {
+        const context = App.state.heroModalContext;
+        if (!context.heroes || context.heroes.length <= 1) return;
+
+        let newIndex;
+
+        if (typeof instruction === 'string') {
+            const direction = instruction === 'next' ? 1 : -1;
+            newIndex = (context.currentIndex + direction + context.heroes.length) % context.heroes.length;
+        } else if (typeof instruction === 'number') {
+            newIndex = instruction;
+        } else {
+            return;
+        }
+        
+        if (newIndex === context.currentIndex) return;
+        
+        const nextHeroContext = context.heroes[newIndex];
+        const nextHeroData = Logic.findHeroByName(nextHeroContext.name);
+
+        if (nextHeroData) {
+            this.openHeroModal(nextHeroData, context.heroes, newIndex);
+        }
+    },
+    
     /**
      * Actualiza todos los textos de la UI al idioma seleccionado.
      */

@@ -16,7 +16,11 @@ const App = {
         weeklyResetsData: null,
         currentOpenEventId: null,
         currentOpenWeeklyId: null,
-        swiper: null
+        swiper: null,
+        heroModalContext: {
+            heroes: [],      // Lista de nombres de héroes en el contexto actual
+            currentIndex: -1 // Índice del héroe que se está mostrando
+        }
     },
     
     // Referencias a elementos del DOM. Se inicializan como null y se pueblan después.
@@ -76,6 +80,11 @@ const App = {
         // --- NUEVAS REFERENCIAS AÑADIDAS ---
         heroModalContent: null,
         heroModalInfo: null,
+        heroModalCloseBtn: null,
+        heroModalPrevBtn: null,
+        heroModalNextBtn: null,
+        heroModalTag: null,
+        heroModalPreviews: null,
     },
     
     // Otros recursos globales
@@ -144,5 +153,10 @@ const App = {
         // --- NUEVAS REFERENCIAS AÑADIDAS ---
         this.dom.heroModalContent = document.getElementById('hero-modal-content');
         this.dom.heroModalInfo = document.getElementById('hero-modal-info');
+        this.dom.heroModalCloseBtn = document.getElementById('hero-modal-close-btn');
+        this.dom.heroModalPrevBtn = document.getElementById('hero-modal-prev-btn');
+        this.dom.heroModalNextBtn = document.getElementById('hero-modal-next-btn');
+        this.dom.heroModalTag = document.getElementById('hero-modal-tag');
+        this.dom.heroModalPreviews = document.getElementById('hero-modal-previews');
     }
 };

@@ -148,14 +148,56 @@
         // --- INICIO: LÓGICA DE CLIC EN HÉROES (REFACTORIZADA) ---
         function handleHeroClick(e) {
             const heroWrapper = e.target.closest('.banner-hero-img-container');
-            if (heroWrapper && heroWrapper.dataset.heroName) {
-                const hero = Logic.findHeroByName(heroWrapper.dataset.heroName);
-                UI.openHeroModal(hero);
+            if (!heroWrapper || !heroWrapper.dataset.heroName) return;
+
+            const clickedHeroName = heroWrapper.dataset.heroName;
+            const heroData = Logic.findHeroByName(clickedHeroName);
+            if (!heroData) return;
+
+            let contextHeroes = []; // Ahora será un array de objetos {name, tag}
+
+            const weeklyContext = heroWrapper.closest('.weekly-recommended-heroes');
+            const bannerContext = heroWrapper.closest('.banner-heroes');
+
+            if (weeklyContext) {
+                // Lógica para agrupar TODOS los héroes recomendados
+                const allTagGroups = weeklyContext.querySelectorAll('.weekly-recommended-heroes-tag-group');
+                allTagGroups.forEach(group => {
+                    const tag = group.querySelector('.weekly-recommended-heroes-tag').textContent;
+                    const heroesInGroup = group.querySelectorAll('.banner-hero-img-container[data-hero-name]');
+                    heroesInGroup.forEach(heroEl => {
+                        contextHeroes.push({ name: heroEl.dataset.heroName, tag: tag });
+                    });
+                });
+            } else if (bannerContext) {
+                // Lógica original para banners (sin tags)
+                const allHeroElements = bannerContext.querySelectorAll('.banner-hero-img-container[data-hero-name]');
+                allHeroElements.forEach(el => {
+                    contextHeroes.push({ name: el.dataset.heroName, tag: null });
+                });
             }
+
+            const currentIndex = contextHeroes.findIndex(h => h.name === clickedHeroName);
+            UI.openHeroModal(heroData, contextHeroes, currentIndex);
         }
         
         if (App.dom.bannersContainer) {
             App.dom.bannersContainer.addEventListener('click', handleHeroClick);
+        }
+        
+        function handleDetailsPanelClick(e) {
+            if (e.target.closest('.close-details-btn')) {
+                UI.closeEventDetailsPanel();
+                UI.closeWeeklyDetailsPanel();
+            }
+            handleHeroClick(e);
+        }
+        
+        if (App.dom.eventDetailsPanel) {
+            App.dom.eventDetailsPanel.addEventListener('click', handleDetailsPanelClick);
+        }
+        if (App.dom.weeklyDetailsPanel) {
+            App.dom.weeklyDetailsPanel.addEventListener('click', handleDetailsPanelClick);
         }
         
         // Listener para el panel de detalles de evento (semanal y normal)
@@ -212,7 +254,51 @@
         App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === App.dom.infoModalOverlay) UI.closeInfoModal(); });
         App.dom.syncModalOverlay.addEventListener('click', e => { if (e.target === App.dom.syncModalOverlay) UI.closeSyncModal(); });
         App.dom.aboutModalOverlay.addEventListener('click', e => { if (e.target === App.dom.aboutModalOverlay) UI.closeAboutModal(); });
-        App.dom.heroModalOverlay.addEventListener('click', () => UI.closeHeroModal());
+        
+        // El overlay del modal de héroe ya no cierra el modal.
+        App.dom.heroModalOverlay.addEventListener('click', (e) => {
+            // Prevenimos que el clic en el overlay se propague al contenido
+            if (e.target === App.dom.heroModalOverlay) {
+                // No hacemos nada, el modal permanece abierto
+            }
+        });
+        // Evitamos que el clic en el contenido del modal lo cierre (ya que antes el overlay lo hacía)
+        document.getElementById('hero-modal-content').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // --- AÑADIMOS NUEVOS LISTENERS PARA EL MODAL DE HÉROE ---
+        App.dom.heroModalCloseBtn.addEventListener('click', () => UI.closeHeroModal());
+        
+        // Usamos strings para eliminar la ambigüedad
+        App.dom.heroModalPrevBtn.addEventListener('click', () => UI.navigateHeroModal('prev'));
+        App.dom.heroModalNextBtn.addEventListener('click', () => UI.navigateHeroModal('next'));
+
+        // Listener para clics en los iconos de preview
+        App.dom.heroModalPreviews.addEventListener('click', (e) => {
+            const previewItem = e.target.closest('.hero-preview-item');
+            if (previewItem && previewItem.dataset.heroName) {
+                const heroName = previewItem.dataset.heroName;
+                const newIndex = App.state.heroModalContext.heroes.findIndex(h => h.name === heroName);
+                if (newIndex !== -1) {
+                    UI.navigateHeroModal(newIndex); // Pasamos el índice numérico
+                }
+            }
+        });
+
+        // Listener para teclas
+        window.addEventListener('keydown', (e) => {
+            if (!App.dom.heroModalOverlay.classList.contains('visible')) return;
+            
+            if (e.key === 'Escape') {
+                UI.closeHeroModal();
+            } else if (e.key === 'ArrowRight') {
+                // Usamos strings para eliminar la ambigüedad
+                UI.navigateHeroModal('next');
+            } else if (e.key === 'ArrowLeft') {
+                UI.navigateHeroModal('prev');
+            }
+        });
 
         // Listeners para el botón flotante y modal de streams
         App.dom.twitchFab.addEventListener('click', () => {

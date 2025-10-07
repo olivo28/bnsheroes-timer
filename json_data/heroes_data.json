@@ -323,8 +323,8 @@
     },
     {
         "asset_name": "hongsam",
-        "game_name": "",
-        "rarity": 0,
+        "game_name": "Hansu",
+        "rarity": 2,
         "available": false,
         "short_image": "hongsam_a_fm.png",
         "long_image": "full_illust_hero_hongsam_base.png",
@@ -379,8 +379,8 @@
     },
     {
         "asset_name": "jinsoa",
-        "game_name": "",
-        "rarity": 0,
+        "game_name": "Soha",
+        "rarity": 2,
         "available": false,
         "short_image": "jinsoa_a_gm.png",
         "long_image": "full_illust_hero_jinsoa_base.png",
