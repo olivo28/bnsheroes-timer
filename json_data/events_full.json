@@ -7,67 +7,67 @@
       },
       "divine_gem_bundle": {
         "name": { "en": "Divine Gem Bundle", "es": "Paquete de Gemas Divinas" },
-        "icon": "item_gem_100"
+        "icon": "item_dum_view_cash"
       },
       "refined_secret_art_chest": {
         "name": { "en": "Refined Secret Art Chest", "es": "Cofre de Arte Secreto Refinado" },
-        "icon": "item_box_secret_art_refined"
+        "icon": "item_box_hero_fskill_book"
       },
       "common_refined_sagittarius_aries_chest_i": {
         "name": { "en": "Common-Refined Sagittarius, Aries Chest I", "es": "Cofre Común-Refinado de Sagitario y Aries I" },
-        "icon": "item_box_constellation_refined"
+        "icon": "item_box_unsuk_red"
       },
       "refined_divine_idol_chest": {
         "name": { "en": "Refined Divine Idol Chest", "es": "Cofre de Ídolo Divino Refinado" },
-        "icon": "item_box_idol_refined"
+        "icon": "item_box_reward_iron_03"
       },
       "fruit_of_potential_chest_i": {
         "name": { "en": "Fruit of Potential Chest I", "es": "Cofre de Fruta del Potencial I" },
-        "icon": "item_box_potential_fruit"
+        "icon": "shoppackage_box_package_product_dark_s2"
       },
       "common_sagittarius_aries_chest_i": {
         "name": { "en": "Common Sagittarius, Aries Chest I", "es": "Cofre Común de Sagitario y Aries I" },
-        "icon": "item_box_constellation_common"
+        "icon": "item_box_unsuk_red"
       },
       "handcrafted_licorice_pill": {
         "name": { "en": "Handcrafted Licorice Pill", "es": "Píldora de Regaliz Hecha a Mano" },
-        "icon": "item_potion_licorice"
+        "icon": "item_questicon_collect_smallpill"
       },
       "strong_ginseng_tea": {
         "name": { "en": "Strong Ginseng Tea", "es": "Té de Ginseng Fuerte" },
-        "icon": "item_potion_ginseng_tea"
+        "icon": "item_battle_buff_att_tea_01"
       },
       "limited_name_card_clash": {
         "name": { "en": "Limited Name Card: Clash with the Stalker Jiangshi", "es": "Tarjeta de Nombre Limitada: Enfrentamiento con el Stalker Jiangshi" },
-        "icon": "item_cosmetic_name_card"
+        "icon": "item_house_card_field_boss_event_01"
       },
       "title_jiangshi_slayer": {
         "name": { "en": "Title: Jiangshi Slayer", "es": "Título: Asesino de Jiangshi" },
-        "icon": "item_title_icon"
+        "icon": "item_repute_common"
       },
       "gold_coin_pouch": {
         "name": { "en": "Gold Coin Pouch", "es": "Bolsa de Monedas de Oro" },
-        "icon": "item_pouch_gold"
+        "icon": "item_gold_coins"
       },
       "common_sagittarius_chest_i": {
         "name": { "en": "Common Sagittarius Chest I", "es": "Cofre Común de Sagitario I" },
-        "icon": "item_box_constellation_common"
+        "icon": "item_box_unsuk_red"
       },
       "common_refined_earthen_meteorite_chest_i": {
         "name": { "en": "Common-Refined Earthen Meteorite Chest I", "es": "Cofre Común-Refinado de Meteorito Terrestre I" },
-        "icon": "item_box_meteorite_refined"
+        "icon": "item_box_unsuk_red"
       },
       "entry_ticket_supply_chest": {
         "name": { "en": "Entry Ticket Supply Chest", "es": "Cofre de Suministro de Boletos de Entrada" },
-        "icon": "item_box_ticket_supply"
+        "icon": "item_box_package_product_white_s2_01"
       },
       "scarlet_bloom_yunma_fei_outfit": {
         "name": { "en": "Scarlet Bloom Yunma Fei's Outfit", "es": "Atuendo de Yunma Fei Flor Escarlata" },
-        "icon": "item_cosmetic_outfit"
+        "icon": "item_cos_shop_bm_trend_gunmahye_01"
       },
       "scarlet_bloom_yunma_fei_weapon": {
         "name": { "en": "Scarlet Bloom Yunma Fei's Weapon", "es": "Arma de Yunma Fei Flor Escarlata" },
-        "icon": "item_cosmetic_weapon"
+        "icon": "item_weapon_shop_bm_trend_gunmahye_01"
       }
     },
     "events": {
@@ -80,32 +80,32 @@
           "ranking_rewards": {
             "base_on_participation": {
               "description": { "en": "Guaranteed reward for all participants who damage the boss.", "es": "Recompensa garantizada para todos los participantes que dañen al jefe." },
-              "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 1 } ]
+              "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 1, "rank": "Common" } ]
             },
             "bonus_by_rank": [
-              { "tier_name": { "en": "First Place", "es": "Primer Lugar" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 6 } ] },
-              { "tier_name": { "en": "Second Place", "es": "Segundo Lugar" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 5 } ] },
-              { "tier_name": { "en": "Third Place", "es": "Tercer Lugar" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 4 } ] },
-              { "tier_name": { "en": "Rank 4-7", "es": "Rango 4-7" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 3 } ] },
-              { "tier_name": { "en": "Rank 8-10", "es": "Rango 8-10" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 2 } ] },
-              { "tier_name": { "en": "Rank 11-50", "es": "Rango 11-50" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 1 } ] }
+              { "tier_name": { "en": "First Place", "es": "Primer Lugar" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 6, "rank": "Common" } ] },
+              { "tier_name": { "en": "Second Place", "es": "Segundo Lugar" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 5, "rank": "Common" } ] },
+              { "tier_name": { "en": "Third Place", "es": "Tercer Lugar" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 4, "rank": "Common" } ] },
+              { "tier_name": { "en": "Rank 4-7", "es": "Rango 4-7" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 3, "rank": "Common" } ] },
+              { "tier_name": { "en": "Rank 8-10", "es": "Rango 8-10" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 2, "rank": "Common" } ] },
+              { "tier_name": { "en": "Rank 11-50", "es": "Rango 11-50" }, "rewards": [ { "itemId": "wheel_of_fate_ticket", "quantity": 1, "rank": "Common" } ] }
             ]
           }
         },
         "rewards": {
           "wheel_of_fate": [
-            { "itemId": "divine_gem_bundle", "quantity": 100 },
-            { "itemId": "refined_secret_art_chest", "quantity": 1 },
-            { "itemId": "common_refined_sagittarius_aries_chest_i", "quantity": 1 },
-            { "itemId": "refined_divine_idol_chest", "quantity": 3 },
-            { "itemId": "fruit_of_potential_chest_i", "quantity": 5 },
-            { "itemId": "common_sagittarius_aries_chest_i", "quantity": 1 },
-            { "itemId": "handcrafted_licorice_pill", "quantity": 1 },
-            { "itemId": "strong_ginseng_tea", "quantity": 1 }
+            { "itemId": "divine_gem_bundle", "quantity": 1, "rank": "Legendary", "probability": 1.0 },
+            { "itemId": "refined_secret_art_chest", "quantity": 1, "rank": "Uncommon", "probability": 2.0 },
+            { "itemId": "common_refined_sagittarius_aries_chest_i", "quantity": 1, "rank": "Uncommon", "probability": 5.0 },
+            { "itemId": "refined_divine_idol_chest", "quantity": 3, "rank": "Uncommon", "probability": 10.0 },
+            { "itemId": "fruit_of_potential_chest_i", "quantity": 5, "rank": "Rare", "probability": 11.0 },
+            { "itemId": "common_sagittarius_aries_chest_i", "quantity": 1, "rank": "Uncommon", "probability": 15.0 },
+            { "itemId": "handcrafted_licorice_pill", "quantity": 3, "rank": "Rare", "probability": 28.0 },
+            { "itemId": "strong_ginseng_tea", "quantity": 3, "rank": "Rare", "probability": 28.0 }
           ],
           "cumulative_spins": [
-            { "condition": { "en": "Spin 15 times", "es": "Girar 15 veces" }, "itemId": "limited_name_card_clash", "quantity": 1 },
-            { "condition": { "en": "Spin 30 times", "es": "Girar 30 veces" }, "itemId": "title_jiangshi_slayer", "quantity": 1 }
+            { "condition": { "en": "Spin 15 times", "es": "Girar 15 veces" }, "itemId": "limited_name_card_clash", "quantity": 1, "rank": "Legendary" },
+            { "condition": { "en": "Spin 30 times", "es": "Girar 30 veces" }, "itemId": "title_jiangshi_slayer", "quantity": 1, "rank": "Legendary" }
           ]
         }
       },
@@ -114,15 +114,20 @@
         "period": "September 30 - October 14, 6:30 PM (UTC-4)",
         "summary": { "en": "Complete daily missions to earn points. Use 10 points to claim a random reward...", "es": "Completa misiones diarias para ganar puntos..." },
         "missions": [
-          { "description": { "en": "Complete Request", "es": "Completar Solicitud" }, "points": 5 },
-          { "description": { "en": "Play Bounty Hunt", "es": "Jugar Caza de Recompensas" }, "points": 5 }
-        ],
+        { "description": { "en": "Complete Request", "es": "Completar Solicitud" }, "points": 5 },
+        { "description": { "en": "Play Bounty Hunt", "es": "Jugar Caza de Recompensas" }, "points": 5 },
+        { "description": { "en": "Use Underground Dungeon", "es": "Usar Mazmorra Subterránea" }, "points": 5 },
+        { "description": { "en": "Play Showdown", "es": "Jugar Enfrentamiento" }, "points": 5 },
+        { "description": { "en": "Clear Boss Trial (Solo)", "es": "Superar Prueba de Jefe (Solo)" }, "points": 10 },
+        { "description": { "en": "Clear Boss Trial (Party)", "es": "Superar Prueba de Jefe (Grupo)" }, "points": 10 },
+        { "description": { "en": "Clear Mind Training", "es": "Superar Entrenamiento Mental" }, "points": 5 }
+      ],
         "rewards": {
           "reward_pool": [
-            { "itemId": "gold_coin_pouch", "quantity": 2 },
-            { "itemId": "common_sagittarius_chest_i", "quantity": 1 },
-            { "itemId": "common_sagittarius_aries_chest_i", "quantity": 1 },
-            { "itemId": "common_refined_earthen_meteorite_chest_i", "quantity": 1 }
+            { "itemId": "common_refined_earthen_meteorite_chest_i", "quantity": 1, "rank": "Uncommon", "probability": 1.0 },
+            { "itemId": "common_sagittarius_aries_chest_i", "quantity": 1, "rank": "Common", "probability": 19.0 },
+            { "itemId": "common_sagittarius_chest_i", "quantity": 1, "rank": "Common", "probability": 20.0 },
+            { "itemId": "gold_coin_pouch", "quantity": 2, "rank": "Uncommon", "probability": 60.0 }
           ]
         }
       },
@@ -131,11 +136,11 @@
         "period": "September 30 - October 14, 6:30 PM (UTC-4)",
         "summary": { "en": "Complete a series of unique dungeon missions to earn specific rewards...", "es": "Completa una serie de misiones de mazmorra únicas..." },
         "missions_and_rewards": [
-          { "mission": { "en": "Clear Pot Dog Donmanja – Normal Mode", "es": "Superar Pot Dog Donmanja – Modo Normal" }, "itemId": "entry_ticket_supply_chest", "quantity": 1 },
-          { "mission": { "en": "Clear Pot Dog Donmanja – Hard Mode", "es": "Superar Pot Dog Donmanja – Modo Difícil" }, "itemId": "scarlet_bloom_yunma_fei_outfit", "quantity": 1 },
-          { "mission": { "en": "Clear Baribari – Normal Mode", "es": "Superar Baribari – Modo Normal" }, "itemId": "entry_ticket_supply_chest", "quantity": 1 },
-          { "mission": { "en": "Clear Baribari – Hard Mode", "es": "Superar Baribari – Modo Difícil" }, "itemId": "scarlet_bloom_yunma_fei_weapon", "quantity": 1 },
-          { "mission": { "en": "Complete all missions", "es": "Completar todas las misiones" }, "itemId": "entry_ticket_supply_chest", "quantity": 1 }
+          { "mission": { "en": "Clear Pot Dog Donmanja – Normal Mode", "es": "Superar Pot Dog Donmanja – Modo Normal" }, "itemId": "entry_ticket_supply_chest", "quantity": 1, "rank": "Rare" },
+          { "mission": { "en": "Clear Pot Dog Donmanja – Hard Mode", "es": "Superar Pot Dog Donmanja – Modo Difícil" }, "itemId": "scarlet_bloom_yunma_fei_outfit", "quantity": 1, "rank": "Epic" },
+          { "mission": { "en": "Clear Baribari – Normal Mode", "es": "Superar Baribari – Modo Normal" }, "itemId": "entry_ticket_supply_chest", "quantity": 1, "rank": "Rare" },
+          { "mission": { "en": "Clear Baribari – Hard Mode", "es": "Superar Baribari – Modo Difícil" }, "itemId": "scarlet_bloom_yunma_fei_weapon", "quantity": 1, "rank": "Epic" },
+          { "mission": { "en": "Complete all missions", "es": "Completar todas las misiones" }, "itemId": "entry_ticket_supply_chest", "quantity": 1, "rank": "Rare" }
         ]
       }
     }

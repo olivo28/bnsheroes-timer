@@ -249,11 +249,13 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 50
+                                        "quantity": 50,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 5
+                                        "quantity": 5,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             },
@@ -262,15 +264,18 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 80
+                                        "quantity": 80,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 5
+                                        "quantity": 5,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_leather",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             },
@@ -279,19 +284,23 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 100
+                                        "quantity": 100,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 10
+                                        "quantity": 10,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_bookshelf",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_leather",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             }
@@ -334,15 +343,18 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 150
+                                        "quantity": 150,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 15
+                                        "quantity": 15,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_leather",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             },
@@ -351,19 +363,23 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 180
+                                        "quantity": 180,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 15
+                                        "quantity": 15,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_leather",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_bookshelf",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             },
@@ -372,19 +388,23 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 200
+                                        "quantity": 200,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 20
+                                        "quantity": 20,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_bookshelf",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_sacred_ultimate_skill_book_chest",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             }
@@ -426,19 +446,23 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 300
+                                        "quantity": 300,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 20
+                                        "quantity": 20,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_leather",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_bookshelf",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             },
@@ -447,19 +471,23 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 350
+                                        "quantity": 350,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 20
+                                        "quantity": 20,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_leather",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_sacred_ultimate_skill_book_chest",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             },
@@ -468,19 +496,23 @@
                                 "rewards": [
                                     {
                                         "itemId": "poharan_trial_token",
-                                        "quantity": 400
+                                        "quantity": 400,
+                                        "rank": "Common"
                                     },
                                     {
                                         "itemId": "choice_refined_potential_fruit_chest",
-                                        "quantity": 30
+                                        "quantity": 30,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_type_skill_book_chest_bookshelf",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     },
                                     {
                                         "itemId": "choice_refined_sacred_ultimate_skill_book_chest",
-                                        "quantity": 1
+                                        "quantity": 1,
+                                        "rank": "Uncommon"
                                     }
                                 ]
                             }
@@ -661,7 +693,8 @@
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
-                                    "quantity": 200
+                                    "quantity": 200,
+                                    "rank": "Common"
                                 }
                             ]
                         },
@@ -670,7 +703,8 @@
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
-                                    "quantity": 300
+                                    "quantity": 300,
+                                    "rank": "Common"
                                 }
                             ]
                         },
@@ -679,7 +713,8 @@
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
-                                    "quantity": 500
+                                    "quantity": 500,
+                                    "rank": "Common"
                                 }
                             ]
                         },
@@ -688,7 +723,8 @@
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
-                                    "quantity": 1000
+                                    "quantity": 1000,
+                                    "rank": "Common"
                                 }
                             ]
                         }

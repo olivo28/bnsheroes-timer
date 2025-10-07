@@ -429,7 +429,7 @@ const UI = {
      * Abre y rellena el panel de detalles de un evento.
      * @param {string} eventId - El ID del evento a mostrar.
      */
-openEventDetailsPanel: function(eventId) {
+    openEventDetailsPanel: function(eventId) {
         this.closeWeeklyDetailsPanel();
         const lang = App.state.config.currentLanguage;
         const langData = I18N_STRINGS[lang];
@@ -440,30 +440,64 @@ openEventDetailsPanel: function(eventId) {
             return;
         }
 
-        const getItemDisplay = (itemId, quantity) => {
-            const itemDef = App.state.allEventsData.itemDefinitions[itemId];
-            const name = itemDef?.name[lang] || itemId;
-            const icon = itemDef?.icon ? `<img src="assets/items/${itemDef.icon}.png" class="reward-icon">` : '';
-            return `<span class="reward-item">${icon}${name} x${quantity}</span>`;
-        };
+        const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
 
-        const getItemGridDisplay = (itemId, quantity) => {
+        const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
             const itemDef = App.state.allEventsData.itemDefinitions[itemId];
-            if (!itemDef || !itemDef.icon) return ''; // No renderizar si no hay ícono
-            
+            if (!itemDef || !itemDef.icon) return '';
             const name = itemDef.name[lang] || itemId;
             const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
-            return `<div class="reward-grid-item ${sizeClass}" title="${name} x${quantity}">
-                        <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
-                        <span class="reward-quantity">${quantity}</span>
+            const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
+            let probabilityHTML = (probability !== null && !isNaN(probability)) ? `<span class="reward-probability">${probability.toFixed(1)}%</span>` : '';
+            return `<div class="reward-item-wrapper" title="${name} x${quantity}">
+                        ${probabilityHTML}
+                        <div class="reward-grid-item ${sizeClass}${rankClass}">
+                            <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                            <span class="reward-quantity">${quantity}</span>
+                        </div>
+                    </div>`;
+        };
+        
+        const generateRewardTextList = (rewards) => {
+            if (!rewards || rewards.length === 0) return '';
+            let listHTML = '<ul class="details-reward-list">';
+            rewards.forEach(r => {
+                const itemDef = App.state.allEventsData.itemDefinitions[r.itemId];
+                if (!itemDef) return;
+                const name = itemDef.name[lang] || r.itemId;
+                const rarityClass = getRarityClass(r.rank);
+                let probClass = 'prob-common';
+                if (r.probability !== null) {
+                    if (r.probability <= 1) probClass = 'prob-legendary';
+                    else if (r.probability <= 5) probClass = 'prob-epic';
+                    else if (r.probability <= 20) probClass = 'prob-rare';
+                    else if (r.probability <= 50) probClass = 'prob-uncommon';
+                }
+                const probText = r.probability !== null ? `${r.probability.toFixed(1)}%` : '';
+                listHTML += `<li class="details-reward-list-item">
+                                <span class="reward-name-part ${rarityClass}">${name}</span>
+                                <span class="reward-quantity-part">x${r.quantity}</span>
+                                <span class="reward-prob-part ${probClass}">${probText}</span>
+                             </li>`;
+            });
+            return listHTML + '</ul>';
+        };
+        
+        const getMinimalistRewardHTML = (itemId, quantity, rank) => {
+            const itemDef = App.state.allEventsData.itemDefinitions[itemId];
+            if (!itemDef) return `<span>${itemId} x${quantity}</span>`;
+            const name = itemDef.name[lang] || itemId;
+            const icon = itemDef.icon ? `<img src="assets/items/${itemDef.icon}.png" class="minimalist-reward-icon">` : '';
+            const rarityClass = getRarityClass(rank);
+            return `<div class="minimalist-reward-item">
+                        ${icon}
+                        <span class="minimalist-reward-name ${rarityClass}">${name} x${quantity}</span>
                     </div>`;
         };
 
         let contentHTML = `
             <div class="details-header">
-                <div class="close-details-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </div>
+                <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
                 <h2>${eventData.name[lang]}</h2>
                 <p>${eventData.period}</p>
             </div>
@@ -472,7 +506,7 @@ openEventDetailsPanel: function(eventId) {
         `;
 
         if (eventData.missions) {
-            contentHTML += `<div class="details-section"><h3>${langData.eventMissionsTitle}</h3><table class="details-table"><tbody>`;
+            contentHTML += `<div class="details-section"><h3>${langData.eventMissionsTitle}</h3><table class="details-table missions-table"><tbody>`;
             eventData.missions.forEach(m => {
                 contentHTML += `<tr><td>${m.description[lang]}</td><td>+${m.points} ${langData.pointsSuffix}</td></tr>`;
             });
@@ -482,7 +516,7 @@ openEventDetailsPanel: function(eventId) {
         if (eventData.missions_and_rewards) {
              contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3><table class="details-table"><tbody>`;
              eventData.missions_and_rewards.forEach(m => {
-                 contentHTML += `<tr><td>${m.mission[lang]}</td><td>${getItemDisplay(m.itemId, m.quantity)}</td></tr>`;
+                contentHTML += `<tr><td>${m.mission[lang]}</td><td>${getMinimalistRewardHTML(m.itemId, m.quantity, m.rank)}</td></tr>`;
              });
              contentHTML += `</tbody></table></div>`;
         }
@@ -491,15 +525,18 @@ openEventDetailsPanel: function(eventId) {
             contentHTML += `<div class="details-section"><h3>${langData.eventBossRankingRewardsTitle}</h3>`;
             const participation = eventData.boss_details.ranking_rewards.base_on_participation;
             if (participation) {
-                const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity)).join('');
-                contentHTML += `<div class="participation-reward"><strong>${langData.eventParticipationRewardTitle}</strong><span>${participation.description[lang]}</span><div class="reward-grid">${rewardsGrid}</div></div>`;
+                const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
+                contentHTML += `<div class="participation-reward">
+                                    <div class="reward-grid">${rewardsGrid}</div>
+                                    <div class="participation-reward-text"><strong>${langData.eventParticipationRewardTitle}</strong><span>${participation.description[lang]}</span></div>
+                                </div>`;
             }
             const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
             if (ranking) {
                 contentHTML += `<table class="details-table"><thead><tr><th>${langData.eventRankHeader}</th><th>${langData.eventRewardHeader}</th></tr></thead><tbody>`;
                 ranking.forEach(r => {
-                    const rewardsGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity)).join('');
-                    contentHTML += `<tr><td>${r.tier_name[lang]}</td><td><div class="reward-grid">${rewardsGrid}</div></td></tr>`;
+                    const rewardItem = r.rewards[0];
+                    contentHTML += `<tr><td>${r.tier_name[lang]}</td><td>${getMinimalistRewardHTML(rewardItem.itemId, rewardItem.quantity, rewardItem.rank || 'Common')}</td></tr>`;
                 });
                 contentHTML += `</tbody></table>`;
             }
@@ -507,33 +544,35 @@ openEventDetailsPanel: function(eventId) {
         }
         
         if (eventData.rewards && eventData.rewards.wheel_of_fate) {
-            contentHTML += `<div class="details-section"><h3>${langData.eventWheelRewardsTitle}</h3><ul class="details-list">`;
-            eventData.rewards.wheel_of_fate.forEach(r => {
-                const name = App.state.allEventsData.itemDefinitions[r.itemId]?.name[lang] || r.itemId;
-                contentHTML += `<li><span>${name}</span><span>x${r.quantity}</span></li>`;
-            });
-            contentHTML += `</ul></div>`;
+            contentHTML += `<div class="details-section"><h3>${langData.eventWheelRewardsTitle}</h3>`;
+            const rewards = eventData.rewards.wheel_of_fate;
+            const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
+            contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
+            contentHTML += generateRewardTextList(rewards);
+            contentHTML += `</div>`;
         }
 
-         if (eventData.rewards && eventData.rewards.cumulative_spins) {
-            contentHTML += `<div class="details-section"><h3>${langData.eventCumulativeRewardsTitle}</h3><table class="details-table"><tbody>`;
+        if (eventData.rewards && eventData.rewards.cumulative_spins) {
+            contentHTML += `<div class="details-section"><h3>${langData.eventCumulativeRewardsTitle}</h3>`;
             eventData.rewards.cumulative_spins.forEach(r => {
-                const name = App.state.allEventsData.itemDefinitions[r.itemId]?.name[lang] || r.itemId;
-                contentHTML += `<tr><td>${r.condition[lang]}</td><td>${name}</td></tr>`;
+                contentHTML += `<div class="cumulative-reward-item">
+                                  <span class="cumulative-reward-condition">${r.condition[lang]}</span>
+                                  ${getMinimalistRewardHTML(r.itemId, r.quantity, r.rank)}
+                                </div>`;
             });
-            contentHTML += `</tbody></table></div>`;
+            contentHTML += `</div>`;
         }
 
         if (eventData.rewards && eventData.rewards.reward_pool) {
-            contentHTML += `<div class="details-section"><h3>${langData.eventPossibleRewardsTitle}</h3><ul class="details-list">`;
-            eventData.rewards.reward_pool.forEach(r => {
-                 const name = App.state.allEventsData.itemDefinitions[r.itemId]?.name[lang] || r.itemId;
-                contentHTML += `<li><span>${name}</span><span>x${r.quantity}</span></li>`;
-            });
-            contentHTML += `</ul></div>`;
+            contentHTML += `<div class="details-section"><h3>${langData.eventPossibleRewardsTitle}</h3>`;
+            const rewards = eventData.rewards.reward_pool;
+            const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
+            contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
+            contentHTML += generateRewardTextList(rewards);
+            contentHTML += `</div>`;
         }
 
-        contentHTML += `</div>`; // Close details-content
+        contentHTML += `</div>`;
         App.dom.eventDetailsPanel.innerHTML = contentHTML;
         App.dom.eventDetailsPanel.classList.add('visible');
         App.dom.eventDetailsPanel.dataset.renderedLang = lang;
@@ -562,25 +601,23 @@ openEventDetailsPanel: function(eventId) {
             return;
         }
 
-        const getItemDisplay = (itemId, quantity) => {
+        const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
+
+        const getWeeklyItemGridDisplay = (itemId, quantity, rank = 'Common') => {
             const itemDef = weeklyData.itemDefinitions[itemId];
-            if (!itemDef) return `<span>${itemId} x${quantity}</span>`;
-
+            if (!itemDef || !itemDef.icon) return '';
             const name = itemDef.name[lang] || itemId;
-            const icon = itemDef.icon ? `assets/items/${itemDef.icon}.png` : '';
+            const rankClass = `rank-${rank.toLowerCase()}`;
             const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
-
-            return `<div class="reward-grid-item ${sizeClass}" title="${name} x${quantity}">
-                        <img src="${icon}" class="reward-icon" alt="${name}">
-                        <span class="reward-quantity">${quantity}</span>
+            return `<div class="weekly-reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
+                        <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon" alt="${name}">
+                        <span class="weekly-reward-quantity">${quantity}</span>
                     </div>`;
         };
 
         let contentHTML = `
             <div class="details-header">
-                <div class="close-details-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </div>
+                <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
                 <h2>${eventData.eventName[lang]}</h2>
                 <p>${eventData.description ? eventData.description[lang] : ''}</p>
             </div>
@@ -590,22 +627,12 @@ openEventDetailsPanel: function(eventId) {
         if (eventData.seasonBuffs) {
             contentHTML += `<div class="details-section"><h3>${langData.weeklySeasonBuffsTitle}</h3>`;
             eventData.seasonBuffs.forEach((buff, index) => {
-                let buffDescription = '';
-                if (buff.description) {
-                    if (Array.isArray(buff.description)) {
-                        buffDescription = buff.description.map(d => d[lang]).join('<br>');
-                    } else {
-                        buffDescription = buff.description[lang];
-                    }
-                }
-                contentHTML += `<div class="buff-item">
+                let buffDescription = buff.description ? (Array.isArray(buff.description) ? buff.description.map(d => d[lang]).join('<br>') : buff.description[lang]) : '';
+                contentHTML += `<div class="weekly-buff-item">
                                   <img src="assets/spells_icons/${buff.icon}.png">
-                                  <div>
-                                    <strong>${buff.name[lang]}</strong>
-                                    <p>${buffDescription}</p>
-                                  </div>
+                                  <div><strong>${buff.name[lang]}</strong><p>${buffDescription}</p></div>
                                 </div>`;
-                if (index < eventData.seasonBuffs.length - 1) contentHTML += '<hr class="buff-separator">';
+                if (index < eventData.seasonBuffs.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
             });
             contentHTML += `</div>`;
         }
@@ -613,14 +640,11 @@ openEventDetailsPanel: function(eventId) {
         if (eventData.chosenBuffs) {
             contentHTML += `<div class="details-section"><h3>${langData.weeklyChosenBuffsTitle}</h3>`;
             eventData.chosenBuffs.forEach((buff, index) => {
-                contentHTML += `<div class="buff-item">
+                contentHTML += `<div class="weekly-buff-item">
                                   <img src="assets/spells_icons/${buff.icon}.png">
-                                  <div>
-                                    <strong>${buff.name[lang]}</strong>
-                                    <p>${buff.description[lang]}</p>
-                                  </div>
+                                  <div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div>
                                 </div>`;
-                if (index < eventData.chosenBuffs.length - 1) contentHTML += '<hr class="buff-separator">';
+                if (index < eventData.chosenBuffs.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
             });
             contentHTML += `</div>`;
         }
@@ -628,37 +652,24 @@ openEventDetailsPanel: function(eventId) {
         if (eventData.stages) {
             contentHTML += `<div class="details-section"><h3>${langData.weeklyStagesTitle}</h3>`;
             if (eventData.stages[0].recommendedHeroes) {
-                const rh = eventData.stages[0].recommendedHeroes;
-                contentHTML += `<div class="recommendation-box"><p>${rh.description[lang]}</p></div>`;
+                contentHTML += `<div class="weekly-recommendation-box"><p>${eventData.stages[0].recommendedHeroes.description[lang]}</p></div>`;
             }
             eventData.stages.forEach((stage, index) => {
-                const elementalIcons = stage.elementalWeakness.map(el => `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="element-icon" alt="${el}">`).join('');
-                contentHTML += `<div class="stage-item">
-                                    <h4 class="stage-title">${stage.stageName[lang]}</h4>
-                                    <div class="stage-info-grid">
-                                        <div class="stage-info-item">
-                                            <span class="stage-info-label">${langData.weeklyCombatPower}</span>
-                                            <div class="stage-info-value"><img src="assets/combat_power.png" class="combat-power-icon" /> ${stage.recommendedPower}</div>
-                                        </div>
-                                        <div class="stage-info-item">
-                                            <span class="stage-info-label">${langData.weeklyTimeLimit}</span>
-                                            <div class="stage-info-value">🕒 ${stage.timeLimit[lang]}</div>
-                                        </div>
-                                        <div class="stage-info-item">
-                                            <span class="stage-info-label">${langData.weeklyWeakness}</span>
-                                            <div class="stage-info-value elemental-weakness">${elementalIcons}</div>
-                                        </div>
+                const elementalIcons = stage.elementalWeakness.map(el => `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="weekly-element-icon" alt="${el}">`).join('');
+                contentHTML += `<div class="weekly-stage-item">
+                                    <h4 class="weekly-stage-title">${stage.stageName[lang]}</h4>
+                                    <div class="weekly-stage-info-grid">
+                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${langData.weeklyCombatPower}</span><div class="weekly-stage-info-value"><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${stage.recommendedPower}</div></div>
+                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${langData.weeklyTimeLimit}</span><div class="weekly-stage-info-value">🕒 ${stage.timeLimit[lang]}</div></div>
+                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${langData.weeklyWeakness}</span><div class="weekly-stage-info-value weekly-elemental-weakness">${elementalIcons}</div></div>
                                     </div>
-                                    <div class="stage-rewards">`;
+                                    <div class="weekly-stage-rewards">`;
                 stage.completionRewards.forEach(rewardTier => {
-                    const rewardsGrid = rewardTier.rewards.map(r => getItemDisplay(r.itemId, r.quantity)).join('');
-                    contentHTML += `<div class="reward-tier">
-                                        <p><strong>${langData.eventRankHeader} ${rewardTier.stageLevel}:</strong></p>
-                                        <div class="reward-grid">${rewardsGrid}</div>
-                                    </div>`;
+                    const rewardsGrid = rewardTier.rewards.map(r => getWeeklyItemGridDisplay(r.itemId, r.quantity, r.rank)).join('');
+                    contentHTML += `<div class="weekly-reward-tier"><p><strong class="rarity-text-rare">${langData.eventRankHeader} ${rewardTier.stageLevel}:</strong></p><div class="weekly-reward-grid">${rewardsGrid}</div></div>`;
                 });
                 contentHTML += `</div></div>`;
-                if (index < eventData.stages.length - 1) contentHTML += '<hr class="buff-separator">';
+                if (index < eventData.stages.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
             });
             contentHTML += `</div>`;
         }
@@ -666,52 +677,27 @@ openEventDetailsPanel: function(eventId) {
         if (eventData.currentBoss) {
             const boss = eventData.currentBoss;
             contentHTML += `<div class="details-section"><h3>${langData.weeklyBossInfoTitle}</h3>
-                <div class="boss-info-header">
+                <div class="weekly-boss-info-header">
                     <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
-                    <div class="boss-info-details">
-                        <h4>${boss.name[lang]}</h4>
-                         <div class="stage-info-grid">
-                            <div class="stage-info-item">
-                                <span class="stage-info-label">${langData.weeklyTimeLimit}</span>
-                                <div class="stage-info-value">🕒 ${boss.turnLimit} Turns</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${langData.weeklyTimeLimit}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
                 </div>
                 <p class="details-summary">${boss.description[lang]}</p>
             </div>`;
             
             if (boss.recommendedHeroes && boss.recommendedHeroes.description) {
-                contentHTML += `<div class="details-section">
-                                    <h3>${langData.weeklyRecommendedHeroes}</h3>
-                                    <div class="recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
+                contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${langData.weeklyRecommendedHeroes}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
                 if (boss.recommendedHeroes.heroesByTag) {
-                    contentHTML += '<div class="recommended-heroes-container">';
                     boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
-                        contentHTML += `<div class="recommended-heroes-tag-group">
-                                          <h5 class="recommended-heroes-tag">#${tagGroup.tag[lang]}</h5>
-                                          <div class="banner-heroes">`;
+                        contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
                         tagGroup.heroList.forEach(hero => {
                             const heroData = Logic.findHeroByName(hero.name);
                             if (heroData) {
-                                const shortImg = `assets/heroes_icon/${heroData.short_image}`;
                                 const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
-                                contentHTML += `
-                                    <div class="banner-hero-wrapper">
-                                        <div class="banner-hero-img-container" data-hero-name="${heroData.game_name}">
-                                            <div class="banner-hero-img rarity-${heroData.rarity}">
-                                                <img src="${shortImg}" alt="${heroData.game_name}">
-                                            </div>
-                                            ${roleIcon}
-                                        </div>
-                                        <span class="banner-hero-name">${heroData.game_name}</span>
-                                    </div>
-                                `;
+                                contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
                             }
                         });
                         contentHTML += `</div></div>`;
                     });
-                    contentHTML += '</div>';
                 }
                 contentHTML += `</div>`;
             }
@@ -719,13 +705,13 @@ openEventDetailsPanel: function(eventId) {
             if (boss.difficultyTiers) {
                 contentHTML += `<div class="details-section"><h3>${langData.weeklyModifiersTitle}</h3>`;
                 Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
-                    contentHTML += `<div class="difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
+                    contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
                     data.modifiers.forEach(mod => {
-                        contentHTML += `<div class="modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
+                        contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
                     });
-                    contentHTML += `<table class="details-table progression-table">`;
+                    contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
                     data.progression.forEach(prog => {
-                        contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
+                        contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
                     });
                     contentHTML += `</table></div>`;
                 });
@@ -733,36 +719,45 @@ openEventDetailsPanel: function(eventId) {
             }
             
             if (boss.scoreRewards) {
-                contentHTML += `<div class="details-section"><h3>${langData.weeklyScoreRewardsTitle}</h3><table class="details-table"><tbody>`;
+                contentHTML += `<div class="details-section"><h3>${langData.weeklyScoreRewardsTitle}</h3><div class="weekly-score-rewards-grid">`;
                 boss.scoreRewards.forEach(tier => {
-                    const rewardsGrid = tier.rewards.map(r => getItemDisplay(r.itemId, r.quantity)).join('');
-                    contentHTML += `<tr><td>${tier.scoreThreshold.toLocaleString()} Pts</td><td><div class="reward-grid">${rewardsGrid}</div></td></tr>`;
+                    const rewardItem = tier.rewards[0];
+                    const itemDef = weeklyData.itemDefinitions[rewardItem.itemId];
+                    const rank = rewardItem.rank || 'Common';
+                    const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
+                    
+                    const iconHTML = itemDef?.icon 
+                        ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}">
+                               <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon">
+                               <span class="weekly-reward-quantity">${rewardItem.quantity}</span>
+                           </div>`
+                        : '';
+
+                    contentHTML += `<div class="weekly-score-reward-column">
+                                      <span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>
+                                      ${iconHTML}
+                                    </div>`;
                 });
-                contentHTML += `</tbody></table></div>`;
+                contentHTML += `</div></div>`;
             }
 
             if (boss.tips && boss.tips.length > 0) {
-                contentHTML += `<div class="details-section"><h3>${langData.weeklyTipsTitle}</h3><ul class="details-list-bullet">`;
-                boss.tips.forEach(tip => {
-                    contentHTML += `<li>${tip[lang]}</li>`;
-                });
+                contentHTML += `<div class="details-section"><h3>${langData.weeklyTipsTitle}</h3><ul class="weekly-tips-list">`;
+                boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
                 contentHTML += `</ul></div>`;
             }
 
             if (eventData.nextBoss) {
                  contentHTML += `<div class="details-section"><h3>${langData.weeklyNextBoss}</h3>
-                    <div class="buff-item">
+                    <div class="weekly-buff-item">
                         <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
-                        <div>
-                            <strong>${eventData.nextBoss.name[lang]}</strong>
-                            <p>${eventData.nextBoss.description[lang]}</p>
-                        </div>
+                        <div><strong>${eventData.nextBoss.name[lang]}</strong><p>${eventData.nextBoss.description[lang]}</p></div>
                     </div>
                  </div>`;
             }
         }
         
-        contentHTML += `</div>`; // Close details-content
+        contentHTML += `</div>`;
         App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
         App.dom.weeklyDetailsPanel.classList.add('visible');
         App.dom.weeklyDetailsPanel.dataset.renderedLang = lang;

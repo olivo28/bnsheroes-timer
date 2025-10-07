@@ -1272,7 +1272,6 @@ select.settings-input option {
     color: var(--color-primary);
     font-size: 1.5em;
     padding-right: 40px;
-
 }
 
 .details-header p {
@@ -1329,8 +1328,9 @@ select.settings-input option {
 .details-table th,
 .details-table td {
     text-align: left;
-    padding: 8px 5px;
+    padding: 10px 5px;
     border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
 }
 
 .details-table th {
@@ -1340,166 +1340,81 @@ select.settings-input option {
 
 .details-table td:last-child {
     text-align: right;
+    color: var(--text-color);
+}
+
+.missions-table td:last-child {
     color: var(--color-warning);
+    font-weight: bold;
 }
 
-.details-table tr:last-child td,
-.details-list li:last-child {
+.details-table tr:last-child td {
     border-bottom: none;
-}
-
-.details-list {
-    font-size: 0.9em;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.details-list li {
-    padding: 8px 5px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-}
-
-.details-list-bullet {
-    font-size: 0.9em;
-    color: var(--text-muted-color);
-    padding-left: 20px;
-    line-height: 1.6;
 }
 
 .participation-reward {
     font-size: 0.9em;
     background-color: rgba(255, 255, 255, 0.04);
-    padding: 10px 12px;
-    border-radius: 6px;
+    padding: 12px 15px;
+    border-radius: 8px;
     margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.participation-reward .reward-grid {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.participation-reward-text {
     color: var(--text-muted-color);
     line-height: 1.5;
 }
 
-.participation-reward strong {
+.participation-reward-text strong {
     color: var(--text-color);
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
-.participation-reward span strong {
-    display: inline;
-    color: var(--color-warning);
-}
-
-.participation-reward .reward-grid {
-    margin-top: 10px;
-}
-
-.buff-item {
+/* --- NUEVO: Estilo para items de Recompensa Acumulativa --- */
+.cumulative-reward-item {
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 12px 15px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 15px;
-    font-size: 0.9em;
+    margin-bottom: 10px; /* Espacio entre cada caja de recompensa */
 }
-.buff-item img {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-}
-.buff-item strong {
-    color: var(--text-color);
-    font-weight: bold;
-}
-.buff-item p {
-    color: var(--text-muted-color);
-    margin: 5px 0 0 0;
-    font-size: 0.9em;
-}
-
-.buff-separator {
-    border: none;
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 15px 0;
-}
-
-.recommendation-box {
-    background-color: rgba(64, 196, 255, 0.1);
-    border-left: 3px solid var(--color-normal);
-    padding: 12px 15px;
-    margin: 15px 0;
-    font-size: 0.9em;
-    color: #cceeff;
-}
-.recommendation-box p {
-    margin: 0;
-}
-
-.stage-item {
-    padding: 0;
-    background-color: transparent;
+.cumulative-reward-item:last-child {
     margin-bottom: 0;
 }
-.stage-title {
-    margin: 0 0 10px 0;
-    color: var(--text-color);
-    font-size: 1.2em;
-}
-.stage-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 15px;
-    background-color: rgba(255, 255, 255, 0.04);
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-.stage-info-item {
-    text-align: center;
-}
-.stage-info-label {
-    font-size: 0.75em;
-    color: var(--text-muted-color);
-    display: block;
-    margin-bottom: 5px;
-}
-.stage-info-value {
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.combat-power-icon {
-    width: 16px;
-    height: 16px;
-}
-.elemental-weakness {
-    display: flex;
-    gap: 4px;
-}
-.element-icon {
-    width: 25px;
-    height: 25px;
-}
-.stage-rewards p {
-    font-size: 0.9em;
-    margin: 8px 0;
+.cumulative-reward-condition {
+    flex-basis: 30%; /* Da un espacio fijo a la condición */
     color: var(--text-muted-color);
 }
-.stage-rewards p strong {
-    color: var(--color-normal);
-}
-.reward-tier {
-    margin-bottom: 10px;
-}
-.reward-grid,
-.event-reward-grid {
+
+.reward-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 8px;
+    justify-content: center;
 }
+
+.reward-item-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+}
+
 .reward-grid-item {
     position: relative;
     width: 64px;
@@ -1509,7 +1424,7 @@ select.settings-input option {
     border: 1px solid var(--border-color);
 }
 .reward-grid-item.double-width {
-    width: 136px; /* 64*2 + 8 */
+    width: 136px;
 }
 .reward-grid-item .reward-icon {
     width: 100%;
@@ -1524,109 +1439,324 @@ select.settings-input option {
     font-size: 1.1em;
     font-weight: bold;
     color: white;
-    text-shadow: 
-        -1px -1px 0 #000,  
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000,
-         0 0 5px rgba(0,0,0,0.8);
-}
-.details-table .reward-grid {
-    justify-content: flex-end;
-}
-.reward-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    vertical-align: middle;
-}
-.reward-icon {
-    width: 20px;
-    height: 20px;
-}
-.details-list-item-fallback {
-    list-style-type: none;
-    padding: 8px 5px;
-    border-bottom: 1px solid var(--border-color);
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 5px rgba(0,0,0,0.8);
 }
 
-.boss-info-header {
+.reward-probability {
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 2px 5px;
+    border-radius: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.details-reward-list {
+    margin-top: 15px;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9em;
+}
+.details-reward-list-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+.details-reward-list-item:last-child {
+    border-bottom: none;
+}
+.reward-name-part {
+    flex-grow: 1; /* Ocupa todo el espacio sobrante */
+}
+.reward-quantity-part {
+    flex-shrink: 0; /* Evita que se encoja */
+    width: 60px;
+    text-align: right;
+    color: var(--text-muted-color);
+}
+.reward-prob-part {
+    flex-shrink: 0; /* Evita que se encoja */
+    width: 70px;
+    text-align: right;
+    font-weight: bold;
+}
+
+/* Colores de Probabilidad */
+.prob-legendary { color: #ff8c00; }
+.prob-epic { color: #9400d3; }
+.prob-rare { color: #4169e1; }
+.prob-uncommon { color: #2e8b57; }
+.prob-common { color: var(--text-muted-color); }
+
+/* Colores de Fondo por Rareza para Recompensas de Evento */
+.reward-grid-item.rank-legendary { background-color: rgba(255, 140, 0, 0.3); border-color: #ff8c00; box-shadow: inset 0 0 12px rgba(255, 165, 0, 0.7); }
+.reward-grid-item.rank-epic { background-color: rgba(148, 0, 211, 0.3); border-color: #9400d3; box-shadow: inset 0 0 12px rgba(153, 50, 204, 0.7); }
+.reward-grid-item.rank-rare { background-color: rgba(65, 105, 225, 0.3); border-color: #4169e1; box-shadow: inset 0 0 12px rgba(100, 149, 237, 0.7); }
+.reward-grid-item.rank-uncommon { background-color: rgba(46, 139, 87, 0.3); border-color: #2e8b57; box-shadow: inset 0 0 12px rgba(60, 179, 113, 0.7); }
+.reward-grid-item.rank-common { background-color: rgba(112, 128, 144, 0.3); border-color: #708090; box-shadow: inset 0 0 12px rgba(119, 136, 153, 0.7); }
+
+/* Estilos para el texto de recompensas minimalista */
+.minimalist-reward-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    vertical-align: middle;
+}
+.minimalist-reward-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+.minimalist-reward-name {
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+/* Colores de texto por RAREZA */
+.rarity-text-legendary { color: #ff8c00; }
+.rarity-text-epic { color: #9400d3; }
+.rarity-text-rare { color: #4169e1; }
+.rarity-text-uncommon { color: #2e8b57; }
+.rarity-text-common { color: var(--text-muted-color); }
+
+/* --- 3.9.1. Panel de Detalles Semanal (Weekly) --- */
+
+.weekly-details-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+.weekly-details-table th,
+.weekly-details-table td {
+    text-align: left;
+    padding: 8px 5px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+.weekly-details-table th {
+    color: var(--text-muted-color);
+    font-weight: normal;
+}
+.weekly-details-table tr:last-child td {
+    border-bottom: none;
+}
+.weekly-details-table td:last-child {
+    text-align: right;
+    color: var(--text-color);
+}
+.weekly-progression-table td:last-child {
+    text-align: right;
+    color: var(--text-color);
+}
+.weekly-progression-table td:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.weekly-buff-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.9em;
+}
+.weekly-buff-item img {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+.weekly-buff-item strong {
+    color: var(--text-color);
+    font-weight: bold;
+}
+.weekly-buff-item p {
+    color: var(--text-muted-color);
+    margin: 5px 0 0 0;
+    font-size: 0.9em;
+}
+
+.weekly-buff-separator {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 15px 0;
+}
+
+.weekly-recommendation-box {
+    background-color: rgba(64, 196, 255, 0.1);
+    border-left: 3px solid var(--color-normal);
+    padding: 12px 15px;
+    margin: 15px 0;
+    font-size: 0.9em;
+    color: #cceeff;
+}
+.weekly-recommendation-box p { margin: 0; }
+
+.weekly-stage-item {
+    padding: 0;
+    background-color: transparent;
+    margin-bottom: 0;
+}
+.weekly-stage-title {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 1.2em;
+}
+.weekly-stage-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.weekly-stage-info-item { text-align: center; }
+.weekly-stage-info-label {
+    font-size: 0.75em;
+    color: var(--text-muted-color);
+    display: block;
+    margin-bottom: 5px;
+}
+.weekly-stage-info-value {
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.weekly-combat-power-icon { width: 16px; height: 16px; }
+.weekly-elemental-weakness { display: flex; gap: 4px; }
+.weekly-element-icon { width: 25px; height: 25px; }
+
+.weekly-stage-rewards p {
+    font-size: 0.9em;
+    margin: 8px 0;
+    color: var(--text-muted-color);
+}
+.weekly-stage-rewards p strong { color: var(--color-normal); }
+
+.weekly-reward-tier { margin-bottom: 10px; }
+.weekly-reward-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.weekly-reward-grid-item {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+.weekly-reward-grid-item .weekly-reward-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.weekly-reward-grid-item .weekly-reward-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 5px rgba(0,0,0,0.8);
+}
+.weekly-reward-grid-item.double-width {
+    width: 136px;
+}
+
+.weekly-reward-grid-item.rank-legendary { background-color: rgba(255, 140, 0, 0.3); border-color: #ff8c00; }
+.weekly-reward-grid-item.rank-epic { background-color: rgba(148, 0, 211, 0.3); border-color: #9400d3; }
+.weekly-reward-grid-item.rank-rare { background-color: rgba(65, 105, 225, 0.3); border-color: #4169e1; }
+.weekly-reward-grid-item.rank-uncommon { background-color: rgba(46, 139, 87, 0.3); border-color: #2e8b57; }
+.weekly-reward-grid-item.rank-common { background-color: rgba(112, 128, 144, 0.3); border-color: #708090; }
+
+.weekly-boss-info-header {
     display: flex;
     align-items: flex-start;
     gap: 15px;
     margin-bottom: 15px;
 }
-.boss-info-header img {
+.weekly-boss-info-header img {
     width: 60px;
     height: 60px;
     border-radius: 50%;
     border: 2px solid var(--border-color);
     flex-shrink: 0;
 }
-.boss-info-details {
-    flex-grow: 1;
-}
-.boss-info-header h4 {
+.weekly-boss-info-header h4 {
     margin: 0 0 10px 0;
     font-size: 1.3em;
     color: var(--color-urgent);
 }
-.recommended-heroes-list {
-    font-size: 0.9em;
-    color: var(--text-muted-color);
-    margin-top: 10px;
-}
-.recommended-heroes-list strong {
-    color: var(--color-normal);
-}
 
-.difficulty-tier {
-    margin-bottom: 20px;
-}
-.difficulty-tier h4 {
-    font-size: 1.3em;
-    color: var(--color-warning);
-    margin: 0 0 10px 0;
-    text-align: center;
-}
-.modifier-item {
-    background-color: rgba(255,255,255,0.04);
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-}
-.modifier-item strong {
-    font-size: 0.9em;
-    color: var(--text-color);
-}
-.modifier-item p {
-    font-size: 0.8em;
-    color: var(--text-muted-color);
-    margin: 4px 0 0 0;
-}
-.progression-table {
-    margin-top: 10px;
-}
-.progression-table td:nth-child(2) {
+.weekly-recommended-heroes-tag-group { margin-bottom: 15px; }
+.weekly-recommended-heroes-tag { font-size: 1em; color: var(--color-normal); margin: 0 0 10px 0; }
+.weekly-recommended-heroes .banner-heroes { justify-content: flex-start; }
+.weekly-recommended-heroes .banner-hero-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.weekly-recommended-heroes .banner-hero-img-container { position: relative; width: 80px; height: 80px; cursor: pointer; }
+.weekly-recommended-heroes .banner-hero-img { width: 100%; height: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); outline: 3px solid transparent; outline-offset: -3px; }
+.weekly-recommended-heroes .banner-hero-name { font-size: 0.8em; color: var(--text-color); font-weight: 700; }
+
+.weekly-difficulty-tier { margin-bottom: 20px; }
+.weekly-difficulty-tier h4 { font-size: 1.3em; color: var(--color-warning); margin: 0 0 10px 0; text-align: center; }
+.weekly-modifier-item { background-color: rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; }
+.weekly-modifier-item strong { font-size: 0.9em; color: var(--text-color); }
+.weekly-modifier-item p { font-size: 0.8em; color: var(--text-muted-color); margin: 4px 0 0 0; }
+
+.weekly-tips-list { font-size: 0.9em; color: var(--text-muted-color); padding-left: 20px; line-height: 1.6; }
+
+/* --- NUEVO: Layout para la cuadrícula de Recompensas por Puntuación --- */
+.weekly-score-rewards-grid {
     display: flex;
+    justify-content: space-around; /* O 'flex-start' si prefieres alineado a la izq */
+    gap: 15px;
+    padding: 10px 0;
+}
+.weekly-score-reward-column {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
 }
-.progression-table td:last-child {
-    text-align: right;
-    color: var(--text-color);
+.weekly-score-reward-points {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--text-muted-color);
 }
+.weekly-score-reward-item {
+    position: relative;
+    width: 64px; /* Icono más grande */
+    height: 64px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+.weekly-score-reward-item.rank-legendary { background-color: rgba(255, 140, 0, 0.3); border-color: #ff8c00; }
+.weekly-score-reward-item.rank-epic { background-color: rgba(148, 0, 211, 0.3); border-color: #9400d3; }
+.weekly-score-reward-item.rank-rare { background-color: rgba(65, 105, 225, 0.3); border-color: #4169e1; }
+.weekly-score-reward-item.rank-uncommon { background-color: rgba(46, 139, 87, 0.3); border-color: #2e8b57; }
+.weekly-score-reward-item.rank-common { background-color: rgba(112, 128, 144, 0.3); border-color: #708090; }
 
-.recommended-heroes-container .banner-heroes {
-    justify-content: flex-start;
+.weekly-score-reward-item .weekly-reward-icon {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
 }
-.recommended-heroes-tag-group {
-    margin-bottom: 15px;
-}
-.recommended-heroes-tag {
-    font-size: 1em;
-    color: var(--color-normal);
-    margin: 0 0 10px 0;
+.weekly-score-reward-item .weekly-reward-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 5px rgba(0,0,0,0.8);
 }
 
 /* --- 3.10. Botón Flotante (FAB) de Twitch --- */
