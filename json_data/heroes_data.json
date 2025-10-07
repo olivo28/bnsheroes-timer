@@ -123,7 +123,7 @@
         "short_image": "docheonpung_a_km.png",
         "long_image": "full_illust_hero_docheonpung_base.png",
         "role": "defender",
-        "element": "water"
+        "element": "typeless"
     },
     {
         "asset_name": "dodanha",

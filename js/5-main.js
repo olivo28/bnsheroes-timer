@@ -145,34 +145,37 @@
             });
         }
 
-        // Listener para cerrar el panel de detalles del evento
-        if(App.dom.eventDetailsPanel) {
-            App.dom.eventDetailsPanel.addEventListener('click', e => {
-                if (e.target.closest('.close-details-btn')) {
-                    UI.closeEventDetailsPanel();
-                }
-            });
+        // --- INICIO: LÓGICA DE CLIC EN HÉROES (REFACTORIZADA) ---
+        function handleHeroClick(e) {
+            const heroWrapper = e.target.closest('.banner-hero-img-container');
+            if (heroWrapper && heroWrapper.dataset.heroName) {
+                const hero = Logic.findHeroByName(heroWrapper.dataset.heroName);
+                UI.openHeroModal(hero);
+            }
         }
-
-        // Listener para cerrar el panel de detalles del evento semanal
-        if(App.dom.weeklyDetailsPanel) {
-            App.dom.weeklyDetailsPanel.addEventListener('click', e => {
-                if (e.target.closest('.close-details-btn')) {
-                    UI.closeWeeklyDetailsPanel();
-                }
-            });
+        
+        if (App.dom.bannersContainer) {
+            App.dom.bannersContainer.addEventListener('click', handleHeroClick);
         }
-
-        // Listener para clics en los héroes de los banners
-        if(App.dom.bannersContainer) {
-            App.dom.bannersContainer.addEventListener('click', e => {
-                const heroWrapper = e.target.closest('.banner-hero-img-container');
-                if (heroWrapper && heroWrapper.dataset.heroName) {
-                    const hero = Logic.findHeroByName(heroWrapper.dataset.heroName);
-                    UI.openHeroModal(hero);
-                }
-            });
+        
+        // Listener para el panel de detalles de evento (semanal y normal)
+        function handleDetailsPanelClick(e) {
+            // Clic en el botón de cerrar
+            if (e.target.closest('.close-details-btn')) {
+                UI.closeEventDetailsPanel();
+                UI.closeWeeklyDetailsPanel();
+            }
+            // Clic en un héroe
+            handleHeroClick(e);
         }
+        
+        if (App.dom.eventDetailsPanel) {
+            App.dom.eventDetailsPanel.addEventListener('click', handleDetailsPanelClick);
+        }
+        if (App.dom.weeklyDetailsPanel) {
+            App.dom.weeklyDetailsPanel.addEventListener('click', handleDetailsPanelClick);
+        }
+        // --- FIN: LÓGICA DE CLIC EN HÉROES ---
         
         // Listeners para botones y controles globales
         App.dom.settingsButton.addEventListener('click', () => UI.openSettingsModal());

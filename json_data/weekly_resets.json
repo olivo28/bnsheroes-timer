@@ -94,9 +94,9 @@
                 { "name": { "en": "Command", "es": "Dirigir" }, "description": { "en": "Enhance Tu Riki's 'Command and Control' Skill", "es": "Mejora la habilidad 'Comando y contro'" }, "points": 1000 }
               ],
               "progression": [
-                { "modifiersSelected": 0, "cumulativeScore": 2000, "recommendedPower": 38000 },
-                { "modifiersSelected": 1, "cumulativeScore": 3000, "recommendedPower": 38000 },
-                { "modifiersSelected": 2, "cumulativeScore": 4000, "recommendedPower": 39000 }
+                { "modifiersSelected": 0, "cumulativeScore": 3000, "recommendedPower": 38000 },
+                { "modifiersSelected": 1, "cumulativeScore": 4000, "recommendedPower": 39000 },
+                { "modifiersSelected": 2, "cumulativeScore": 5000, "recommendedPower": 40000 }
               ]
             },
             "3-star": {
@@ -105,7 +105,7 @@
                 { "name": { "en": "Favorable Treatment", "es": "Trato favorable" }, "description": { "en": "Can't place more than 1 Tactician Hero", "es": "No se puede designar más de un héroe Táctico" }, "points": 2000 }
               ],
               "progression": [
-                { "modifiersSelected": 0, "cumulativeScore": 4000, "recommendedPower": 58000 },
+                { "modifiersSelected": 0, "cumulativeScore": 7000, "recommendedPower": 58000 },
                 { "modifiersSelected": 1, "cumulativeScore": 9000, "recommendedPower": 60000 },
                 { "modifiersSelected": 2, "cumulativeScore": 11000, "recommendedPower": 62000 }
               ]

@@ -81,7 +81,7 @@
     /* Colores por Rareza */
     --rarity1-color: #d500f9; /* Exalted - Morado */
     --rarity2-color: #536dfe; /* Revered - Azul Oscuro */
-    --rarity3-color: #00b0ff; /* Famed - Azul Claro */
+    --rarity3-color: #77bcdc; /* Famed - Azul Claro */
 
     --rarity1-bg-color: rgb(210, 21, 244);
     --rarity2-bg-color: rgb(42 62 177);
@@ -631,19 +631,17 @@ input:checked+.slider:before {
     left: 2px;
     width: 17px;
     height: 17px;
-    border-radius: 50px;
+    border-radius: 50%;
     padding: 1px;
     display: flex;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
-    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.5);
 }
 
 .hero-role-icon img {
-    display: flex;
     width: 16px;
     height: 16px;
-    flex-wrap: nowrap;
 }
 
 /* --- Fondos de Banner por Elemento --- */
@@ -1559,6 +1557,18 @@ select.settings-input option {
 .progression-table td:last-child {
     text-align: right;
     color: var(--text-color);
+}
+
+.recommended-heroes-container .banner-heroes {
+    justify-content: flex-start;
+}
+.recommended-heroes-tag-group {
+    margin-bottom: 15px;
+}
+.recommended-heroes-tag {
+    font-size: 1em;
+    color: var(--color-normal);
+    margin: 0 0 10px 0;
 }
 
 

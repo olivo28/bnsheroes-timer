@@ -688,12 +688,35 @@ const UI = {
             
             if (boss.recommendedHeroes && boss.recommendedHeroes.description) {
                 contentHTML += `<div class="details-section">
+                                    <h3>Héroes Recomendados</h3>
                                     <div class="recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
                 if (boss.recommendedHeroes.heroesByTag) {
+                    contentHTML += '<div class="recommended-heroes-container">';
                     boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
-                        const heroNames = tagGroup.heroList.map(h => h.name).join(', ');
-                        contentHTML += `<p class="recommended-heroes-list"><strong>${tagGroup.tag[lang]}:</strong> ${heroNames}</p>`;
+                        contentHTML += `<div class="recommended-heroes-tag-group">
+                                          <h5 class="recommended-heroes-tag">#${tagGroup.tag[lang]}</h5>
+                                          <div class="banner-heroes">`;
+                        tagGroup.heroList.forEach(hero => {
+                            const heroData = Logic.findHeroByName(hero.name);
+                            if (heroData) {
+                                const shortImg = `assets/heroes_icon/${heroData.short_image}`;
+                                const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
+                                contentHTML += `
+                                    <div class="banner-hero-wrapper">
+                                        <div class="banner-hero-img-container" data-hero-name="${heroData.game_name}">
+                                            <div class="banner-hero-img rarity-${heroData.rarity}">
+                                                <img src="${shortImg}" alt="${heroData.game_name}">
+                                            </div>
+                                            ${roleIcon}
+                                        </div>
+                                        <span class="banner-hero-name">${heroData.game_name}</span>
+                                    </div>
+                                `;
+                            }
+                        });
+                        contentHTML += `</div></div>`;
                     });
+                    contentHTML += '</div>';
                 }
                 contentHTML += `</div>`;
             }
@@ -843,7 +866,6 @@ const UI = {
         if (heroData.rarity === 1) {
             App.dom.heroModalName.style.color = 'var(--color-exalted-gold)';
         } else {
-            // Restablecer al color por defecto para otros héroes
             App.dom.heroModalName.style.color = ''; 
         }
         
