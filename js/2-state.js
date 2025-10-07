@@ -12,8 +12,10 @@ const App = {
         lastResetCycleDay: null,
         allHeroesData: [],
         allEventsData: {},
+        weeklyResetsData: null,
         currentOpenEventId: null,
-        swiper: null // <-- AÑADE ESTA LÍNEA
+        currentOpenWeeklyId: null, // <-- AÑADE ESTA LÍNEA
+        swiper: null
     },
     
     // Referencias a elementos del DOM. Se inicializan como null y se pueblan después.
@@ -24,6 +26,7 @@ const App = {
         primaryTimersContainer: null,
         timersContainer: null,
         eventsContainer: null,
+        weeklyContainer: null, // <-- AÑADE ESTA LÍNEA
         bannersContainer: null,
         statusBar: null,
         modalOverlay: null,
@@ -61,6 +64,7 @@ const App = {
         heroModalElementIcon: null,
         heroModalRoleIcon: null,
         eventDetailsPanel: null,
+        weeklyDetailsPanel: null, // <-- AÑADE ESTA LÍNEA
         twitchFab: null,
         streamsModalOverlay: null,
         streamsModalContent: null,
@@ -86,6 +90,7 @@ const App = {
         this.dom.primaryTimersContainer = document.getElementById('primary-timers-container');
         this.dom.timersContainer = document.getElementById('timers-container');
         this.dom.eventsContainer = document.getElementById('events-container');
+        this.dom.weeklyContainer = document.getElementById('weekly-container');
         this.dom.bannersContainer = document.getElementById('banners-container');
         this.dom.statusBar = document.getElementById('status-bar');
         this.dom.modalOverlay = document.getElementById('modal-overlay');
@@ -123,6 +128,7 @@ const App = {
         this.dom.heroModalElementIcon = document.getElementById('hero-modal-element-icon');
         this.dom.heroModalRoleIcon = document.getElementById('hero-modal-role-icon');
         this.dom.eventDetailsPanel = document.getElementById('event-details-panel');
+        this.dom.weeklyDetailsPanel = document.getElementById('weekly-details-panel');
         
         // AÑADE LAS NUEVAS REFERENCIAS de STREAMS
         this.dom.twitchFab = document.getElementById('twitch-fab');

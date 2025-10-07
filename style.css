@@ -22,7 +22,7 @@
 *      3.3. Barra de Estado (Inferior Izquierda)
 *      3.4. Lista de Spawns (Panel Derecho)
 *      3.5. Banners de Héroes
-*      3.6. Lista de Eventos (Panel Derecho)
+*      3.6. Lista de Eventos y Semanales (Panel Derecho)
 *      3.7. Botones e Iconos Interactivos
 *      3.8. Modales (Estructura General)
 *          3.8.1. Modal de Héroe
@@ -662,13 +662,19 @@ input:checked+.slider:before {
 .banner-bg-dark::before { background: radial-gradient(ellipse, transparent 20%, rgba(171, 71, 188, 0.2) 100%); }
 
 
-/* --- 3.6. Lista de Eventos (Panel Derecho) --- */
-#events-container {
+/* --- 3.6. Lista de Eventos y Semanales (Panel Derecho) --- */
+#events-container,
+#weekly-container {
     padding: 0 18px 10px 18px;
     border-bottom: 1px solid var(--border-color);
 }
 
-.event-item {
+#weekly-container {
+    padding-top: 10px;
+}
+
+.event-item,
+.weekly-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -680,21 +686,36 @@ input:checked+.slider:before {
     border-radius: 6px;
 }
 
-.event-item:not(:last-child) {
+.event-item:not(:last-child),
+.weekly-item:not(:last-child) {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.event-item:hover {
+.event-item:hover,
+.weekly-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-.event-name {
+.event-name,
+.weekly-name {
     color: var(--text-color);
 }
 
-.event-countdown {
+.event-countdown,
+.weekly-countdown {
     color: var(--color-warning);
 }
+
+.weekly-item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.weekly-category {
+    font-size: 0.8em;
+    color: var(--text-muted-color);
+}
+
 
 .event-tip {
     background-color: var(--color-primary);
@@ -1214,7 +1235,8 @@ select.settings-input option {
 
 
 /* --- 3.9. Panel de Detalles de Evento (Lateral Derecho) --- */
-#event-details-panel {
+#event-details-panel,
+#weekly-details-panel {
     background-color: var(--box-bg-color);
     border-radius: 16px;
     border: 1px solid var(--border-color);
@@ -1227,7 +1249,8 @@ select.settings-input option {
     flex-direction: column;
 }
 
-#event-details-panel.visible {
+#event-details-panel.visible,
+#weekly-details-panel.visible {
     width: 450px;
     opacity: 1;
     height: 827px;
@@ -1273,7 +1296,7 @@ select.settings-input option {
 }
 
 .details-content {
-    padding: 0 5px 20px 5px;
+    padding: 0 25px 25px 25px;
     overflow-y: auto;
     flex-grow: 1;
 }
@@ -1334,6 +1357,14 @@ select.settings-input option {
     justify-content: space-between;
 }
 
+.details-list-bullet {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+
 .participation-reward {
     font-size: 0.9em;
     background-color: rgba(255, 255, 255, 0.04);
@@ -1354,6 +1385,65 @@ select.settings-input option {
 .participation-reward span strong {
     display: inline;
     color: var(--color-warning);
+}
+
+.buff-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+.buff-item img {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+.buff-item strong {
+    color: var(--text-color);
+    font-weight: bold;
+}
+.buff-item p {
+    color: var(--text-muted-color);
+    margin: 5px 0 0 0;
+    font-size: 0.9em;
+}
+
+.stage-item {
+    padding: 10px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.04);
+    margin-bottom: 10px;
+}
+.stage-item h4 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+}
+.stage-item p {
+    font-size: 0.85em;
+    margin: 5px 0;
+    color: var(--text-muted-color);
+}
+.stage-item p strong {
+    color: var(--color-normal);
+}
+
+.boss-info-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.boss-info-header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+}
+.boss-info-header h4 {
+    margin: 0;
+    font-size: 1.3em;
+    color: var(--color-urgent);
 }
 
 
@@ -1536,7 +1626,8 @@ select.settings-input option {
     }
 
     /* --- 6.2. Componentes en Móvil --- */
-    #events-container {
+    #events-container,
+    #weekly-container {
         padding: 0 0px 7px 0px;
         border-bottom: 1px solid var(--border-color);
     }
@@ -1591,7 +1682,8 @@ select.settings-input option {
         display: none;
     }
 
-    #event-details-panel {
+    #event-details-panel,
+    #weekly-details-panel {
         position: fixed;
         top: 100%;
         left: 0;
@@ -1602,7 +1694,8 @@ select.settings-input option {
         transition: top 0.4s ease;
     }
 
-    #event-details-panel.visible {
+    #event-details-panel.visible,
+    #weekly-details-panel.visible {
         top: 0;
         width: 100%;
     }

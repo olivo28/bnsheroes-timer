@@ -196,6 +196,36 @@ const Logic = {
     },
 
     /**
+     * Obtiene una lista de todos los timers de reinicio semanal.
+     * @param {Date} now - La fecha y hora actual.
+     * @returns {Array<object>} Una lista de objetos de timers de reinicio semanal.
+     */
+    getWeeklyResetTimers: function(now) {
+        const weeklyData = App.state.weeklyResetsData;
+        if (!weeklyData || !weeklyData.events) {
+            return [];
+        }
+        const lang = App.state.config.currentLanguage;
+    
+        return weeklyData.events
+            .filter(event => event.status && event.status.resetSchedule && event.status.resetSchedule.dayOfWeek)
+            .map(event => {
+                const resetInfo = event.status.resetSchedule;
+                const targetDate = this.getNextWeeklyResetDate(now, resetInfo.dayOfWeek.en, resetInfo.time, -4);
+                
+                return {
+                    type: 'weekly',
+                    id: event.id,
+                    name: event.eventName[lang],
+                    // CORRECCIÓN: Acceso seguro a eventCategory. Si no existe, devuelve una cadena vacía.
+                    category: event.eventCategory ? event.eventCategory[lang] : '',
+                    targetDate: targetDate,
+                    secondsLeft: Math.floor((targetDate - now) / 1000)
+                };
+            }).sort((a, b) => a.secondsLeft - b.secondsLeft);
+    },
+
+    /**
      * Comprueba si deben dispararse alertas y las muestra.
      * @param {Date} now - La fecha y hora actual.
      * @param {Array} bossTimers - Lista de timers de jefes.
@@ -330,6 +360,35 @@ const Logic = {
         if (targetDate < now) {
             targetDate.setUTCDate(targetDate.getUTCDate() + 1);
         }
+        return targetDate;
+    },
+
+    /**
+     * Calcula la próxima fecha de reinicio para un evento semanal.
+     * @param {Date} now - La fecha y hora actual.
+     * @param {string} dayOfWeek - El día de la semana en inglés (ej. "Tuesday").
+     * @param {string} timeString - La hora en formato "HH:MM".
+     * @param {number} referenceOffsetHours - El offset de la zona horaria de referencia.
+     * @returns {Date} El objeto Date del próximo reinicio.
+     */
+    getNextWeeklyResetDate: function(now, dayOfWeek, timeString, referenceOffsetHours) {
+        const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const targetDay = weekDays.indexOf(dayOfWeek);
+
+        const [h, m] = timeString.split(':').map(Number);
+        const utcHour = h - referenceOffsetHours;
+
+        let targetDate = new Date(now);
+        targetDate.setUTCHours(utcHour, m, 0, 0);
+
+        const currentDayUTC = targetDate.getUTCDay();
+        let daysToAdd = targetDay - currentDayUTC;
+
+        if (daysToAdd < 0 || (daysToAdd === 0 && targetDate < now)) {
+            daysToAdd += 7;
+        }
+
+        targetDate.setUTCDate(targetDate.getUTCDate() + daysToAdd);
         return targetDate;
     }
 };

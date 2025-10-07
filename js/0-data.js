@@ -56,8 +56,10 @@ const I18N_STRINGS = {
         aboutDisclaimerBody: "Esta es una herramienta no oficial creada por un fan y no está afiliada, respaldada ni patrocinada por NCSoft o el equipo de desarrollo del juego. Todos los nombres, imágenes y marcas registradas del juego son propiedad de sus respectivos dueños.",
         aboutCloseButton: "Cerrar",
         eventsTitle: "Eventos Activos",
+        weeklyTitle: "Resets Semanales", // <-- AÑADE ESTA LÍNEA
         eventEndsIn: (d) => `termina en ${d}`,
         eventEndsToday: "termina hoy",
+        weeklyResetsIn: (d) => `reinicia en ${d}`, // <-- AÑADE ESTA LÍNEA
         eventTip: "Evento",
         activeBannersTitle: "Banner Activo",
         nextBannerTitle: "Próximo Banner",
@@ -82,16 +84,23 @@ const I18N_STRINGS = {
         eventCumulativeRewardsTitle: "Recompensas Acumulativas",
         eventPossibleRewardsTitle: "Posibles Recompensas",
         pointsSuffix: "Puntos",
-        streamWidgetTitle: "Próximo Stream",
-        streamWidgetTitle: "Stream de Twitch", // <--- AÑADE ESTA LÍNEA
-        streamsModalTitle: "Próximos Streams", // <-- AÑADE ESTA
-        noStreamsMessage: "No hay streams programados por el momento.", // <-- AÑADE ESTA
-        streamAlertsTitle: "Notificaciones de Stream:", // <-- AÑADE ESTA
-        preStreamAlertLabel: "Avisar antes de empezar", // <-- AÑADE ESTA
-        postStreamAlertLabel: "Avisar al terminar", // <-- AÑADE ESTA
-        notificationPreStream: (name) => `¡${name} comienza en 15 minutos!`, // <-- AÑADE ESTA
-        notificationPostStream: (name) => `¡El stream de ${name} ha terminado!`, // <-- AÑADE ESTA
-        notificationStreamBody: "Sintoniza el canal oficial de Twitch.", // <-- AÑADE ESTA
+        weeklySeasonBuffsTitle: "Potenciadores de Temporada", // <-- AÑADE ESTA LÍNEA
+        weeklyChosenBuffsTitle: "Potenciadores Elegidos", // <-- AÑADE ESTA LÍNEA
+        weeklyStagesTitle: "Etapas", // <-- AÑADE ESTA LÍNEA
+        weeklyCompletionRewardsTitle: "Recompensas por Finalización", // <-- AÑADE ESTA LÍNEA
+        weeklyScoreRewardsTitle: "Recompensas por Puntuación", // <-- AÑADE ESTA LÍNEA
+        weeklyTipsTitle: "Consejos", // <-- AÑADE ESTA LÍNEA
+        weeklyBossInfoTitle: "Información del Jefe", // <-- AÑADE ESTA LÍNEA
+        weeklyModifiersTitle: "Modificadores de Dificultad", // <-- AÑADE ESTA LÍNEA
+        streamWidgetTitle: "Stream de Twitch",
+        streamsModalTitle: "Próximos Streams",
+        noStreamsMessage: "No hay streams programados por el momento.",
+        streamAlertsTitle: "Notificaciones de Stream:",
+        preStreamAlertLabel: "Avisar antes de empezar",
+        postStreamAlertLabel: "Avisar al terminar",
+        notificationPreStream: (name) => `¡${name} comienza en 15 minutos!`,
+        notificationPostStream: (name) => `¡El stream de ${name} ha terminado!`,
+        notificationStreamBody: "Sintoniza el canal oficial de Twitch.",
         streamStartsIn: "¡Comienza en!",
         streamIsLive: "¡EN VIVO AHORA!",
         goToChannel: "Ir al Canal"
@@ -147,8 +156,10 @@ const I18N_STRINGS = {
         aboutDisclaimerBody: "This is an unofficial fan-made tool and is not affiliated with, endorsed, or sponsored by NCSoft or the game's development team. All in-game names, images, and trademarks are the property of their respective owners.",
         aboutCloseButton: "Close",
         eventsTitle: "Active Events",
+        weeklyTitle: "Weekly Resets", // <-- AÑADE ESTA LÍNEA
         eventEndsIn: (d) => `ends in ${d} days`,
         eventEndsToday: "ends today",
+        weeklyResetsIn: (d) => `resets in ${d}`, // <-- AÑADE ESTA LÍNEA
         eventTip: "Event",
         activeBannersTitle: "Active Banner",
         nextBannerTitle: "Next Banner",
@@ -173,15 +184,23 @@ const I18N_STRINGS = {
         eventCumulativeRewardsTitle: "Cumulative Rewards",
         eventPossibleRewardsTitle: "Possible Rewards",
         pointsSuffix: "Points",
-        streamWidgetTitle: "Twitch Stream", // <--- AÑADE ESTA LÍNEA
-        streamsModalTitle: "Upcoming Streams", // <-- AÑADE ESTA
-        noStreamsMessage: "No streams scheduled at the moment.", // <-- AÑADE ESTA
-        streamAlertsTitle: "Stream Notifications:", // <-- AÑADE ESTA
-        preStreamAlertLabel: "Notify before start", // <-- AÑADE ESTA
-        postStreamAlertLabel: "Notify on end", // <-- AÑADE ESTA
-        notificationPreStream: (name) => `${name} starts in 15 minutes!`, // <-- AÑADE ESTA
-        notificationPostStream: (name) => `${name}'s stream has ended!`, // <-- AÑADE ESTA
-        notificationStreamBody: "Tune in on the official Twitch channel.", // <-- AÑADE ESTA
+        weeklySeasonBuffsTitle: "Season Buffs", // <-- AÑADE ESTA LÍNEA
+        weeklyChosenBuffsTitle: "Chosen Buffs", // <-- AÑADE ESTA LÍNEA
+        weeklyStagesTitle: "Stages", // <-- AÑADE ESTA LÍNEA
+        weeklyCompletionRewardsTitle: "Completion Rewards", // <-- AÑADE ESTA LÍNEA
+        weeklyScoreRewardsTitle: "Score Rewards", // <-- AÑADE ESTA LÍNEA
+        weeklyTipsTitle: "Tips", // <-- AÑADE ESTA LÍNEA
+        weeklyBossInfoTitle: "Boss Info", // <-- AÑADE ESTA LÍNEA
+        weeklyModifiersTitle: "Difficulty Modifiers", // <-- AÑADE ESTA LÍNEA
+        streamWidgetTitle: "Twitch Stream",
+        streamsModalTitle: "Upcoming Streams",
+        noStreamsMessage: "No streams scheduled at the moment.",
+        streamAlertsTitle: "Stream Notifications:",
+        preStreamAlertLabel: "Notify before start",
+        postStreamAlertLabel: "Notify on end",
+        notificationPreStream: (name) => `${name} starts in 15 minutes!`,
+        notificationPostStream: (name) => `${name}'s stream has ended!`,
+        notificationStreamBody: "Tune in on the official Twitch channel.",
         streamWidgetTitle: "Next Stream",
         streamStartsIn: "Starts in!",
         streamIsLive: "LIVE NOW!",

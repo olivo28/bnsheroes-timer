@@ -130,11 +130,35 @@
             });
         }
 
+        // Listener para clics en los items de evento semanales
+        if(App.dom.weeklyContainer) {
+            App.dom.weeklyContainer.addEventListener('click', e => {
+                const weeklyItem = e.target.closest('.weekly-item');
+                if (weeklyItem && weeklyItem.dataset.weeklyId) {
+                    const weeklyId = weeklyItem.dataset.weeklyId;
+                    if (weeklyId === App.state.currentOpenWeeklyId) {
+                        UI.closeWeeklyDetailsPanel();
+                    } else {
+                        UI.openWeeklyDetailsPanel(weeklyId);
+                    }
+                }
+            });
+        }
+
         // Listener para cerrar el panel de detalles del evento
         if(App.dom.eventDetailsPanel) {
             App.dom.eventDetailsPanel.addEventListener('click', e => {
                 if (e.target.closest('.close-details-btn')) {
                     UI.closeEventDetailsPanel();
+                }
+            });
+        }
+
+        // Listener para cerrar el panel de detalles del evento semanal
+        if(App.dom.weeklyDetailsPanel) {
+            App.dom.weeklyDetailsPanel.addEventListener('click', e => {
+                if (e.target.closest('.close-details-btn')) {
+                    UI.closeWeeklyDetailsPanel();
                 }
             });
         }
@@ -221,19 +245,21 @@
         // Cargar datos externos (JSON) es lo primero.
         Promise.all([
             fetch('json_data/heroes_data.json').then(res => res.json()),
-            fetch('json_data/events_full.json').then(res => res.json())
+            fetch('json_data/events_full.json').then(res => res.json()),
+            fetch('json_data/weekly_resets.json').then(res => res.json())
         ])
-        .then(([heroesData, eventsData]) => {
+        .then(([heroesData, eventsData, weeklyData]) => {
             // Una vez cargados los datos, los guardamos en el estado.
             App.state.allHeroesData = heroesData;
             App.state.allEventsData = eventsData.events;
+            App.state.weeklyResetsData = weeklyData.gameData;
             
             // Ahora que los datos están listos, podemos inicializar la aplicación.
             initialize();
         })
         .catch(error => {
-            console.error("Error cargando los datos iniciales (heroes_data.json o events_full.json):", error);
-            document.body.innerHTML = `<div style="text-align: center; color: white; padding: 40px;"><p>Error al cargar datos. Asegúrate de que los archivos 'heroes_data.json' y 'events_full.json' existen y son accesibles.</p><p>Revisa la consola (F12) para más detalles.</p></div>`;
+            console.error("Error cargando los datos iniciales (heroes_data.json, events_full.json o weekly_resets.json):", error);
+            document.body.innerHTML = `<div style="text-align: center; color: white; padding: 40px;"><p>Error al cargar datos. Asegúrate de que los archivos JSON requeridos existen y son accesibles.</p><p>Revisa la consola (F12) para más detalles.</p></div>`;
         });
     });
 

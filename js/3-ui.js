@@ -67,11 +67,16 @@ const UI = {
     
         if (config.showEvents) {
             App.dom.eventsContainer.innerHTML = this.renderEventsPanel();
+            App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
             App.dom.eventsContainer.style.display = 'block';
+            App.dom.weeklyContainer.style.display = 'block';
         } else {
             App.dom.eventsContainer.innerHTML = '';
+            App.dom.weeklyContainer.innerHTML = '';
             App.dom.eventsContainer.style.display = 'none';
+            App.dom.weeklyContainer.style.display = 'none';
             this.closeEventDetailsPanel();
+            this.closeWeeklyDetailsPanel();
         }
         
         const primaryTimers = [dailyResetTimer];
@@ -194,6 +199,38 @@ const UI = {
             return '';
         }
         
+        return html;
+    },
+
+    /**
+     * Renderiza el panel de reinicios semanales.
+     * @returns {string} El HTML para el panel de reinicios semanales.
+     */
+    renderWeeklyPanel: function() {
+        const lang = I18N_STRINGS[App.state.config.currentLanguage];
+        const now = new Date();
+        const weeklyTimers = Logic.getWeeklyResetTimers(now);
+
+        if (weeklyTimers.length === 0) {
+            return '';
+        }
+
+        let html = `<h3 class="panel-subtitle">${lang.weeklyTitle}</h3>`;
+
+        weeklyTimers.forEach(timer => {
+            const timeString = Utils.formatTimeWithDays(timer.secondsLeft, true);
+            const countdownText = lang.weeklyResetsIn(timeString);
+            html += `
+                <div class="weekly-item" data-weekly-id="${timer.id}">
+                    <div class="weekly-item-info">
+                        <span class="weekly-name">${timer.name}</span>
+                        <span class="weekly-category">${timer.category}</span>
+                    </div>
+                    <span class="weekly-countdown">${countdownText}</span>
+                </div>
+            `;
+        });
+
         return html;
     },
 
@@ -388,6 +425,7 @@ const UI = {
      * @param {string} eventId - El ID del evento a mostrar.
      */
     openEventDetailsPanel: function(eventId) {
+        this.closeWeeklyDetailsPanel();
         const lang = App.state.config.currentLanguage;
         const langData = I18N_STRINGS[lang];
         const eventData = App.state.allEventsData[eventId];
@@ -508,6 +546,107 @@ const UI = {
     closeEventDetailsPanel: function() {
         App.dom.eventDetailsPanel.classList.remove('visible');
         App.state.currentOpenEventId = null;
+    },
+
+    /**
+     * Abre y rellena el panel de detalles de un evento semanal.
+     * @param {string} weeklyId - El ID del evento semanal a mostrar.
+     */
+    openWeeklyDetailsPanel: function(weeklyId) {
+        this.closeEventDetailsPanel();
+        const lang = App.state.config.currentLanguage;
+        const langData = I18N_STRINGS[lang];
+        const weeklyData = App.state.weeklyResetsData;
+        const eventData = weeklyData.events.find(e => e.id === weeklyId);
+        
+        if (!eventData) {
+            console.error(`Weekly event data not found for ID: ${weeklyId}`);
+            return;
+        }
+
+        const getItemName = (itemId) => weeklyData.itemDefinitions[itemId]?.name[lang] || itemId;
+
+        let contentHTML = `
+            <div class="details-header">
+                <div class="close-details-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </div>
+                <h2>${eventData.eventName[lang]}</h2>
+                <p>${eventData.description[lang]}</p>
+            </div>
+            <div class="details-content">
+        `;
+
+        // Para Hall of Challenge
+        if (eventData.seasonBuffs) {
+            contentHTML += `<div class="details-section"><h3>${langData.weeklySeasonBuffsTitle}</h3>`;
+            eventData.seasonBuffs.forEach(buff => {
+                contentHTML += `<div class="buff-item"><img src="assets/spells_icons/${buff.icon}.png"><div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div></div>`;
+            });
+            contentHTML += `</div>`;
+        }
+
+        if (eventData.stages) {
+            contentHTML += `<div class="details-section"><h3>${langData.weeklyStagesTitle}</h3>`;
+            eventData.stages.forEach(stage => {
+                contentHTML += `<div class="stage-item"><h4>${stage.stageName[lang]}</h4>`;
+                stage.completionRewards.forEach(rewardTier => {
+                    const rewardsText = rewardTier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
+                    contentHTML += `<p><strong>${langData.eventRankHeader} ${rewardTier.stageLevel}:</strong> ${rewardsText}</p>`;
+                });
+                contentHTML += `</div>`;
+            });
+            contentHTML += `</div>`;
+        }
+
+        // Para Tactical Trial
+        if (eventData.bossInfo) {
+            const boss = eventData.bossInfo;
+            contentHTML += `<div class="details-section"><h3>${langData.weeklyBossInfoTitle}</h3>
+                <div class="boss-info-header">
+                    <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
+                    <h4>${boss.name[lang]}</h4>
+                </div>
+                <p class="details-summary">${boss.description[lang]}</p>
+            </div>`;
+        }
+
+        if (eventData.difficultyModifiers) {
+            contentHTML += `<div class="details-section"><h3>${langData.weeklyModifiersTitle}</h3><table class="details-table"><tbody>`;
+            eventData.difficultyModifiers.forEach(mod => {
+                contentHTML += `<tr><td>${'★'.repeat(mod.stars)} ${mod.name[lang]}</td><td>${mod.description[lang]} (+${mod.points})</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
+        }
+
+        if (eventData.scoreRewards) {
+            contentHTML += `<div class="details-section"><h3>${langData.weeklyScoreRewardsTitle}</h3><table class="details-table"><tbody>`;
+            eventData.scoreRewards.forEach(tier => {
+                const rewardsText = tier.rewards.map(r => `${getItemName(r.itemId)} x${r.quantity}`).join(', ');
+                contentHTML += `<tr><td>${tier.scoreThreshold.toLocaleString()} Pts</td><td>${rewardsText}</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
+        }
+
+        if (eventData.tips) {
+            contentHTML += `<div class="details-section"><h3>${langData.weeklyTipsTitle}</h3><ul class="details-list-bullet">`;
+            eventData.tips.forEach(tip => {
+                contentHTML += `<li>${tip[lang]}</li>`;
+            });
+            contentHTML += `</ul></div>`;
+        }
+
+        contentHTML += `</div>`; // Close details-content
+        App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
+        App.dom.weeklyDetailsPanel.classList.add('visible');
+        App.dom.weeklyDetailsPanel.dataset.renderedLang = lang;
+        App.state.currentOpenWeeklyId = weeklyId;
+    },
+
+    /** Cierra el panel de detalles del evento semanal. */
+    closeWeeklyDetailsPanel: function() {
+        App.dom.weeklyDetailsPanel.classList.remove('visible');
+        App.state.currentOpenWeeklyId = null;
     },
 
     /** Abre el modal de configuración con los valores actuales. */
@@ -652,6 +791,12 @@ const UI = {
             const renderedLang = App.dom.eventDetailsPanel.dataset.renderedLang;
             if (renderedLang !== App.state.config.currentLanguage) {
                 this.openEventDetailsPanel(App.state.currentOpenEventId);
+            }
+        }
+        if (App.state.currentOpenWeeklyId && App.dom.weeklyDetailsPanel.classList.contains('visible')) {
+            const renderedLang = App.dom.weeklyDetailsPanel.dataset.renderedLang;
+            if (renderedLang !== App.state.config.currentLanguage) {
+                this.openWeeklyDetailsPanel(App.state.currentOpenWeeklyId);
             }
         }
     },
