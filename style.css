@@ -1380,23 +1380,25 @@ select.settings-input option {
     font-weight: bold;
 }
 
-/* --- NUEVO: Estilo para items de Recompensa Acumulativa --- */
-.cumulative-reward-item {
-    background-color: rgba(255, 255, 255, 0.04);
-    padding: 12px 15px;
-    border-radius: 8px;
+/* --- NUEVO: Cuadrícula para Recompensas de Rango y Acumulativas --- */
+.details-reward-grid-container {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
-    margin-bottom: 10px; /* Espacio entre cada caja de recompensa */
+    padding: 10px 0;
 }
-.cumulative-reward-item:last-child {
-    margin-bottom: 0;
+.details-reward-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
-.cumulative-reward-condition {
-    flex-basis: 30%; /* Da un espacio fijo a la condición */
+.details-reward-label {
+    font-size: 0.9em;
+    font-weight: bold;
     color: var(--text-muted-color);
+    text-align: center;
 }
 
 .reward-grid {
@@ -1468,16 +1470,16 @@ select.settings-input option {
     border-bottom: none;
 }
 .reward-name-part {
-    flex-grow: 1; /* Ocupa todo el espacio sobrante */
+    flex-grow: 1;
 }
 .reward-quantity-part {
-    flex-shrink: 0; /* Evita que se encoja */
+    flex-shrink: 0;
     width: 60px;
     text-align: right;
     color: var(--text-muted-color);
 }
 .reward-prob-part {
-    flex-shrink: 0; /* Evita que se encoja */
+    flex-shrink: 0;
     width: 70px;
     text-align: right;
     font-weight: bold;

@@ -514,11 +514,16 @@ const UI = {
         }
 
         if (eventData.missions_and_rewards) {
-             contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3><table class="details-table"><tbody>`;
+             contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3>`;
+             contentHTML += `<div class="details-reward-grid-container">`;
              eventData.missions_and_rewards.forEach(m => {
-                contentHTML += `<tr><td>${m.mission[lang]}</td><td>${getMinimalistRewardHTML(m.itemId, m.quantity, m.rank)}</td></tr>`;
+                const iconGrid = getItemGridDisplay(m.itemId, m.quantity, m.rank);
+                contentHTML += `<div class="details-reward-column">
+                                  <span class="details-reward-label">${m.mission[lang]}</span>
+                                  ${iconGrid}
+                                </div>`;
              });
-             contentHTML += `</tbody></table></div>`;
+             contentHTML += `</div></div>`;
         }
         
         if (eventData.boss_details && eventData.boss_details.ranking_rewards) {
@@ -533,12 +538,15 @@ const UI = {
             }
             const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
             if (ranking) {
-                contentHTML += `<table class="details-table"><thead><tr><th>${langData.eventRankHeader}</th><th>${langData.eventRewardHeader}</th></tr></thead><tbody>`;
+                contentHTML += `<div class="details-reward-grid-container">`;
                 ranking.forEach(r => {
-                    const rewardItem = r.rewards[0];
-                    contentHTML += `<tr><td>${r.tier_name[lang]}</td><td>${getMinimalistRewardHTML(rewardItem.itemId, rewardItem.quantity, rewardItem.rank || 'Common')}</td></tr>`;
+                    const iconGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
+                    contentHTML += `<div class="details-reward-column">
+                                      <span class="details-reward-label">${r.tier_name[lang]}</span>
+                                      <div class="reward-grid">${iconGrid}</div>
+                                    </div>`;
                 });
-                contentHTML += `</tbody></table>`;
+                contentHTML += `</div>`;
             }
             contentHTML += `</div>`;
         }
@@ -552,15 +560,17 @@ const UI = {
             contentHTML += `</div>`;
         }
 
-        if (eventData.rewards && eventData.rewards.cumulative_spins) {
+         if (eventData.rewards && eventData.rewards.cumulative_spins) {
             contentHTML += `<div class="details-section"><h3>${langData.eventCumulativeRewardsTitle}</h3>`;
+            contentHTML += `<div class="details-reward-grid-container">`;
             eventData.rewards.cumulative_spins.forEach(r => {
-                contentHTML += `<div class="cumulative-reward-item">
-                                  <span class="cumulative-reward-condition">${r.condition[lang]}</span>
-                                  ${getMinimalistRewardHTML(r.itemId, r.quantity, r.rank)}
+                const iconGrid = getItemGridDisplay(r.itemId, r.quantity, r.rank);
+                contentHTML += `<div class="details-reward-column">
+                                  <span class="details-reward-label">${r.condition[lang]}</span>
+                                  ${iconGrid}
                                 </div>`;
             });
-            contentHTML += `</div>`;
+            contentHTML += `</div></div>`;
         }
 
         if (eventData.rewards && eventData.rewards.reward_pool) {
