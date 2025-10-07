@@ -514,14 +514,10 @@ const UI = {
         }
 
         if (eventData.missions_and_rewards) {
-             contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3>`;
-             contentHTML += `<div class="details-reward-grid-container">`;
+             contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3><div class="details-reward-grid-container">`;
              eventData.missions_and_rewards.forEach(m => {
                 const iconGrid = getItemGridDisplay(m.itemId, m.quantity, m.rank);
-                contentHTML += `<div class="details-reward-column">
-                                  <span class="details-reward-label">${m.mission[lang]}</span>
-                                  ${iconGrid}
-                                </div>`;
+                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${iconGrid}</div>`;
              });
              contentHTML += `</div></div>`;
         }
@@ -587,12 +583,20 @@ const UI = {
         App.dom.eventDetailsPanel.classList.add('visible');
         App.dom.eventDetailsPanel.dataset.renderedLang = lang;
         App.state.currentOpenEventId = eventId;
+        // --- AÑADIDO: Bloquea el scroll del fondo en móvil ---
+        if (App.state.isMobile) {
+            document.body.classList.add('no-scroll');
+        }
     },
-
+    
     /** Cierra el panel de detalles del evento. */
     closeEventDetailsPanel: function() {
         App.dom.eventDetailsPanel.classList.remove('visible');
         App.state.currentOpenEventId = null;
+        // --- AÑADIDO: Desbloquea el scroll del fondo en móvil ---
+        if (App.state.isMobile) {
+            document.body.classList.remove('no-scroll');
+        }
     },
 
     /**
@@ -772,6 +776,20 @@ const UI = {
         App.dom.weeklyDetailsPanel.classList.add('visible');
         App.dom.weeklyDetailsPanel.dataset.renderedLang = lang;
         App.state.currentOpenWeeklyId = weeklyId;
+        // --- AÑADIDO: Bloquea el scroll del fondo en móvil ---
+        if (App.state.isMobile) {
+            document.body.classList.add('no-scroll');
+        }
+    },
+
+    /** Cierra el panel de detalles del evento semanal. */
+    closeWeeklyDetailsPanel: function() {
+        App.dom.weeklyDetailsPanel.classList.remove('visible');
+        App.state.currentOpenWeeklyId = null;
+        // --- AÑADIDO: Desbloquea el scroll del fondo en móvil ---
+        if (App.state.isMobile) {
+            document.body.classList.remove('no-scroll');
+        }
     },
 
     /** Cierra el panel de detalles del evento semanal. */

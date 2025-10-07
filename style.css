@@ -806,7 +806,7 @@ input:checked+.slider:before {
     top: 0; left: 0;
     width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    z-index: 1200;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1902,6 +1902,7 @@ select.settings-input option {
 
     body.no-scroll {
         overflow: hidden;
+        height: 100vh;
     }
 
     .app-container,
