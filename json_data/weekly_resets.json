@@ -153,14 +153,14 @@
                     },
                     {
                         "name": {
-                            "en": "Season Secret Art Boost – Recover",
-                            "es": "Mejora del arte secreto de la temporada - Recuperar"
+                            "en": "Season Secret Art Boost – Rift",
+                            "es": "Mejora del arte secreto de la temporada - Ruptura"
                         },
                         "description": {
                             "en": "Cooldown for this Clan Skill is reduced by 80%.",
                             "es": "El tiempo de enfriamiento de esta habilidad de clan se reduce en un 80 %."
                         },
-                        "icon": "icon_bigi_heal"
+                        "icon": "icon_bigi_break_def"
                     }
                 ],
                 "chosenBuffs": [
@@ -520,7 +520,7 @@
                     }
                 ]
             },
-            {
+           {
                 "id": "tacticalTrial",
                 "eventName": {
                     "en": "Tactical Trial",
@@ -540,20 +540,20 @@
                         "timezone": "GMT-4"
                     },
                     "playerScore": {
-                        "currentScore": 2000,
-                        "bestScore": 2000
+                        "currentScore": 0,
+                        "bestScore": 0
                     }
                 },
                 "currentBoss": {
-                    "bossId": "talus_army_investigator",
+                    "bossId": "altered_beast_automaton",
                     "name": {
-                        "en": "Talus Army Investigator",
-                        "es": "Investigador del ejército de los Talus"
+                        "en": "Altered Beast Automaton",
+                        "es": "Autómata de Bestia Alterada"
                     },
-                    "enemyIcon": "gotuli-named_a_bm",
+                    "enemyIcon": "mechaeungeomho-named_a_cr",
                     "description": {
-                        "en": "The Investigation Team, one of the special forces of the Talus Dominion, is tasked with traveling around the continent to investigate the Naryu Automaton Ruins.\n\nAs a result, Tu Riki, the leader of the Investigation Team, is an experienced general who has faced countless hardships. He swings the flag and commands the team.\n\nTu Riki guards the first floor of the Automaton Ruins with the Investigation Team. No one will be able to enter the ruins without defeating him first.",
-                        "es": "Como resultado, Tu Riki, líder del Equipo de investigación, es un general experimentado que ha enfrentado innumerables adversidades, flamea la bandera y dirige al equipo.\n\nTu Riki custodia el primer piso de las ruinas de los autómatas con el Equipo de investigación. Nadie puede entrar en las ruinas sin derrotarlo primero."
+                        "en": "The Automaton Army of the Talus Dominion studies Naryu's Automaton technology with the goal of creating a unit capable of matching the strength of a hundred. However, since they couldn't find enough volunteers for the initial experiments, it is said that they used beasts for testing.\n\nThe successful subjects of these experiments were stationed on the second floor of the ruins. A fusion of the beasts' wild nature and the power of Automaton.",
+                        "es": "El Ejército de Autómatas del Dominio Talus estudia la tecnología de Autómatas de Naryu con el objetivo de crear una unidad capaz de igualar la fuerza de un centenar. Sin embargo, como no encontraron suficientes voluntarios para los experimentos iniciales, se dice que usaron bestias para las pruebas.\n\nLos sujetos exitosos de estos experimentos fueron apostados en el segundo piso de las ruinas. Una fusión de la naturaleza salvaje de las bestias y el poder del Autómata."
                     },
                     "turnLimit": 60,
                     "difficultyTiers": {
@@ -561,12 +561,12 @@
                             "modifiers": [
                                 {
                                     "name": {
-                                        "en": "Action",
-                                        "es": "Acción"
+                                        "en": "Stab",
+                                        "es": "Apuñalar"
                                     },
                                     "description": {
-                                        "en": "Enemy's Block Rate +15%",
-                                        "es": "Tasa de Bloqueo del enemigo +15%"
+                                        "en": "Enemy's Dealt DoT +15%",
+                                        "es": "Daño por Tiempo infligido por el enemigo +15%"
                                     },
                                     "points": 500
                                 },
@@ -577,7 +577,7 @@
                                     },
                                     "description": {
                                         "en": "Ally's Ultimate Skill Gauge Gain -40%",
-                                        "es": "Reducción del medidor de la habilidad definitiva de aliado"
+                                        "es": "Ganancia del medidor de habilidad definitiva de aliado -40%"
                                     },
                                     "points": 500
                                 }
@@ -585,17 +585,17 @@
                             "progression": [
                                 {
                                     "modifiersSelected": 0,
-                                    "cumulativeScore": 1000,
+                                    "cumulativeScore": 0,
                                     "recommendedPower": 29000
                                 },
                                 {
                                     "modifiersSelected": 1,
-                                    "cumulativeScore": 1500,
+                                    "cumulativeScore": 500,
                                     "recommendedPower": 29500
                                 },
                                 {
                                     "modifiersSelected": 2,
-                                    "cumulativeScore": 2000,
+                                    "cumulativeScore": 1000,
                                     "recommendedPower": 30000
                                 }
                             ]
@@ -604,23 +604,23 @@
                             "modifiers": [
                                 {
                                     "name": {
-                                        "en": "Book of Strategies",
-                                        "es": "Libro de estrategias"
+                                        "en": "Roar",
+                                        "es": "Rugido"
                                     },
                                     "description": {
-                                        "en": "Enhance Tu Riki's 'Commence Operation' Skill",
-                                        "es": "Mejora la habilidad 'Iniciar operación'"
+                                        "en": "Add 'Roar' Skill to Altered Beast #9",
+                                        "es": "Añade la habilidad 'Rugido' a la Bestia Alterada #9"
                                     },
                                     "points": 1000
                                 },
                                 {
                                     "name": {
-                                        "en": "Command",
-                                        "es": "Dirigir"
+                                        "en": "Rebuild",
+                                        "es": "Reconstruir"
                                     },
                                     "description": {
-                                        "en": "Enhance Tu Riki's 'Command and Control' Skill",
-                                        "es": "Mejora la habilidad 'Comando y contro'"
+                                        "en": "Enhance Altered Beast #9's 'Multishot Cluster Bomb' Skill",
+                                        "es": "Mejora la habilidad 'Bomba de Racimo Multidisparo' de la Bestia Alterada #9"
                                     },
                                     "points": 1000
                                 }
@@ -647,23 +647,23 @@
                             "modifiers": [
                                 {
                                     "name": {
-                                        "en": "Gambit",
-                                        "es": "Táctica"
+                                        "en": "Reduction",
+                                        "es": "Reducción"
                                     },
                                     "description": {
-                                        "en": "Add 'Final Gambit' Skill to Tu Riki",
-                                        "es": "Añade la habilidad 'Táctica final' a Tu Riki"
+                                        "en": "Enhance Altered Beast #9's 'Self-Destruct Stance' Skill",
+                                        "es": "Mejora la habilidad 'Postura de Autodestrucción' de la Bestia Alterada #9"
                                     },
                                     "points": 2000
                                 },
                                 {
                                     "name": {
-                                        "en": "Favorable Treatment",
-                                        "es": "Trato favorable"
+                                        "en": "Discharge",
+                                        "es": "Descarga"
                                     },
                                     "description": {
-                                        "en": "Can't place more than 1 Tactician Hero",
-                                        "es": "No se puede designar más de un héroe Táctico"
+                                        "en": "Can't place more than 2 Lightning-type Heroes",
+                                        "es": "No se pueden colocar más de 2 Héroes de tipo Rayo"
                                     },
                                     "points": 2000
                                 }
@@ -699,7 +699,7 @@
                             ]
                         },
                         {
-                            "scoreThreshold": 5000,
+                            "scoreThreshold": 4000,
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
@@ -709,7 +709,7 @@
                             ]
                         },
                         {
-                            "scoreThreshold": 9000,
+                            "scoreThreshold": 6000,
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
@@ -719,7 +719,7 @@
                             ]
                         },
                         {
-                            "scoreThreshold": 11000,
+                            "scoreThreshold": 7000,
                             "rewards": [
                                 {
                                     "itemId": "victory_token",
@@ -731,63 +731,63 @@
                     ],
                     "tips": [
                         {
-                            "en": "Tu Riki uses the [Commence Operation] Skill and [Command and Control] Skill to control the Talus army.",
-                            "es": "Tu Riki usa las habilidades [Iniciar operación] y [Mando y control] para controlar el ejército de los Talus."
+                            "en": "Altered Beast groups use Burn Skills.",
+                            "es": "Los grupos de Bestias Alteradas usan habilidades de Quemadura."
                         },
                         {
-                            "en": "When the [Marked for Hunt] target dies, Tu Riki uses the [Masterful Commander] Skill.",
-                            "es": "Cuando el objetivo con [Marca de caza] muere, Tu Riki usa la habilidad [Comandante experto]."
+                            "en": "Upon death, #9 activates [Execute Self Destruct] after [Self-Destruct Stance].",
+                            "es": "Al morir, #9 activa [Ejecutar Autodestrucción] después de [Postura de Autodestrucción]."
                         },
                         {
-                            "en": "Use Fire-type Heroes' attacks to Incapacitate Tu Riki more easily.",
-                            "es": "Usa ataques de Héroes de tipo Fuego para incapacitar a Tu Riki más fácilmente."
+                            "en": "When #9 is in [Self-Destruct Stance], Hero can stop #9's [Self Destruction Sequence] by using [Standard Impact].",
+                            "es": "Cuando #9 está en [Postura de Autodestrucción], el Héroe puede detener la [Secuencia de Autodestrucción] de #9 usando un [Impacto Estándar]."
                         },
                         {
-                            "en": "Proceed with caution as upon a successful Block, the Talus army will counter.",
-                            "es": "Procede con cautela, ya que tras un bloqueo exitoso, el ejército de los Talus contraatacará."
+                            "en": "Can Incapacitate Altered Beasts with Electrocute.",
+                            "es": "Se puede Incapacitar a las Bestias Alteradas con Electrocutar."
                         }
                     ],
                     "recommendedHeroes": {
                         "description": {
-                            "en": "A Hero who can weaken block can prevent the Talus Army from countering. It's also best to use a Hero who can protect allies marked with [Marked for Hunt].",
-                            "es": "Un héroe que pueda debilitar el bloqueo puede impedir que el ejército de los Talus contraataque. También es mejor usar un héroe que pueda proteger a los aliados marcados con [Marca de caza]."
+                            "en": "It is best to have a hero that can counter [Burn]. When Altered Beast #9 is preparing to self-destruct, you can use [Accelerate Turn] on a Lightning-type Hero to quickly destroy it.",
+                            "es": "Es mejor tener un héroe que pueda contrarrestar la [Quemadura]. Cuando la Bestia Alterada #9 se esté preparando para autodestruirse, puedes usar [Acelerar Turno] en un Héroe de tipo Rayo para destruirla rápidamente."
                         },
                         "tags": [
                             {
-                                "en": "#Block Resistance",
-                                "es": "#Resistencia al bloqueo"
+                                "en": "#Type & Elemental Effect Resistance",
+                                "es": "#Tipo y Resistencia a Efectos Elementales"
                             },
                             {
-                                "en": "#Ally Protection",
-                                "es": "#Protección de aliados"
+                                "en": "#Accelerate Turn",
+                                "es": "#Acelerar Turno"
                             }
                         ],
                         "heroesByTag": [
                             {
                                 "tag": {
-                                    "en": "Block Resistance",
-                                    "es": "Resistencia al bloqueo"
+                                    "en": "Type & Elemental Effect Resistance",
+                                    "es": "Tipo y Resistencia a Efectos Elementales"
                                 },
                                 "heroList": [
                                     {
-                                        "name": "Gwen"
+                                        "name": "Ken"
                                     }
                                 ]
                             },
                             {
                                 "tag": {
-                                    "en": "Ally Protection",
-                                    "es": "Protección de aliados"
+                                    "en": "Accelerate Turn",
+                                    "es": "Acelerar Turno"
                                 },
                                 "heroList": [
                                     {
-                                        "name": "Dochun"
+                                        "name": "Yuri"
                                     },
                                     {
-                                        "name": "Gwon"
+                                        "name": "Leo"
                                     },
                                     {
-                                        "name": "Boryn"
+                                        "name": "Mina"
                                     }
                                 ]
                             }
@@ -796,14 +796,14 @@
                 },
                 "nextBoss": {
                     "name": {
-                        "en": "Altered Beast #9",
-                        "es": "Bestia Alterada #9"
+                        "en": "Talus Army Investigator",
+                        "es": "Investigador del ejército de los Talus"
                     },
                     "description": {
                         "en": "Upcoming Boss",
                         "es": "Próximo Jefe"
                     },
-                    "icon": "mechaeungeomho-named_a_cr.png"
+                    "icon": "gotuli-named_a_bm.png"
                 }
             }
         ]
