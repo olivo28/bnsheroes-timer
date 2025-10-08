@@ -261,7 +261,8 @@ const DEFAULT_CONFIG = {
     events: [
         { id: "Field Boss Challenge", name: { es: "Desafío de Jefe de Campo", en: "Field Boss Challenge" }, startDate: '2025-09-30', endDate: '2025-10-14' },
         { id: "Daily Challenge", name: { es: "Desafío Diario", en: "Daily Challenge" }, startDate: '2025-09-30', endDate: '2025-10-14' },
-        { id: "Ukapong's Hidden Challenge", name: { es: "El Desafío Oculto de Ukapong", en: "Ukapong's Hidden Challenge" }, startDate: '2025-09-30', endDate: '2025-10-14' }
+        { id: "Ukapong's Hidden Challenge", name: { es: "El Desafío Oculto de Ukapong", en: "Ukapong's Hidden Challenge" }, startDate: '2025-09-30', endDate: '2025-10-14' },
+        { id: "Quick Challenge Event", name: { en: "Quick Challenge Event", es: "Evento de Desafío Rápido" }, startDate: "2025-10-07", endDate: "2025-10-14" }
     ],
     banner: [
         { element: "fire", heroes: "Poharan, Sansu, Yunma Fei", startDate: "2025-09-25", endDate: "2025-10-14" },

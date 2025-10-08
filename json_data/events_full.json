@@ -1,65 +1,65 @@
 {
   "gameData": {
     "itemDefinitions": {
-      "wheel_of_fate_ticket": {
-        "name": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" },
-        "icon": "item_coin_roulette_ticket_01"
-      },
-      "divine_gem_bundle": {
-        "name": { "en": "Divine Gem Bundle", "es": "Paquete de Gemas Divinas" },
-        "icon": "item_dum_view_cash"
-      },
-      "refined_secret_art_chest": {
-        "name": { "en": "Refined Secret Art Chest", "es": "Cofre de Arte Secreto Refinado" },
-        "icon": "item_box_hero_fskill_book"
-      },
-      "common_refined_sagittarius_aries_chest_i": {
-        "name": { "en": "Common-Refined Sagittarius, Aries Chest I", "es": "Cofre Común-Refinado de Sagitario y Aries I" },
-        "icon": "item_box_unsuk_red"
-      },
-      "refined_divine_idol_chest": {
-        "name": { "en": "Refined Divine Idol Chest", "es": "Cofre de Ídolo Divino Refinado" },
-        "icon": "item_box_reward_iron_03"
-      },
-      "fruit_of_potential_chest_i": {
-        "name": { "en": "Fruit of Potential Chest I", "es": "Cofre de Fruta del Potencial I" },
+      "choice_fruit_of_potential_chest_i": {
+        "name": { "en": "[Choice] Fruit of Potential Chest I", "es": "[Elección] Cofre de Fruta del Potencial I" },
         "icon": "shoppackage_box_package_product_dark_s2"
       },
-      "common_sagittarius_aries_chest_i": {
-        "name": { "en": "Common Sagittarius, Aries Chest I", "es": "Cofre Común de Sagitario y Aries I" },
-        "icon": "item_box_unsuk_red"
-      },
-      "handcrafted_licorice_pill": {
-        "name": { "en": "Handcrafted Licorice Pill", "es": "Píldora de Regaliz Hecha a Mano" },
-        "icon": "item_questicon_collect_smallpill"
-      },
-      "strong_ginseng_tea": {
-        "name": { "en": "Strong Ginseng Tea", "es": "Té de Ginseng Fuerte" },
-        "icon": "item_battle_buff_att_tea_01"
-      },
-      "limited_name_card_clash": {
-        "name": { "en": "Limited Name Card: Clash with the Stalker Jiangshi", "es": "Tarjeta de Nombre Limitada: Enfrentamiento con el Stalker Jiangshi" },
-        "icon": "item_house_card_field_boss_event_01"
-      },
-      "title_jiangshi_slayer": {
-        "name": { "en": "Title: Jiangshi Slayer", "es": "Título: Asesino de Jiangshi" },
-        "icon": "item_repute_common"
-      },
-      "gold_coin_pouch": {
-        "name": { "en": "Gold Coin Pouch", "es": "Bolsa de Monedas de Oro" },
+      "common_gold_coin_pouch": {
+        "name": { "en": "Common Gold Coin Pouch", "es": "Bolsa Común de Monedas de Oro" },
         "icon": "item_gold_coins"
-      },
-      "common_sagittarius_chest_i": {
-        "name": { "en": "Common Sagittarius Chest I", "es": "Cofre Común de Sagitario I" },
-        "icon": "item_box_unsuk_red"
       },
       "common_refined_earthen_meteorite_chest_i": {
         "name": { "en": "Common-Refined Earthen Meteorite Chest I", "es": "Cofre Común-Refinado de Meteorito Terrestre I" },
         "icon": "item_box_unsuk_red"
       },
+      "common_refined_sagittarius_aries_chest_i": {
+        "name": { "en": "Common-Refined Sagittarius, Aries Chest I", "es": "Cofre Común-Refinado de Sagitario y Aries I" },
+        "icon": "item_box_unsuk_red"
+      },
+      "common_sagittarius_aries_chest_i": {
+        "name": { "en": "Common Sagittarius, Aries Chest I", "es": "Cofre Común de Sagitario y Aries I" },
+        "icon": "item_box_unsuk_red"
+      },
+      "common_sagittarius_chest_i": {
+        "name": { "en": "Common Sagittarius Chest I", "es": "Cofre Común de Sagitario I" },
+        "icon": "item_box_unsuk_red"
+      },
+      "divine_gem_bundle": {
+        "name": { "en": "Divine Gem Bundle", "es": "Paquete de Gemas Divinas" },
+        "icon": "item_dum_view_cash"
+      },
       "entry_ticket_supply_chest": {
         "name": { "en": "Entry Ticket Supply Chest", "es": "Cofre de Suministro de Boletos de Entrada" },
         "icon": "item_box_package_product_white_s2_01"
+      },
+      "fruit_of_potential_chest_i": {
+        "name": { "en": "Fruit of Potential Chest I", "es": "Cofre de Fruta del Potencial I" },
+        "icon": "shoppackage_box_package_product_dark_s2"
+      },
+      "gold_coin_pouch": {
+        "name": { "en": "Gold Coin Pouch", "es": "Bolsa de Monedas de Oro" },
+        "icon": "item_gold_coins"
+      },
+      "handcrafted_licorice_pill": {
+        "name": { "en": "Handcrafted Licorice Pill", "es": "Píldora de Regaliz Hecha a Mano" },
+        "icon": "item_questicon_collect_smallpill"
+      },
+      "limited_name_card_clash": {
+        "name": { "en": "Limited Name Card: Clash with the Stalker Jiangshi", "es": "Tarjeta de Nombre Limitada: Enfrentamiento con el Stalker Jiangshi" },
+        "icon": "item_house_card_field_boss_event_01"
+      },
+      "refined_divine_idol_chest": {
+        "name": { "en": "Refined Divine Idol Chest", "es": "Cofre de Ídolo Divino Refinado" },
+        "icon": "item_box_reward_iron_03"
+      },
+      "refined_secret_art_chest": {
+        "name": { "en": "Refined Secret Art Chest", "es": "Cofre de Arte Secreto Refinado" },
+        "icon": "item_box_hero_fskill_book"
+      },
+      "revered_hero_guarantee_ticket": {
+        "name": { "en": "Revered Hero Guarantee Ticket", "es": "Ticket de Garantía de Héroe Venerado" },
+        "icon": "item_heromake_ssr"
       },
       "scarlet_bloom_yunma_fei_outfit": {
         "name": { "en": "Scarlet Bloom Yunma Fei's Outfit", "es": "Atuendo de Yunma Fei Flor Escarlata" },
@@ -68,6 +68,18 @@
       "scarlet_bloom_yunma_fei_weapon": {
         "name": { "en": "Scarlet Bloom Yunma Fei's Weapon", "es": "Arma de Yunma Fei Flor Escarlata" },
         "icon": "item_weapon_shop_bm_trend_gunmahye_01"
+      },
+      "strong_ginseng_tea": {
+        "name": { "en": "Strong Ginseng Tea", "es": "Té de Ginseng Fuerte" },
+        "icon": "item_battle_buff_att_tea_01"
+      },
+      "title_jiangshi_slayer": {
+        "name": { "en": "Title: Jiangshi Slayer", "es": "Título: Asesino de Jiangshi" },
+        "icon": "item_repute_common"
+      },
+      "wheel_of_fate_ticket": {
+        "name": { "en": "Wheel of Fate Ticket", "es": "Ticket de la Rueda del Destino" },
+        "icon": "item_coin_roulette_ticket_01"
       }
     },
     "events": {
@@ -142,6 +154,52 @@
           { "mission": { "en": "Clear Baribari – Hard Mode", "es": "Superar Baribari – Modo Difícil" }, "itemId": "scarlet_bloom_yunma_fei_weapon", "quantity": 1, "rank": "Epic" },
           { "mission": { "en": "Complete all missions", "es": "Completar todas las misiones" }, "itemId": "entry_ticket_supply_chest", "quantity": 1, "rank": "Rare" }
         ]
+      },
+      "Quick Challenge Event": {
+        "name": { "en": "Quick Challenge Event", "es": "Evento de Desafío Rápido" },
+        "period": "October 1 - October 8, 2023",
+        "summary": {
+          "en": "Clear Boss Trial (Solo) in Hard Mode and try the Time Attack to obtain one of the prepared daily rewards.",
+          "es": "Supera la Prueba de Jefe (Solo) en Modo Difícil y prueba el Ataque de Tiempo para obtener una de las recompensas diarias preparadas."
+        },
+        "daily_claim_limit": 2,
+        "missions": [
+          {
+            "description": {
+              "en": "Clear Boss Trial (Solo) in Hard Mode",
+              "es": "Superar Prueba de Jefe (Solo) en Modo Difícil"
+            },
+            "goal": 1
+          }
+        ],
+        "rewards": {
+          "reward_pool": [
+            {
+              "itemId": "revered_hero_guarantee_ticket",
+              "quantity": 1,
+              "rank": "Epic",
+              "probability": 1.0
+            },
+            {
+              "itemId": "choice_fruit_of_potential_chest_i",
+              "quantity": 1,
+              "rank": "Rare",
+              "probability": 24.0
+            },
+            {
+              "itemId": "common_gold_coin_pouch",
+              "quantity": 1,
+              "rank": "Uncommon",
+              "probability": 35.0
+            },
+            {
+              "itemId": "gold_coin_pouch",
+              "quantity": 2,
+              "rank": "Uncommon",
+              "probability": 40.0
+            }
+          ]
+        }
       }
     }
   }

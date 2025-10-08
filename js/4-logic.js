@@ -9,29 +9,10 @@ const Logic = {
      * Realiza una única llamada a una API de tiempo mundial para calcular el desfase
      * entre el reloj local del usuario y la hora UTC real.
      */
-    syncWithWorldTime: async function() {
-        const statusBarSpan = App.dom.statusBar.querySelector('span');
-        try {
-            const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-            if (!response.ok) throw new Error('Network response was not ok');
-            
-            const data = await response.json();
-            const worldTimeMs = data.unixtime * 1000;
-            const localTimeMs = new Date().getTime();
-            
-            App.state.timeOffset = worldTimeMs - localTimeMs;
-
-            statusBarSpan.dataset.langKey = 'timeSynced';
-            UI.updateLanguage(); // Actualiza el texto inmediatamente
-            
-            console.log(`Time synced. Local clock offset is ${App.state.timeOffset}ms.`);
-        } catch (error) {
-            console.error("World time sync failed:", error);
-            App.state.timeOffset = 0; // Se revierte a 0 en caso de error
-            statusBarSpan.dataset.langKey = 'timeSyncFailed';
-            UI.updateLanguage(); // Actualiza el texto para mostrar el error
-        }
-    },
+syncWithWorldTime: function() {
+    // Ya no hacemos nada aquí.
+    console.log("La sincronización de tiempo se ha delegado al Service Worker.");
+},
     
     /**
      * Devuelve un objeto Date que representa la hora actual, corregida por el desfase

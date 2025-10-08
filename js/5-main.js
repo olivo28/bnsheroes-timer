@@ -15,10 +15,8 @@
         const primaryPanel = document.querySelector('.primary-panel');
         const secondaryPanel = document.querySelector('.secondary-panel');
 
-        // Si los elementos no existen, no hacer nada.
         if (!mainWrapper || !primaryPanel || !secondaryPanel) return;
 
-        // 1. Crear la estructura HTML que Swiper necesita
         const swiperContainer = document.createElement('div');
         swiperContainer.className = 'swiper mobile-swiper-container';
 
@@ -34,23 +32,18 @@
         const pagination = document.createElement('div');
         pagination.className = 'swiper-pagination';
 
-        // 2. Mover los paneles originales dentro de los nuevos 'slides'
         slide1.appendChild(primaryPanel);
         slide2.appendChild(secondaryPanel);
         swiperWrapper.appendChild(slide1);
         swiperWrapper.appendChild(slide2);
 
-        // 3. Ensamblar la estructura final del Swiper
         swiperContainer.appendChild(swiperWrapper);
         swiperContainer.appendChild(pagination);
 
-        // 4. Limpiar el contenedor original y añadir la nueva estructura Swiper
         mainWrapper.innerHTML = '';
         mainWrapper.appendChild(swiperContainer);
         
-        // 5. Inicializar la librería Swiper sobre la nueva estructura
         App.state.swiper = new Swiper('.mobile-swiper-container', {
-            // AÑADIMOS LA SOLUCIÓN: autoHeight ajustará la altura del carrusel dinámicamente
             autoHeight: true, 
             loop: false,
             pagination: {
@@ -75,19 +68,34 @@
         
         Logic.loadSettings();
         UI.populateSelects();
-        UI.updateLanguage(); // Muestra "Inicializando..."
+        UI.updateLanguage(); // Muestra el estado inicial (ej. "Inicializando...")
         
-        // --- LLAMADA A LA SINCRONIZACIÓN ---
-        Logic.syncWithWorldTime().then(() => {
-            // Este código se ejecuta DESPUÉS de que la sincronización termine
-            Logic.requestNotificationPermission();
-            addEventListeners();
-            
-            setTimeout(() => {
-                UI.updateAll();
-                setInterval(() => UI.updateAll(), 1000);
-            }, 100);
+        // El código de inicialización ahora se ejecuta de forma síncrona,
+        // ya que la llamada a la API de tiempo fue movida al Service Worker.
+        Logic.requestNotificationPermission();
+        addEventListeners();
+
+        // --- INICIO: LISTENER PARA MENSAJES DEL SERVICE WORKER ---
+        // Se configura para escuchar mensajes del SW que llegarán en segundo plano.
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data && event.data.type === 'TIME_SYNC_UPDATE') {
+                const newOffset = event.data.payload;
+                if (App.state.timeOffset !== newOffset) {
+                    console.log(`Página principal: Recibido nuevo desfase de tiempo: ${newOffset}ms`);
+                    App.state.timeOffset = newOffset;
+                    // Forzamos una actualización de la UI para reflejar el tiempo corregido.
+                    UI.updateAll(); 
+                }
+            }
         });
+        // --- FIN: LISTENER PARA MENSAJES DEL SERVICE WORKER ---
+        
+        // El bucle principal de la aplicación se inicia inmediatamente, sin bloqueos.
+        // Se coloca FUERA del listener de mensajes para que se ejecute solo una vez.
+        setTimeout(() => {
+            UI.updateAll();
+            setInterval(() => UI.updateAll(), 1000);
+        }, 100);
     }
 
     /**
@@ -255,52 +263,42 @@
         App.dom.syncModalOverlay.addEventListener('click', e => { if (e.target === App.dom.syncModalOverlay) UI.closeSyncModal(); });
         App.dom.aboutModalOverlay.addEventListener('click', e => { if (e.target === App.dom.aboutModalOverlay) UI.closeAboutModal(); });
         
-        // El overlay del modal de héroe ya no cierra el modal.
         App.dom.heroModalOverlay.addEventListener('click', (e) => {
-            // Prevenimos que el clic en el overlay se propague al contenido
             if (e.target === App.dom.heroModalOverlay) {
                 // No hacemos nada, el modal permanece abierto
             }
         });
-        // Evitamos que el clic en el contenido del modal lo cierre (ya que antes el overlay lo hacía)
         document.getElementById('hero-modal-content').addEventListener('click', (e) => {
             e.stopPropagation();
         });
 
-        // --- AÑADIMOS NUEVOS LISTENERS PARA EL MODAL DE HÉROE ---
         App.dom.heroModalCloseBtn.addEventListener('click', () => UI.closeHeroModal());
-        
-        // Usamos strings para eliminar la ambigüedad
         App.dom.heroModalPrevBtn.addEventListener('click', () => UI.navigateHeroModal('prev'));
         App.dom.heroModalNextBtn.addEventListener('click', () => UI.navigateHeroModal('next'));
 
-        // Listener para clics en los iconos de preview
         App.dom.heroModalPreviews.addEventListener('click', (e) => {
             const previewItem = e.target.closest('.hero-preview-item');
             if (previewItem && previewItem.dataset.heroName) {
                 const heroName = previewItem.dataset.heroName;
                 const newIndex = App.state.heroModalContext.heroes.findIndex(h => h.name === heroName);
                 if (newIndex !== -1) {
-                    UI.navigateHeroModal(newIndex); // Pasamos el índice numérico
+                    UI.navigateHeroModal(newIndex);
                 }
             }
         });
 
-        // Listener para teclas
         window.addEventListener('keydown', (e) => {
             if (!App.dom.heroModalOverlay.classList.contains('visible')) return;
             
             if (e.key === 'Escape') {
                 UI.closeHeroModal();
             } else if (e.key === 'ArrowRight') {
-                // Usamos strings para eliminar la ambigüedad
                 UI.navigateHeroModal('next');
             } else if (e.key === 'ArrowLeft') {
                 UI.navigateHeroModal('prev');
             }
         });
 
-        // Listeners para el botón flotante y modal de streams
         App.dom.twitchFab.addEventListener('click', () => {
             App.dom.streamsModalOverlay.classList.add('visible');
         });
@@ -315,7 +313,6 @@
             }
         });
 
-        // Listeners para los checkboxes de notificación de streams
         App.dom.preStreamAlertToggle.addEventListener('change', () => {
             App.state.config.streamAlerts.preStream = App.dom.preStreamAlertToggle.checked;
             Logic.saveConfigToCookie();
@@ -325,12 +322,32 @@
             Logic.saveConfigToCookie();
         });
 
-        // Actualizar idioma si el usuario vuelve a la pestaña
         window.addEventListener('focus', () => UI.updateLanguage());
     }
 
     // Espera a que el DOM esté listo antes de hacer nada.
     document.addEventListener('DOMContentLoaded', () => {
+        // --- INICIO: REGISTRO DEL SERVICE WORKER ---
+        // Se registra lo antes posible para acelerar su instalación.
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Detectamos si estamos en localhost
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Asignamos la ruta correcta según el entorno
+        const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
+
+        navigator.serviceWorker.register(serviceWorkerPath)
+            .then(registration => {
+                console.log(`Service Worker registrado con éxito en: ${registration.scope}`);
+            })
+            .catch(err => {
+                console.error('Error en el registro del Service Worker:', err);
+            });
+    });
+}
+        // --- FIN: REGISTRO DEL SERVICE WORKER ---
+
         // Cargar datos externos (JSON) es lo primero.
         Promise.all([
             fetch('json_data/heroes_data.json').then(res => res.json()),
