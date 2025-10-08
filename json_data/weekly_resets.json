@@ -170,14 +170,28 @@
                             "es": "Infusión de veneno explosivo"
                         },
                         "description": {
-                            "en": "When the attacked enemy dies, it has a chance to inflict damage in a 3m area.",
+                            "en": "When the attacked enemy dies, has a chance to deal damage within a 3m area.",
                             "es": "Cuando el enemigo atacado muere, tiene la probabilidad de infligir daño en un área de 3 m."
                         },
                         "tag": {
                             "en": "Unique",
                             "es": "Único"
                         },
-                        "icon": "icon_buff_dungeon_type01"
+                        "icon": "icon_buff_dungeon_type01",
+                        "enhancements": [
+                            {
+                                "name": { "en": "Elemental Diffusion", "es": "Difusión Elemental" },
+                                "description": { "en": "Applies 1 additional stack of the Elemental Effect on the enemy when using a Joint Attack.", "es": "Aplica 1 acumulación adicional del efecto elemental al enemigo al usar un ataque conjunto." }
+                            },
+                            {
+                                "name": { "en": "Vital Strike", "es": "Golpe Vital" },
+                                "description": { "en": "Has a chance to instant-kill an enemy when using Single-Target Skill. (Cooldown: 7 sec.)", "es": "Tiene la probabilidad de matar instantáneamente a un enemigo al usar una habilidad de objetivo único. (Enfriamiento: 7 s)." }
+                            },
+                            {
+                                "name": { "en": "Flamethrower", "es": "Lanzallamas" },
+                                "description": { "en": "Increases Damage Dealt by AoE Skills.", "es": "Aumenta el daño infligido por las habilidades de AdE." }
+                            }
+                        ]
                     },
                     {
                         "name": {
@@ -185,29 +199,57 @@
                             "es": "Bendición absoluta"
                         },
                         "description": {
-                            "en": "Upon taking a hit, has a chance to grant a shield. (Cooldown: 7s)",
+                            "en": "When hit, has a chance to grant a Shield. (Cooldown: 7 sec.)",
                             "es": "Al recibir un golpe, tiene probabilidad de otorgar un escudo. (Enfriamiento: 7 s)"
                         },
                         "tag": {
                             "en": "Unique",
                             "es": "Único"
                         },
-                        "icon": "icon_buff_dungeon_type02"
+                        "icon": "icon_buff_dungeon_type02",
+                        "enhancements": [
+                            {
+                                "name": { "en": "Ascension", "es": "Ascensión" },
+                                "description": { "en": "When a Buff expires, deals Damage to enemies within 3m of the team. (Cooldown: 5 sec.)", "es": "Cuando un potenciador expira, inflige daño a los enemigos en un radio de 3 m del equipo. (Enfriamiento: 5 s)." }
+                            },
+                            {
+                                "name": { "en": "Tranquil Mind", "es": "Mente Tranquila" },
+                                "description": { "en": "Increases S.U. Gauge Recovery Rate", "es": "Aumenta la tasa de recuperación del medidor S.U." }
+                            },
+                            {
+                                "name": { "en": "Strong Spirit", "es": "Espíritu Fuerte" },
+                                "description": { "en": "Increases Max HP.", "es": "Aumenta los PS máximos." }
+                            }
+                        ]
                     },
                     {
                         "name": {
-                            "en": "The Value of Devotion",
-                            "es": "El valor de la devoción"
+                            "en": "Value of Devotion",
+                            "es": "Valor de la devoción"
                         },
                         "description": {
-                            "en": "Recovers 1 slot of the joint attack gauge when using a ranged skill.",
-                            "es": "Recupera 1 ranura del indicador de ataque conjunto al usar una habilidad a distancia"
+                            "en": "Recovers 1 slot of Joint Attack Gauge on Ranged Skill use.",
+                            "es": "Recupera 1 ranura del medidor de ataque conjunto al usar una habilidad a distancia."
                         },
                         "tag": {
                             "en": "Unique",
                             "es": "Único"
                         },
-                        "icon": "icon_buff_dungeon_type03"
+                        "icon": "icon_buff_dungeon_type03",
+                        "enhancements": [
+                            {
+                                "name": { "en": "Equip Scope", "es": "Equipar Mira" },
+                                "description": { "en": "Increases Ranged Attack Power.", "es": "Aumenta el poder de ataque a distancia." }
+                            },
+                            {
+                                "name": { "en": "Full Cooperation", "es": "Cooperación Total" },
+                                "description": { "en": "Increases Joint Attack damage.", "es": "Aumenta el daño del ataque conjunto." }
+                            },
+                            {
+                                "name": { "en": "Elemental Diffusion", "es": "Difusión Elemental" },
+                                "description": { "en": "Applies 1 additional stack of the Elemental Effect on the enemy when using a Joint Attack.", "es": "Aplica 1 acumulación adicional del efecto elemental al enemigo al usar un ataque conjunto." }
+                            }
+                        ]
                     }
                 ],
                 "stages": [
