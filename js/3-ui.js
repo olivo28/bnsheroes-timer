@@ -505,18 +505,6 @@ const UI = {
             return listHTML + '</ul>';
         };
         
-        const getMinimalistRewardHTML = (itemId, quantity, rank) => {
-            const itemDef = App.state.allEventsData.itemDefinitions[itemId];
-            if (!itemDef) return `<span>${itemId} x${quantity}</span>`;
-            const name = itemDef.name[lang] || itemId;
-            const icon = itemDef.icon ? `<img src="assets/items/${itemDef.icon}.png" class="minimalist-reward-icon">` : '';
-            const rarityClass = getRarityClass(rank);
-            return `<div class="minimalist-reward-item">
-                        ${icon}
-                        <span class="minimalist-reward-name ${rarityClass}">${name} x${quantity}</span>
-                    </div>`;
-        };
-
         let contentHTML = `
             <div class="details-header">
                 <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
@@ -527,13 +515,35 @@ const UI = {
                 <p class="details-summary">${eventData.summary[lang]}</p>
         `;
 
+        // --- INICIO DE LA MODIFICACIÓN ---
+
+        // Muestra el límite diario de reclamos si está definido en el JSON
+        if (eventData.daily_claim_limit) {
+            contentHTML += `<div class="weekly-recommendation-box"><p>${langData.dailyClaimLimitText(eventData.daily_claim_limit)}</p></div>`;
+        }
+
+        // Modificamos la sección de misiones para ser más flexible
         if (eventData.missions) {
             contentHTML += `<div class="details-section"><h3>${langData.eventMissionsTitle}</h3><table class="details-table missions-table"><tbody>`;
             eventData.missions.forEach(m => {
-                contentHTML += `<tr><td>${m.description[lang]}</td><td>+${m.points} ${langData.pointsSuffix}</td></tr>`;
+                let rightColumnHTML = ''; // Columna derecha de la tabla
+                
+                // Opción 1: La misión da puntos (formato antiguo)
+                if (m.points) {
+                    rightColumnHTML = `+${m.points} ${langData.pointsSuffix}`;
+                } 
+                // Opción 2: La misión tiene un objetivo (formato nuevo)
+                else if (m.goal) {
+                    rightColumnHTML = `${langData.goalPrefix} x${m.goal}`;
+                }
+                // Si no hay ni puntos ni objetivo, la columna quedará vacía.
+
+                contentHTML += `<tr><td>${m.description[lang]}</td><td style="color: var(--color-warning); font-weight: bold;">${rightColumnHTML}</td></tr>`;
             });
             contentHTML += `</tbody></table></div>`;
         }
+        
+        // --- FIN DE LA MODIFICACIÓN ---
 
         if (eventData.missions_and_rewards) {
              contentHTML += `<div class="details-section"><h3>${langData.eventMissionsAndRewardsTitle}</h3><div class="details-reward-grid-container">`;

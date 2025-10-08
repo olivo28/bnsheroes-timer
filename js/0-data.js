@@ -112,7 +112,9 @@ const I18N_STRINGS = {
         notificationStreamBody: "Sintoniza el canal oficial de Twitch.",
         streamStartsIn: "¡Comienza en!",
         streamIsLive: "¡EN VIVO AHORA!",
-        goToChannel: "Ir al Canal"
+        goToChannel: "Ir al Canal",
+        dailyClaimLimitText: (limit) => `Puedes reclamar recompensas hasta ${limit} veces al día.`,
+        goalPrefix: "Objetivo"
     },
     en: {
         initializing: "Initializing...", // <-- AÑADE ESTA LÍNEA
@@ -222,7 +224,9 @@ const I18N_STRINGS = {
         streamWidgetTitle: "Next Stream",
         streamStartsIn: "Starts in!",
         streamIsLive: "LIVE NOW!",
-        goToChannel: "Go to Channel"
+        goToChannel: "Go to Channel",
+        dailyClaimLimitText: (limit) => `You can claim rewards up to ${limit} times per day.`,
+        goalPrefix: "Goal"
     }
 };
 
