@@ -1627,6 +1627,7 @@ select.settings-input option {
 }
 
 /* 3.8.7.1 Estilos para la lista de suscripciones activas */
+/* Estilos para la lista de suscripciones activas (Versión con Iconos) */
 #active-subscriptions-list {
     display: flex;
     flex-direction: column;
@@ -1646,6 +1647,7 @@ select.settings-input option {
 .subscription-info {
     display: flex;
     flex-direction: column;
+    gap: 8px; /* Espacio entre el alias y los detalles */
 }
 
 .subscription-alias {
@@ -1655,9 +1657,38 @@ select.settings-input option {
 }
 
 .subscription-details {
-    font-size: 0.85em;
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espacio entre los items de detalle */
+    font-size: 0.9em;
     color: var(--text-muted-color);
-    margin-top: 4px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Espacio entre icono y texto */
+}
+
+.os-detail svg {
+    width: 18px;
+    height: 18px;
+}
+
+.browser-detail {
+    font-weight: 500;
+}
+
+/* --- AÑADE ESTAS LÍNEAS --- */
+.browser-icon {
+    width: 18px;
+    height: 18px;
+}
+/* --- FIN DE LÍNEAS A AÑADIR --- */
+
+.os-detail svg {
+    width: 18px;
+    height: 18px;
 }
 
 .delete-subscription-btn {

@@ -860,45 +860,101 @@ const UI = {
     },
 
     /**
+     * Devuelve el SVG correspondiente al sistema operativo.
+     * @param {string} os - El nombre del sistema operativo (ej. "Windows").
+     * @returns {string} El string SVG del icono.
+     */
+    getDeviceIcon(os) {
+        const osLower = (os || '').toLowerCase(); // Maneja el caso de que 'os' sea undefined
+        if (osLower.includes('windows')) {
+            return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3,12V6.75L9,5.43V11.91L3,12M21,12V4.5L11,3V11.91L21,12M3,13L9,13.09V19.57L3,18.25V13M21,13L11,13.09V21L21,19.5V13Z" /></svg>`;
+        }
+        if (osLower.includes('android')) {
+            return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16,18H8V6H16M16.5,3H7.5A1.5,1.5 0 0,0 6,4.5V19.5A1.5,1.5 0 0,0 7.5,21H16.5A1.5,1.5 0 0,0 18,19.5V4.5A1.5,1.5 0 0,0 16.5,3M13.5,4.5H10.5V5H13.5V4.5Z" /></svg>`;
+        }
+        if (osLower.includes('ios')) {
+            return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16,18H8V6H16M16.5,3H7.5A1.5,1.5 0 0,0 6,4.5V19.5A1.5,1.5 0 0,0 7.5,21H16.5A1.5,1.5 0 0,0 18,19.5V4.5A1.5,1.5 0 0,0 16.5,3M12,20A1,1 0 1,1 13,19A1,1 0 0,1 12,20Z" /></svg>`;
+        }
+        if (osLower.includes('macos')) {
+            return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20,2H4C2.9,2 2,2.9 2,4V16C2,17.1 2.9,18 4,18H9V20H7V22H17V20H15V18H20C21.1,18 22,17.1 22,16V4C22,2.9 21.1,2 20,2M20,16H4V4H20V16Z" /></svg>`;
+        }
+        // Icono por defecto para Linux, etc.
+        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z" /></svg>`;
+    },
+
+    /**
      * Obtiene y renderiza la lista de suscripciones push activas del usuario.
      */
     async renderActiveSubscriptions() {
         const listContainer = document.getElementById('active-subscriptions-list');
         if (!listContainer) return;
 
+        // --- INICIO DE LA MEJORA ---
+        // Objeto de mapeo para asociar nombres de navegador con archivos de icono.
+        const browserIconMap = {
+            'chrome': 'chrome',
+            'firefox': 'firefox',
+            'safari': 'safari',
+            'edge': 'edge',
+            'brave': 'brave',
+            'opera': 'opera',
+            'opera gx': 'operagx',
+            'opera mini': 'operamini',
+            'opera touch': 'operatouch',
+            'vivaldi': 'vivaldi',
+            'arc': 'arc',
+            'tor': 'tor' // Aunque Tor se detecta como Firefox, lo dejamos por si la detección mejora
+        };
+
+        const getDefaultIcon = () => 'default.png'; // <-- Prepara un icono 'default.png' en tu carpeta de assets/browsers
+        // --- FIN DE LA MEJORA ---
+
         listContainer.innerHTML = `<p class="settings-description">${Utils.getText('account.loadingSubscriptions')}</p>`;
 
         try {
-            // Logic.fetchUserPreferences() nos devuelve toda la info del usuario, incluidas las suscripciones
             const userData = await Logic.fetchUserPreferences();
             const subscriptions = userData?.preferences?.pushSubscriptions || [];
 
             if (subscriptions.length === 0) {
-                listContainer.innerHTML = `<p class="settings-description">No active subscriptions found.</p>`; // Idealmente, este texto también iría en i18n
+                listContainer.innerHTML = `<p class="settings-description">No active subscriptions found.</p>`;
                 return;
             }
 
-            // Si tenemos suscripciones, creamos el HTML para cada una
             listContainer.innerHTML = subscriptions.map(sub => {
-                // Formateamos la fecha para que sea legible
-                const date = new Date(sub.subscribedAt);
-                const formattedDate = date.toLocaleDateString(App.state.config.language, {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                });
+                const subscribedOnText = Utils.getText('account.subscribedOn');
+                const { DateTime } = luxon;
+                const date = DateTime.fromISO(sub.subscribedAt);
+                const formattedDate = date.setLocale(App.state.config.language).toLocaleString(DateTime.DATE_FULL);
+
+                // --- LÓGICA DE ICONO MÁS ROBUSTA ---
+                const browserName = sub.browser || ''; // Asegura que no sea undefined
+                const browserKey = browserName.toLowerCase();
+                const iconFileName = browserIconMap[browserKey] || 'default'; // Usa el mapeo o 'default'
 
                 return `
                     <div class="subscription-item">
                         <div class="subscription-info">
                             <span class="subscription-alias">${sub.alias}</span>
-                            <span class="subscription-details">${sub.browser || 'Navegador'} - Suscrito el ${formattedDate}</span>
+                            <div class="subscription-details">
+                                <span class="detail-item browser-detail">
+                                    <img src="assets/browsers/${iconFileName}.png" alt="${browserName}" class="browser-icon">
+                                    ${browserName}
+                                </span>
+                                <span class="detail-item os-detail">
+                                    ${this.getDeviceIcon(sub.os || '')}
+                                    ${sub.os || 'SO Desconocido'}
+                                </span>
+                                <span class="detail-item date-detail">
+                                    - ${subscribedOnText} ${formattedDate}
+                                </span>
+                            </div>
                         </div>
                         <button class="delete-subscription-btn" data-endpoint="${sub.endpoint}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                         </button>
                     </div>
                 `;
             }).join('');
-
         } catch (error) {
             console.error("Error al cargar las suscripciones:", error);
             listContainer.innerHTML = `<p class="settings-description" style="color: var(--color-danger);">Error loading subscriptions.</p>`;

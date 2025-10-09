@@ -11,6 +11,7 @@ const Logic = {
 
     // --- AUTENTICACIÓN Y PREFERENCIAS DE USUARIO ---
 
+
     getSessionToken() {
         return localStorage.getItem('session_token');
     },
@@ -158,19 +159,13 @@ const Logic = {
         if (subscribeButton) subscribeButton.disabled = true;
 
         try {
-            // --- INICIO DE LA MODIFICACIÓN ---
-
-            // 1. Pedir al usuario un alias para este dispositivo.
             const alias = prompt(Utils.getText('account.promptAlias'), Utils.getText('account.promptAliasDefault'));
 
-            // 2. Si el usuario cancela o no escribe nada, detenemos el proceso.
             if (!alias) {
-                console.log("El usuario canceló la suscripción.");
-                if (subscribeButton) subscribeButton.disabled = false; // Reactivamos el botón
+                if (subscribeButton) subscribeButton.disabled = false;
                 return;
             }
 
-            // 3. Si el usuario proporciona un alias, continuamos con la suscripción.
             const registration = await navigator.serviceWorker.ready;
             let subscription = await registration.pushManager.getSubscription();
 
@@ -181,19 +176,32 @@ const Logic = {
                 });
             }
 
-            // 4. Enviamos tanto la suscripción como el alias al backend.
-            await fetch(`${this.BACKEND_URL}/api/save-subscription`, {
+            // --- INICIO DE LA MODIFICACIÓN ---
+            // 1. Detectamos el navegador del cliente.
+            const deviceDetails = Logic.getClientDeviceDetails();
+
+            // 2. Enviamos la suscripción, el alias Y el nombre del navegador al backend.
+            await fetch(`${Logic.BACKEND_URL}/api/save-subscription`, {
                 method: 'POST',
-                body: JSON.stringify({ subscription, alias }), // <--- Objeto modificado
+                body: JSON.stringify({ 
+                    subscription, 
+                    alias, 
+                    browser: deviceDetails.browser, // ej. "Chrome"
+                    os: deviceDetails.os            // ej. "Windows"
+                }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
             });
-
             // --- FIN DE LA MODIFICACIÓN ---
 
             alert(Utils.getText('settings.subscribeButtonSuccess'));
 
             if (subscribeButton) {
                 subscribeButton.textContent = Utils.getText('account.pushEnabled');
+            }
+            
+            // Refrescamos la lista en la UI para que aparezca la nueva suscripción
+            if (typeof UI !== 'undefined' && UI.renderActiveSubscriptions) {
+                UI.renderActiveSubscriptions();
             }
 
         } catch (error) {
@@ -255,6 +263,42 @@ const Logic = {
             console.error('Error al desuscribirse de push:', error);
             alert(Utils.getText('account.unsubscribeError'));
         }
+    },
+
+    /**
+     * Detecta el nombre del navegador del cliente a partir del User-Agent.
+     * La comprobación se hace en un orden específico para evitar falsos positivos
+     * (ej. muchos navegadores se identifican como 'Chrome' y 'Safari').
+     * @returns {string} El nombre del navegador detectado.
+     */
+    getClientDeviceDetails() {
+        const ua = navigator.userAgent;
+        let browser = "Desconocido";
+        let os = "Desconocido";
+
+        // Detección del Sistema Operativo
+        if (/Windows/i.test(ua)) os = "Windows";
+        else if (/Android/i.test(ua)) os = "Android";
+        else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
+        else if (/Mac/i.test(ua)) os = "macOS";
+        else if (/Linux/i.test(ua)) os = "Linux";
+
+        // --- INICIO DE LA DETECCIÓN DE NAVEGADOR MEJORADA ---
+        // Se priorizan las variantes más específicas primero.
+        if (/Brave/i.test(ua)) browser = "Brave";
+        else if (/Edg/i.test(ua)) browser = "Edge";
+        else if (ua.includes("Opera") && ua.includes("GX")) browser = "Opera GX";
+        else if (/Opera Mini/i.test(ua)) browser = "Opera Mini";
+        else if (/OPRT/i.test(ua)) browser = "Opera Touch";
+        else if (/Opera|OPR/i.test(ua)) browser = "Opera";
+        else if (/Vivaldi/i.test(ua)) browser = "Vivaldi";
+        else if (/Arc/i.test(ua)) browser = "Arc";
+        else if (/Firefox/i.test(ua)) browser = "Firefox"; // Tor se detectará como Firefox
+        else if (/Chrome/i.test(ua)) browser = "Chrome";
+        else if (/Safari/i.test(ua)) browser = "Safari";
+        // --- FIN DE LA DETECCIÓN DE NAVEGADOR MEJORADA ---
+        
+        return { browser, os };
     },
 
     requestNotificationPermission() {
