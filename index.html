@@ -135,17 +135,73 @@
 
     <div id="account-modal-overlay">
         <div id="account-modal">
-            <button id="close-account-modal-btn" class="modal-close-btn">&times;</button>
-            <h2 data-lang-key="account.title"></h2>
-            
-            <div class="settings-section">
-                <label data-lang-key="account.pushNotifications"></label>
-                <p class="settings-description" data-lang-key="account.pushDescription"></p>
-                <button id="account-subscribe-push-btn" class="settings-btn push-btn" data-lang-key="settings.subscribeButton"></button>
+            <!-- Columna de Navegación (Barra Lateral) -->
+            <div class="account-sidebar">
+                <div class="account-sidebar-scroller">
+                    <div class="sidebar-header">
+                        <h3 data-lang-key="account.userSettings"></h3>
+                    </div>
+                    <div class="sidebar-nav">
+                        <a href="#" class="nav-item active" data-section="my-account">
+                            <span data-lang-key="account.nav.myAccount"></span>
+                        </a>
+                        <a href="#" class="nav-item" data-section="push-notifications">
+                            <span data-lang-key="account.nav.pushNotifications"></span>
+                        </a>
+                        <!-- Aquí se pueden añadir más enlaces de navegación en el futuro -->
+                    </div>
+                    <div class="sidebar-footer">
+                        <button id="logout-btn-modal" class="logout-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                            </svg>
+                            <span data-lang-key="common.logout"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
-            
-            <!-- Aquí se pueden añadir más configuraciones de cuenta en el futuro -->
-
+    
+            <!-- Columna de Contenido Principal -->
+            <div class="account-content">
+                <div class="account-content-scroller">
+    
+                    <!-- Sección 1: Mi Cuenta (Visible por defecto) -->
+                    <div class="content-section active" id="section-my-account">
+                        <h2 data-lang-key="account.nav.myAccount"></h2>
+                        <div class="user-profile-card">
+                            <div class="user-profile-banner"></div>
+                            <div class="user-profile-info">
+                                <img src="" alt="User Avatar" class="user-profile-avatar">
+                                <span class="user-profile-name"></span>
+                            </div>
+                        </div>
+                        <!-- Más detalles de la cuenta pueden ir aquí -->
+                    </div>
+    
+                    <!-- Sección 2: Notificaciones Push (Oculta por defecto) -->
+                    <div class="content-section" id="section-push-notifications">
+                        <h2 data-lang-key="account.nav.pushNotifications"></h2>
+                        <p class="settings-description" data-lang-key="account.pushDescription"></p>
+                        <button id="account-subscribe-push-btn" class="settings-btn push-btn"
+                            data-lang-key="settings.subscribeButton"></button>
+                        <hr class="section-divider">
+                        <h3 data-lang-key="account.activeSubscriptions"></h3>
+                        <div id="active-subscriptions-list">
+                            <!-- La lista de suscripciones se generará aquí con JS -->
+                        </div>
+                    </div>
+    
+                </div>
+                <div id="close-account-modal-btn" class="close-fullscreen-modal-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span data-lang-key="common.escape"></span>
+                </div>
+            </div>
         </div>
     </div>
 

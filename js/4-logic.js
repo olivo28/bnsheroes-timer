@@ -154,12 +154,23 @@ const Logic = {
 
         const VAPID_PUBLIC_KEY = App.state.config.publicConfig.vapidPublicKey;
         
-        // --- INICIO DE LA MODIFICACIÓN ---
-        // Obtenemos una referencia al botón para poder manipularlo
         const subscribeButton = document.getElementById('account-subscribe-push-btn');
-        if (subscribeButton) subscribeButton.disabled = true; // Desactivamos el botón para evitar clics múltiples
+        if (subscribeButton) subscribeButton.disabled = true;
 
         try {
+            // --- INICIO DE LA MODIFICACIÓN ---
+
+            // 1. Pedir al usuario un alias para este dispositivo.
+            const alias = prompt(Utils.getText('account.promptAlias'), Utils.getText('account.promptAliasDefault'));
+
+            // 2. Si el usuario cancela o no escribe nada, detenemos el proceso.
+            if (!alias) {
+                console.log("El usuario canceló la suscripción.");
+                if (subscribeButton) subscribeButton.disabled = false; // Reactivamos el botón
+                return;
+            }
+
+            // 3. Si el usuario proporciona un alias, continuamos con la suscripción.
             const registration = await navigator.serviceWorker.ready;
             let subscription = await registration.pushManager.getSubscription();
 
@@ -170,53 +181,79 @@ const Logic = {
                 });
             }
 
+            // 4. Enviamos tanto la suscripción como el alias al backend.
             await fetch(`${this.BACKEND_URL}/api/save-subscription`, {
                 method: 'POST',
-                body: JSON.stringify(subscription),
+                body: JSON.stringify({ subscription, alias }), // <--- Objeto modificado
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
             });
 
-            // Mostramos el mensaje de éxito (ahora traducido)
+            // --- FIN DE LA MODIFICACIÓN ---
+
             alert(Utils.getText('settings.subscribeButtonSuccess'));
 
-            // Cambiamos el texto del botón y lo mantenemos desactivado para indicar éxito
             if (subscribeButton) {
-                subscribeButton.textContent = Utils.getText('account.pushEnabled'); // Necesitaremos esta nueva clave
+                subscribeButton.textContent = Utils.getText('account.pushEnabled');
             }
 
         } catch (error) {
             console.error("Error al suscribirse a push:", error);
             alert(Utils.getText('notifications.pushSubscribedError'));
-            // Si hay un error, volvemos a activar el botón
             if (subscribeButton) subscribeButton.disabled = false;
         }
-        // --- FIN DE LA MODIFICACIÓN ---
     },
-    
-    async unsubscribeFromPushNotifications() {
+
+    /**
+     * Desuscribe un dispositivo de las notificaciones push.
+     * @param {string|null} endpointToDelete - Si se proporciona, solo se elimina esta suscripción del backend.
+     * Si es null, se desuscribe el navegador actual y se notifica al backend.
+     */
+    async unsubscribeFromPushNotifications(endpointToDelete = null) {
         const token = this.getSessionToken();
-        if (!token || !('serviceWorker' in navigator)) return;
+        if (!token) return;
+
+        let endpointToTellBackend = endpointToDelete;
 
         try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
+            // Si no nos han pasado un endpoint específico, significa que estamos desuscribiendo el navegador actual.
+            if (!endpointToDelete) {
+                if (!('serviceWorker' in navigator)) return;
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
 
-            if (subscription) {
-                // Primero, le decimos al navegador que se desuscriba
-                await subscription.unsubscribe();
-
-                // Luego, le decimos a nuestro backend que elimine el registro
-                await fetch(`${this.BACKEND_URL}/api/delete-subscription`, {
+                if (subscription) {
+                    endpointToTellBackend = subscription.endpoint;
+                    await subscription.unsubscribe();
+                    console.log("Suscripción eliminada del navegador actual.");
+                } else {
+                    console.log("No había suscripción activa en este navegador para eliminar.");
+                    return; // No hay nada más que hacer
+                }
+            }
+            
+            // Si tenemos un endpoint (ya sea el del navegador actual o uno de la lista), se lo decimos al backend.
+            if (endpointToTellBackend) {
+                const response = await fetch(`${this.BACKEND_URL}/api/delete-subscription`, {
                     method: 'POST',
-                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                    body: JSON.stringify({ endpoint: endpointToTellBackend }),
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error del servidor al eliminar la suscripción.');
+                }
                 
-                alert(Utils.getText('account.unsubscribeSuccess')); // Nueva clave de texto
+                // Si la desuscripción fue del navegador actual, mostramos una alerta.
+                // Si fue de un botón en la lista, no es necesario (la UI se refresca sola).
+                if (!endpointToDelete) {
+                    alert(Utils.getText('account.unsubscribeSuccess'));
+                }
+                console.log("Suscripción eliminada del backend con éxito.");
             }
         } catch (error) {
             console.error('Error al desuscribirse de push:', error);
-            alert(Utils.getText('account.unsubscribeError')); // Nueva clave de texto
+            alert(Utils.getText('account.unsubscribeError'));
         }
     },
 

@@ -85,6 +85,7 @@ const App = {
         streamsModalOverlay: null,
         languageModalOverlay: null, // Nuevo
         accountModalOverlay: null,
+        logoutBtnModal: null,
 
         // ... más referencias específicas si son necesarias
     },
@@ -151,6 +152,7 @@ const App = {
         this.dom.heroModalOverlay = document.getElementById('hero-modal-overlay');
         this.dom.streamsModalOverlay = document.getElementById('streams-modal-overlay');
         this.dom.languageModalOverlay = document.getElementById('language-modal-overlay');
+        this.dom.logoutBtnModal = document.getElementById('logout-btn-modal');
         
         // Botón flotante de Twitch
         this.dom.twitchFab = document.getElementById('twitch-fab');

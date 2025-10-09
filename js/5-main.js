@@ -260,12 +260,43 @@ import UI from './3-ui.js';
         document.getElementById('close-info-btn').addEventListener('click', UI.closeInfoModal);
 
         document.getElementById('close-account-modal-btn').addEventListener('click', UI.closeAccountModal);
-        if (App.dom.accountModalOverlay) { // Añadimos una comprobación por si acaso
-            App.dom.accountModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeAccountModal(); });
+        if (App.dom.accountModalOverlay) {
+            // Clic en los enlaces de navegación de la barra lateral
+            App.dom.accountModalOverlay.addEventListener('click', e => {
+                if (e.target.closest('.nav-item')) {
+                    e.preventDefault();
+                    const sectionId = e.target.closest('.nav-item').dataset.section;
+                    UI.switchAccountModalSection(sectionId);
+                }
+                // Clic para cerrar si se pulsa fuera del modal
+                if (e.target === e.currentTarget) {
+                    UI.closeAccountModal();
+                }
+            });
         }
-        document.getElementById('account-subscribe-push-btn').addEventListener('click', () => Logic.subscribeToPushNotifications());
-        document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
 
+        const subscriptionsList = document.getElementById('active-subscriptions-list');
+        if (subscriptionsList) {
+            subscriptionsList.addEventListener('click', async (e) => {
+                const deleteButton = e.target.closest('.delete-subscription-btn');
+                if (deleteButton) {
+                    const endpoint = deleteButton.dataset.endpoint;
+                    if (confirm('Are you sure you want to remove this subscription?')) { // Idealmente, este texto también iría en i18n
+                        // Reutilizamos la función de desuscripción, pero ahora la adaptamos
+                        await Logic.unsubscribeFromPushNotifications(endpoint);
+                        // Después de eliminar, volvemos a renderizar la lista para que desaparezca el elemento
+                        UI.renderActiveSubscriptions();
+                    }
+                }
+            });
+        }
+        
+        // El botón de logout ahora está en el modal, así que le añadimos su listener
+        if (App.dom.logoutBtnModal) {
+            App.dom.logoutBtnModal.addEventListener('click', () => Logic.logout());
+        }
+        
+        document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
         
         App.dom.modalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSettingsModal(); });
         App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeInfoModal(); });
@@ -385,8 +416,8 @@ import UI from './3-ui.js';
             }
         });
         
-        App.dom.twitchFab.addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.remove('hidden'));
-        document.getElementById('close-streams-modal').addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.add('hidden'));
+        App.dom.twitchFab.addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.add('visible'));
+        document.getElementById('close-streams-modal').addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.remove('visible'));
         
         window.addEventListener('focus', () => UI.updateLanguage());
     }

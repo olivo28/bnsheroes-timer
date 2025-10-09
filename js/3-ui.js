@@ -782,12 +782,23 @@ const UI = {
     },
 
     async openAccountModal() {
-        if (!App.state.isLoggedIn) {
-            // Si el navegador no soporta Push, ni siquiera mostramos la opción
-            // (podrías ocultar el botón de settings del usuario en este caso)
-            return; 
+        App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.dataset.langKey;
+            const text = Utils.getText(key);
+            if (text !== key) el.textContent = text;
+        });
+        // Si no está logueado, no abre el modal. El widget de usuario debería prevenir esto.
+        if (!App.state.isLoggedIn || !App.state.userInfo) return;
+
+        // --- LÓGICA DE POBLACIÓN DE DATOS ---
+        const { global_name, avatarUrl } = App.state.userInfo;
+        const profileCard = App.dom.accountModalOverlay.querySelector('.user-profile-card');
+        if (profileCard) {
+            profileCard.querySelector('.user-profile-avatar').src = avatarUrl;
+            profileCard.querySelector('.user-profile-name').textContent = global_name;
         }
 
+        // --- LÓGICA DEL BOTÓN PUSH ---
         const subscribeButton = document.getElementById('account-subscribe-push-btn');
         subscribeButton.disabled = true; // Desactivar mientras comprobamos
 
@@ -806,10 +817,98 @@ const UI = {
             console.error("Error al comprobar la suscripción push:", error);
             subscribeButton.textContent = "Error";
         } finally {
-            subscribeButton.disabled = false; // Reactivar tras la comprobación
-            App.dom.accountModalOverlay.classList.add('visible');
+            subscribeButton.disabled = false;
+        }
+
+        // Renderizar la lista de suscripciones activas
+        this.renderActiveSubscriptions();
+
+        // Asegurarse de que la primera sección esté visible al abrir
+        this.switchAccountModalSection('my-account');
+        App.dom.accountModalOverlay.classList.add('visible');
+    },
+
+    /**
+     * Cambia la sección visible dentro del modal de cuenta.
+     * @param {string} sectionId - El ID de la sección a mostrar (ej. 'my-account').
+     */
+    switchAccountModalSection(sectionId) {
+        const modal = App.dom.accountModalOverlay;
+        if (!modal) return;
+
+        // 1. Ocultar todas las secciones de contenido
+        modal.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // 2. Quitar la clase 'active' de todos los enlaces de navegación
+        modal.querySelectorAll('.nav-item').forEach(navLink => {
+            navLink.classList.remove('active');
+        });
+
+        // 3. Mostrar la sección de contenido correcta
+        const activeSection = modal.querySelector(`#section-${sectionId}`);
+        if (activeSection) {
+            activeSection.classList.add('active');
+        }
+
+        // 4. Marcar como 'active' el enlace de navegación correcto
+        const activeNavLink = modal.querySelector(`.nav-item[data-section="${sectionId}"]`);
+        if (activeNavLink) {
+            activeNavLink.classList.add('active');
         }
     },
+
+    /**
+     * Obtiene y renderiza la lista de suscripciones push activas del usuario.
+     */
+    async renderActiveSubscriptions() {
+        const listContainer = document.getElementById('active-subscriptions-list');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = `<p class="settings-description">${Utils.getText('account.loadingSubscriptions')}</p>`;
+
+        try {
+            // Logic.fetchUserPreferences() nos devuelve toda la info del usuario, incluidas las suscripciones
+            const userData = await Logic.fetchUserPreferences();
+            const subscriptions = userData?.preferences?.pushSubscriptions || [];
+
+            if (subscriptions.length === 0) {
+                listContainer.innerHTML = `<p class="settings-description">No active subscriptions found.</p>`; // Idealmente, este texto también iría en i18n
+                return;
+            }
+
+            // Si tenemos suscripciones, creamos el HTML para cada una
+            listContainer.innerHTML = subscriptions.map(sub => {
+                // Formateamos la fecha para que sea legible
+                const date = new Date(sub.subscribedAt);
+                const formattedDate = date.toLocaleDateString(App.state.config.language, {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+
+                return `
+                    <div class="subscription-item">
+                        <div class="subscription-info">
+                            <span class="subscription-alias">${sub.alias}</span>
+                            <span class="subscription-details">${sub.browser || 'Navegador'} - Suscrito el ${formattedDate}</span>
+                        </div>
+                        <button class="delete-subscription-btn" data-endpoint="${sub.endpoint}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error("Error al cargar las suscripciones:", error);
+            listContainer.innerHTML = `<p class="settings-description" style="color: var(--color-danger);">Error loading subscriptions.</p>`;
+        }
+    },
+    
+    async togglePushSubscription() {
+        // ... (esta función no necesita cambios por ahora)
+    },
+
     async togglePushSubscription() {
         const subscribeButton = document.getElementById('account-subscribe-push-btn');
         subscribeButton.disabled = true;

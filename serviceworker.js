@@ -7,7 +7,7 @@ const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v1';
 
 const STATIC_FILES_TO_CACHE = [
     '/',
-    '/bnsheroes-timer/',
+    // '/bnsheroes-timer/',
     '/index.html',
     '/style.css',
     '/manifest.json',
