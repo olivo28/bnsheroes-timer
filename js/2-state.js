@@ -1,114 +1,139 @@
 'use strict';
 
 /**
- * Contiene el estado dinámico, las referencias a elementos del DOM y otros recursos de la aplicación.
+ * Contiene el estado dinámico de la aplicación, las referencias al DOM y otros recursos.
+ * Ahora es un módulo ES6.
  */
 const App = {
     // Estado que cambia durante la ejecución
     state: {
-        config: {}, // Se llenará con la configuración cargada al iniciar
+        isLoggedIn: false,      // Nuevo: Para saber si el usuario ha iniciado sesión.
+        userInfo: null,         // Nuevo: Para guardar info del usuario (ej. nombre, avatar).
+        i18n: {},               // Nuevo: Aquí se cargarán las traducciones.
+
+        config: {},             // Se llenará con la configuración fusionada (backend + usuario).
         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-        alertsShownToday: {},
-        lastResetCycleDay: null,
-        timeOffset: 0, // <-- AÑADE ESTA LÍNEA
+        timeOffset: 0,
+
+        // Datos del juego que se cargarán desde el backend
         allHeroesData: [],
         allEventsData: {},
         weeklyResetsData: null,
+
+        // Estado de la UI
+        alertsShownToday: {},
+        lastResetCycleDay: null,
         currentOpenEventId: null,
         currentOpenWeeklyId: null,
         swiper: null,
         heroModalContext: {
-            heroes: [],      // Lista de nombres de héroes en el contexto actual
-            currentIndex: -1 // Índice del héroe que se está mostrando
+            heroes: [],
+            currentIndex: -1
         }
     },
-    
-    // Referencias a elementos del DOM. Se inicializan como null y se pueblan después.
+
+    // Referencias a elementos del DOM
     dom: {
+        // Estructura principal
         mainWrapper: null,
         primaryPanel: null,
         secondaryPanel: null,
+        contentWrapper: null,
+        appContainer: null,
+
+        // Contenedores de Timers y Eventos
         primaryTimersContainer: null,
         timersContainer: null,
+        stickyTicketContainer: null,
         eventsContainer: null,
         weeklyContainer: null,
         bannersContainer: null,
+
+        // Barra superior y de estado
+        topBar: null,
+        currentTime: null,
         statusBar: null,
-        modalOverlay: null,
+        userStatus: null, // Nuevo
+
+        // Botones principales
         settingsButton: null,
+        aboutButton: null,
+
+        // Modal de Configuración
+        modalOverlay: null,
+        settingsModal: null,
         saveSettingsBtn: null,
         closeSettingsBtn: null,
+        testNotificationBtn: null,
+        
+        // Controles de Configuración
         bossTimersToggle: null,
         eventsToggle: null,
-        weeklyToggle: null, // <-- AÑADE ESTA LÍNEA
+        weeklyToggle: null,
         preAlertInput: null,
         soundToggle: null,
         desktopToggle: null,
         timezoneSelect: null,
         languageSelect: null,
         timeFormatSwitch: null,
-        testNotificationBtn: null,
+
+        // Otros Modales
         infoModalOverlay: null,
-        infoModalTitle: null,
-        infoModalBody1: null,
-        infoModalBody2: null,
-        closeInfoBtn: null,
         syncModalOverlay: null,
-        syncHours: null,
-        syncMinutes: null,
-        syncSeconds: null,
-        saveSyncBtn: null,
-        currentTime: null,
-        aboutButton: null,
         aboutModalOverlay: null,
-        closeAboutBtn: null,
         heroModalOverlay: null,
-        heroModalImage: null,
-        heroModalName: null,
-        heroModalRarity: null,
-        heroModalRole: null,
-        heroModalElementIcon: null,
-        heroModalRoleIcon: null,
-        eventDetailsPanel: null,
-        weeklyDetailsPanel: null,
-        twitchFab: null,
         streamsModalOverlay: null,
-        streamsModalContent: null,
-        closeStreamsModal: null,
-        preStreamAlertToggle: null,
-        postStreamAlertToggle: null,
-        stickyTicketContainer: null,
-        // --- NUEVAS REFERENCIAS AÑADIDAS ---
-        heroModalContent: null,
-        heroModalInfo: null,
-        heroModalCloseBtn: null,
-        heroModalPrevBtn: null,
-        heroModalNextBtn: null,
-        heroModalTag: null,
-        heroModalPreviews: null,
+        languageModalOverlay: null, // Nuevo
+        accountModalOverlay: null,
+
+        // ... más referencias específicas si son necesarias
     },
-    
+
     // Otros recursos globales
     alertSound: new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg'),
 
     /**
      * Puebla el objeto App.dom con referencias a los elementos del DOM.
-     * Es crucial llamar a esta función DESPUÉS de que el DOM se haya cargado completamente.
+     * Esta función debe ser llamada después de que el DOM esté completamente cargado.
      */
-    initializeDOM: function() {
+        initializeDOM: function() {
+        // Estructura principal
+        this.dom.appContainer = document.querySelector('.app-container');
+        this.dom.contentWrapper = document.querySelector('.content-wrapper');
         this.dom.mainWrapper = document.querySelector('.main-wrapper');
         this.dom.primaryPanel = document.querySelector('.primary-panel');
         this.dom.secondaryPanel = document.querySelector('.secondary-panel');
+
+        // Contenedores
         this.dom.primaryTimersContainer = document.getElementById('primary-timers-container');
         this.dom.timersContainer = document.getElementById('timers-container');
+        this.dom.stickyTicketContainer = document.getElementById('sticky-ticket-container');
         this.dom.eventsContainer = document.getElementById('events-container');
         this.dom.weeklyContainer = document.getElementById('weekly-container');
         this.dom.bannersContainer = document.getElementById('banners-container');
+
+        // Barras y estado
+        this.dom.currentTime = document.getElementById('current-time');
         this.dom.statusBar = document.getElementById('status-bar');
-        this.dom.modalOverlay = document.getElementById('modal-overlay');
+        this.dom.userStatus = document.getElementById('user-status');
+
+        // Botones principales
         this.dom.settingsButton = document.getElementById('settings-button');
+        this.dom.aboutButton = document.getElementById('about-button');
+
+        // Paneles de detalles
+        this.dom.eventDetailsPanel = document.getElementById('event-details-panel');
+        this.dom.weeklyDetailsPanel = document.getElementById('weekly-details-panel');
+
+        // Modal de Configuración
+        this.dom.modalOverlay = document.getElementById('modal-overlay');
+        this.dom.settingsModal = document.getElementById('settings-modal');
         this.dom.saveSettingsBtn = document.getElementById('save-settings-btn');
         this.dom.closeSettingsBtn = document.getElementById('close-settings-btn');
+        this.dom.testNotificationBtn = document.getElementById('test-notification-btn');
+        this.dom.accountModalOverlay = document.getElementById('account-modal-overlay');
+
+        // Controles de Configuración
         this.dom.bossTimersToggle = document.getElementById('boss-timers-toggle');
         this.dom.eventsToggle = document.getElementById('events-toggle');
         this.dom.weeklyToggle = document.getElementById('weekly-toggle');
@@ -118,47 +143,19 @@ const App = {
         this.dom.timezoneSelect = document.getElementById('timezone-select');
         this.dom.languageSelect = document.getElementById('language-select');
         this.dom.timeFormatSwitch = document.getElementById('time-format-switch');
-        this.dom.testNotificationBtn = document.getElementById('test-notification-btn');
+
+        // Overlays de otros modales
         this.dom.infoModalOverlay = document.getElementById('info-modal-overlay');
-        this.dom.infoModalTitle = document.getElementById('info-modal-title');
-        this.dom.infoModalBody1 = document.getElementById('info-modal-body1');
-        this.dom.infoModalBody2 = document.getElementById('info-modal-body2');
-        this.dom.closeInfoBtn = document.getElementById('close-info-btn');
         this.dom.syncModalOverlay = document.getElementById('sync-modal-overlay');
-        this.dom.syncHours = document.getElementById('sync-hours');
-        this.dom.syncMinutes = document.getElementById('sync-minutes');
-        this.dom.syncSeconds = document.getElementById('sync-seconds');
-        this.dom.saveSyncBtn = document.getElementById('save-sync-btn');
-        this.dom.currentTime = document.getElementById('current-time');
-        this.dom.aboutButton = document.getElementById('about-button');
         this.dom.aboutModalOverlay = document.getElementById('about-modal-overlay');
-        this.dom.closeAboutBtn = document.getElementById('close-about-btn');
         this.dom.heroModalOverlay = document.getElementById('hero-modal-overlay');
-        this.dom.heroModalImage = document.getElementById('hero-modal-image');
-        this.dom.heroModalName = document.getElementById('hero-modal-name');
-        this.dom.heroModalRarity = document.getElementById('hero-modal-rarity');
-        this.dom.heroModalRole = document.getElementById('hero-modal-role');
-        this.dom.heroModalElementIcon = document.getElementById('hero-modal-element-icon');
-        this.dom.heroModalRoleIcon = document.getElementById('hero-modal-role-icon');
-        this.dom.eventDetailsPanel = document.getElementById('event-details-panel');
-        this.dom.weeklyDetailsPanel = document.getElementById('weekly-details-panel');
-        
-        // AÑADE LAS NUEVAS REFERENCIAS de STREAMS
-        this.dom.twitchFab = document.getElementById('twitch-fab');
         this.dom.streamsModalOverlay = document.getElementById('streams-modal-overlay');
-        this.dom.streamsModalContent = document.getElementById('streams-modal-content');
-        this.dom.closeStreamsModal = document.getElementById('close-streams-modal');
-        this.dom.preStreamAlertToggle = document.getElementById('pre-stream-alert-toggle');
-        this.dom.postStreamAlertToggle = document.getElementById('post-stream-alert-toggle');
-        this.dom.stickyTicketContainer = document.getElementById('sticky-ticket-container');
+        this.dom.languageModalOverlay = document.getElementById('language-modal-overlay');
         
-        // --- NUEVAS REFERENCIAS AÑADIDAS ---
-        this.dom.heroModalContent = document.getElementById('hero-modal-content');
-        this.dom.heroModalInfo = document.getElementById('hero-modal-info');
-        this.dom.heroModalCloseBtn = document.getElementById('hero-modal-close-btn');
-        this.dom.heroModalPrevBtn = document.getElementById('hero-modal-prev-btn');
-        this.dom.heroModalNextBtn = document.getElementById('hero-modal-next-btn');
-        this.dom.heroModalTag = document.getElementById('hero-modal-tag');
-        this.dom.heroModalPreviews = document.getElementById('hero-modal-previews');
-    }
+        // Botón flotante de Twitch
+        this.dom.twitchFab = document.getElementById('twitch-fab');
+    },
 };
+
+// Exportamos el objeto App para que otros módulos puedan importarlo.
+export default App;

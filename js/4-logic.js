@@ -1,167 +1,347 @@
+// js/4-logic.js
+
 'use strict';
 
-/**
- * Módulo para la lógica de negocio, cálculos de tiempo y gestión de estado.
- */
+import App from './2-state.js';
+import Utils from './1-utils.js';
+
 const Logic = {
+    // Definimos la URL del backend aquí. Cámbiala por tu dominio de producción cuando despliegues.
+    BACKEND_URL: 'http://localhost:3001',
 
-    /**
-     * Realiza una única llamada a una API de tiempo mundial para calcular el desfase
-     * entre el reloj local del usuario y la hora UTC real.
-     */
-syncWithWorldTime: function() {
-    // Ya no hacemos nada aquí.
-    console.log("La sincronización de tiempo se ha delegado al Service Worker.");
-},
-    
-    /**
-     * Devuelve un objeto Date que representa la hora actual, corregida por el desfase
-     * calculado con la hora mundial.
-     * TODAS las funciones de tiempo deben usar esto en lugar de 'new Date()'.
-     * @returns {Date} La hora actual corregida.
-     */
-    getCorrectedNow: function() {
-        return new Date(new Date().getTime() + App.state.timeOffset);
+    // --- AUTENTICACIÓN Y PREFERENCIAS DE USUARIO ---
+
+    getSessionToken() {
+        return localStorage.getItem('session_token');
     },
 
-    /**
-     * Carga la configuración del usuario desde una cookie o usa los valores por defecto.
-     */
-    loadSettings: function() {
-        let tempConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-        const savedJSON = Utils.getCookie('timersDashboardConfig');
-        if (savedJSON) {
-            try {
-                const savedConfig = JSON.parse(savedJSON);
-                tempConfig = { ...DEFAULT_CONFIG, ...savedConfig };
-                tempConfig.streamAlerts = { ...DEFAULT_CONFIG.streamAlerts, ...(savedConfig.streamAlerts || {}) };
-                if (savedConfig.bosses) {
-                     tempConfig.bosses = DEFAULT_CONFIG.bosses.map(defaultBoss => {
-                        const savedBoss = savedConfig.bosses.find(b => b.id === defaultBoss.id);
-                        return savedBoss ? { ...defaultBoss, alerts: { ...defaultBoss.alerts, ...savedBoss.alerts } } : defaultBoss;
-                    });
-                }
-                tempConfig.notificationTypes = { ...DEFAULT_CONFIG.notificationTypes, ...(savedConfig.notificationTypes || {}) };
-                tempConfig.events = DEFAULT_CONFIG.events;
-                tempConfig.banner = DEFAULT_CONFIG.banner;
-                tempConfig.streams = DEFAULT_CONFIG.streams;
-            } catch (e) {
-                console.error("Error loading settings from cookie.", e);
-            }
+    redirectToDiscordLogin() {
+        const publicConfig = App.state.config.publicConfig;
+        if (!publicConfig || !publicConfig.discordClientId) {
+            console.error("La configuración pública no se ha cargado. No se puede iniciar sesión.");
+            return;
         }
-        App.state.config = tempConfig;
+
+        if (App.state.config.displayTimezone) {
+            localStorage.setItem('pending_timezone_for_new_user', App.state.config.displayTimezone);
+        }
+
+        // ESTA LÍNEA DEBE COINCIDIR EXACTAMENTE CON LA DEL PORTAL DE DISCORD
+        const REDIRECT_URI = this.BACKEND_URL + '/api/auth/discord/callback'; // Ej: http://localhost:3001/api/auth/discord/callback
+        const scope = 'identify email';
+
+        const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${publicConfig.discordClientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${scope}`;
+        window.location.href = authUrl;
     },
 
-    /**
-     * Lee los valores del modal de ajustes, los guarda en el estado y en la cookie.
-     */
-    saveSettings: function() {
-        App.state.config.showBossTimers = App.dom.bossTimersToggle.checked;
-        App.state.config.showEvents = App.dom.eventsToggle.checked;
-        App.state.config.showWeekly = App.dom.weeklyToggle.checked;
-        const alerts = App.dom.preAlertInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
-        App.state.config.preAlertMinutes = alerts.length ? alerts.sort((a, b) => b - a) : DEFAULT_CONFIG.preAlertMinutes;
-        App.state.config.notificationTypes = { sound: App.dom.soundToggle.checked, desktop: App.dom.desktopToggle.checked };
-        App.state.config.displayTimezone = App.dom.timezoneSelect.value;
-        App.state.config.currentLanguage = App.dom.languageSelect.value;
-        this.saveConfigToCookie();
-        UI.closeSettingsModal();
+    logout() {
+        localStorage.removeItem('session_token');
+        window.location.reload();
     },
 
-    /**
-     * Guarda la configuración actual del estado en una cookie.
-     */
-    saveConfigToCookie: function() {
+    async fetchUserPreferences() {
+        const token = this.getSessionToken();
+        if (!token) return null;
+
         try {
-            const configToSave = JSON.parse(JSON.stringify(App.state.config));
-            delete configToSave.events;
-            delete configToSave.banner;
-            delete configToSave.streams;
-            Utils.setCookie('timersDashboardConfig', JSON.stringify(configToSave), 365);
-        } catch (e) {
-            console.error("Error saving settings to cookie.", e);
+            const response = await fetch(`${this.BACKEND_URL}/api/user/preferences`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            return response.ok ? await response.json() : null;
+        } catch (error) {
+            console.error("Error al obtener preferencias del usuario:", error);
+            return null;
         }
     },
 
+    async saveUserPreferences(prefsToSave) {
+        const token = this.getSessionToken();
+        
+        if (!token) {
+            // Construimos el objeto que se guardará en la cookie a partir de los datos completos del estado.
+            // Usamos el estado global (App.state.config) para tener todos los datos,
+            // y lo actualizamos con los nuevos cambios que vienen en prefsToSave.
+            const config = App.state.config;
+            const configForCookie = {
+                language: config.language,
+                notificationPrefs: config.notificationPrefs,
+                displayTimezone: config.displayTimezone,
+                use24HourFormat: config.use24HourFormat,
+                preAlertMinutes: config.preAlertMinutes,
+                notificationTypes: config.notificationTypes,
+                showBossTimers: config.showBossTimers,
+                showEvents: config.showEvents,
+                showWeekly: config.showWeekly,
+                showdownTicketSync: config.showdownTicketSync
+            };
+            
+            Utils.setCookie('timersDashboardConfig', JSON.stringify(configForCookie), 365);
+            return;
+        }
+
+        try {
+            await fetch(`${this.BACKEND_URL}/api/user/preferences`, {
+                method: 'PUT',
+                body: JSON.stringify(prefsToSave),
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
+        } catch (error) {
+            console.error("Error al guardar preferencias del usuario:", error);
+        }
+    },
+
+    async syncShowdownTicket(remainingSeconds) {
+        const token = this.getSessionToken();
+        if (!token) {
+            console.error("No se puede sincronizar el ticket sin iniciar sesión.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${this.BACKEND_URL}/api/sync-ticket`, {
+                method: 'POST',
+                body: JSON.stringify({ remainingSeconds }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error del servidor');
+            }
+            
+            // Opcional: podrías mostrar una pequeña notificación de éxito
+            console.log("Ticket sincronizado con éxito en el backend.");
+
+        } catch (error) {
+            console.error("Error al sincronizar el ticket de Showdown:", error);
+            // Opcional: mostrar un mensaje de error al usuario
+        }
+    },
+    // --- FIN DE LA NUEVA FUNCIÓN ---
+
     /**
-     * Cambia el estado de alerta para un jefe y hora específicos y guarda la configuración.
-     * @param {string} bossId - ID del jefe.
-     * @param {string} time - Hora del spawn ("HH:MM").
+     * Carga dinámicamente un nuevo archivo de idioma desde el backend.
+     * @param {string} locale - El código de idioma a cargar (ej. 'es', 'en').
+     * @returns {Promise<Object|null>} El objeto de traducción o null si falla.
      */
-    toggleAlertState: function(bossId, time) {
-        const bossToUpdate = App.state.config.bosses.find(b => b.id === bossId);
-        if (bossToUpdate && bossToUpdate.alerts[time] !== undefined) {
-            bossToUpdate.alerts[time] = !bossToUpdate.alerts[time];
-            this.saveConfigToCookie();
-            UI.updateAll();
+    async fetchLocaleData(locale) {
+        try {
+            const response = await fetch(`${this.BACKEND_URL}/api/data/i18n/${locale}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            return await response.json();
+        } catch (error) {
+            console.error(`Error al cargar el idioma '${locale}':`, error);
+            return null;
         }
     },
     
-    /**
-     * Guarda el tiempo de sincronización del ticket de Showdown.
-     */
-    saveSyncData: function() {
-        const h = parseInt(App.dom.syncHours.value) || 0;
-        const m = parseInt(App.dom.syncMinutes.value) || 0;
-        const s = parseInt(App.dom.syncSeconds.value) || 0;
-        const remainingSeconds = (h * 3600) + (m * 60) + s;
-        const now = this.getCorrectedNow().getTime();
-        App.state.config.showdownTicketSync = now + (remainingSeconds * 1000);
-        this.saveConfigToCookie();
-        UI.closeSyncModal();
-        UI.updateAll();
+    // --- NOTIFICACIONES (LOCALES Y PUSH) ---
+
+    async subscribeToPushNotifications() {
+        const token = this.getSessionToken();
+        if (!token) {
+            alert(Utils.getText('notifications.loginRequiredForPush'));
+            return;
+        }
+
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            alert(Utils.getText('notifications.pushNotSupported'));
+            return;
+        }
+
+        const VAPID_PUBLIC_KEY = App.state.config.publicConfig.vapidPublicKey;
+        
+        // --- INICIO DE LA MODIFICACIÓN ---
+        // Obtenemos una referencia al botón para poder manipularlo
+        const subscribeButton = document.getElementById('account-subscribe-push-btn');
+        if (subscribeButton) subscribeButton.disabled = true; // Desactivamos el botón para evitar clics múltiples
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: VAPID_PUBLIC_KEY
+                });
+            }
+
+            await fetch(`${this.BACKEND_URL}/api/save-subscription`, {
+                method: 'POST',
+                body: JSON.stringify(subscription),
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
+
+            // Mostramos el mensaje de éxito (ahora traducido)
+            alert(Utils.getText('settings.subscribeButtonSuccess'));
+
+            // Cambiamos el texto del botón y lo mantenemos desactivado para indicar éxito
+            if (subscribeButton) {
+                subscribeButton.textContent = Utils.getText('account.pushEnabled'); // Necesitaremos esta nueva clave
+            }
+
+        } catch (error) {
+            console.error("Error al suscribirse a push:", error);
+            alert(Utils.getText('notifications.pushSubscribedError'));
+            // Si hay un error, volvemos a activar el botón
+            if (subscribeButton) subscribeButton.disabled = false;
+        }
+        // --- FIN DE LA MODIFICACIÓN ---
+    },
+    
+    async unsubscribeFromPushNotifications() {
+        const token = this.getSessionToken();
+        if (!token || !('serviceWorker' in navigator)) return;
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (subscription) {
+                // Primero, le decimos al navegador que se desuscriba
+                await subscription.unsubscribe();
+
+                // Luego, le decimos a nuestro backend que elimine el registro
+                await fetch(`${this.BACKEND_URL}/api/delete-subscription`, {
+                    method: 'POST',
+                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                });
+                
+                alert(Utils.getText('account.unsubscribeSuccess')); // Nueva clave de texto
+            }
+        } catch (error) {
+            console.error('Error al desuscribirse de push:', error);
+            alert(Utils.getText('account.unsubscribeError')); // Nueva clave de texto
+        }
     },
 
-    /**
-     * Comprueba y resetea las alertas diarias si ha pasado el reset del juego.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     */
-    checkAndPerformDailyReset: function(now) {
-        const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime);
-        const r = new Date(t);
-        if (now >= r) {
-            r.setUTCDate(r.getUTCDate() - 1);
+    requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                if (typeof UI !== 'undefined' && UI.updateLanguage) {
+                    UI.updateLanguage();
+                }
+            });
         }
+    },
+
+    showFullAlert(title, body, imageUrl) {
+        const config = App.state.config;
+        if (config.notificationTypes?.desktop && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification(title, { body, icon: imageUrl, requireInteraction: false });
+        }
+        if (config.notificationTypes?.sound) {
+            App.alertSound.play().catch(e => console.warn("La reproducción de sonido fue bloqueada por el navegador."));
+        }
+    },
+
+    checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer) {
+        const config = App.state.config;
+        if (!config || !config.notificationTypes) return;
+
+        if (config.showBossTimers) {
+            bossTimers.forEach(spawn => {
+                if (!spawn.isAlertEnabled) return;
+                const cycleKey = `${App.state.lastResetCycleDay}-${spawn.id}-${spawn.time}`;
+                (config.preAlertMinutes || []).forEach(min => {
+                    const alertTime = new Date(spawn.targetDate.getTime() - min * 60000).toTimeString().slice(0, 5);
+                    const alertKey = `${cycleKey}-${min}`;
+                    if (now.toTimeString().slice(0, 5) === alertTime && !App.state.alertsShownToday[alertKey]) {
+                        this.showFullAlert(
+                            Utils.getText('notifications.preAlertTitle', { b: spawn.name, m: min }),
+                            Utils.getText('notifications.preAlertBody', { l: spawn.location }),
+                            spawn.imageUrl
+                        );
+                        App.state.alertsShownToday[alertKey] = true;
+                    }
+                });
+            });
+        }
+
+        const resetAlertKey = `${App.state.lastResetCycleDay}-reset`;
+        if (dailyResetTimer.secondsLeft <= 0 && dailyResetTimer.secondsLeft > -5 && !App.state.alertsShownToday[resetAlertKey]) {
+            const displayResetTime = Utils.formatDateToTimezoneString(dailyResetTimer.targetDate, config.displayTimezone, config.use24HourFormat);
+            this.showFullAlert(
+                Utils.getText('notifications.resetTitle'),
+                Utils.getText('notifications.resetBody', { t: displayResetTime }),
+                dailyResetTimer.imageUrl
+            );
+            App.state.alertsShownToday[resetAlertKey] = true;
+        }
+
+        const showdownAlertKey = `showdown-${showdownTicketTimer.targetDate.getTime()}`;
+        if (showdownTicketTimer.secondsLeft <= 0 && showdownTicketTimer.secondsLeft > -5 && !App.state.alertsShownToday[showdownAlertKey]) {
+            this.showFullAlert(
+                Utils.getText('notifications.showdownReadyTitle'),
+                Utils.getText('notifications.showdownReadyBody'),
+                config.showdownTicketImageUrl
+            );
+            App.state.alertsShownToday[showdownAlertKey] = true;
+        }
+    },
+
+    // --- LÓGICA DE TIEMPO Y TIMERS ---
+
+    getCorrectedNow() {
+        return new Date(Date.now() + App.state.timeOffset);
+    },
+
+    checkAndPerformDailyReset(now) {
+        const config = App.state.config;
+        if (!config.dailyResetTime) return;
+
+        const t = this.getAbsoluteDateFromReferenceTimezone(config.dailyResetTime);
+        const r = new Date(t);
+        if (now >= r) r.setUTCDate(r.getUTCDate() - 1);
+        
         const d = r.getUTCDate();
         if (App.state.lastResetCycleDay !== null && App.state.lastResetCycleDay !== d) {
             App.state.alertsShownToday = {};
-            if (App.state.config.showdownTicketSync) {
-                App.state.config.showdownTicketSync = null;
-                this.saveConfigToCookie();
+            if (!App.state.isLoggedIn && config.showdownTicketSync) {
+                config.showdownTicketSync = null;
             }
         }
         App.state.lastResetCycleDay = d;
     },
-    
-    /**
-     * Calcula la información para el timer de Reset Diario.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     * @returns {object} El objeto del timer de reset.
-     */
-    getDailyResetTimer: function(now) {
-        const t = this.getAbsoluteDateFromReferenceTimezone(App.state.config.dailyResetTime);
+
+    getDailyResetTimer(now) {
+        const config = App.state.config;
+        if (!config.dailyResetTime) return {};
+
+        const targetDate = this.getAbsoluteDateFromReferenceTimezone(config.dailyResetTime);
         return {
             type: 'reset',
-            name: I18N_STRINGS[App.state.config.currentLanguage].dailyResetName,
-            description: I18N_STRINGS[App.state.config.currentLanguage].dailyResetDesc,
-            imageUrl: App.state.config.dailyResetImageUrl,
-            targetDate: t,
-            secondsLeft: Math.floor((t - now) / 1000)
+            name: Utils.getText('timers.dailyResetName'),
+            description: Utils.getText('timers.dailyResetDesc'),
+            imageUrl: config.dailyResetImageUrl,
+            targetDate,
+            secondsLeft: Math.floor((targetDate - now) / 1000)
         };
     },
 
-    /**
-     * Calcula la información para el timer del Ticket de Showdown.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     * @param {Date} lastReset - La fecha del último reset.
-     * @returns {object} El objeto del timer del ticket.
-     */
-    getShowdownTicketTimer: function(now, lastReset) {
+    getShowdownTicketTimer(now, lastReset) {
         const config = App.state.config;
-        const intervalMs = config.showdownTicketIntervalHours * 3600000;
+        if (!config.showdownTicketIntervalHours) return {};
+        
+        const intervalMs = config.showdownTicketIntervalHours * 3600 * 1000;
         let nextTime;
-        if (config.showdownTicketSync && config.showdownTicketSync > lastReset.getTime()) {
-            const syncAnchor = config.showdownTicketSync;
+
+        if (App.state.isLoggedIn && config.showdownTicketSync) { // <-- 1. CAMBIAR 'ticketSyncTimestamp' por 'showdownTicketSync'
+            const syncAnchor = new Date(config.showdownTicketSync).getTime(); // <-- 2. CAMBIAR 'ticketSyncTimestamp' por 'showdownTicketSync'
+            if (now.getTime() < syncAnchor) {
+                nextTime = new Date(syncAnchor);
+            } else {
+                const msSinceSync = now.getTime() - syncAnchor;
+                const intervalsPassed = Math.floor(msSinceSync / intervalMs);
+                nextTime = new Date(syncAnchor + (intervalsPassed + 1) * intervalMs);
+            }
+        } else if (!App.state.isLoggedIn && config.showdownTicketSync) {
+             const syncAnchor = config.showdownTicketSync;
             const msSinceSync = now.getTime() - syncAnchor;
             if (msSinceSync > 0) {
                 const intervalsPassed = Math.floor(msSinceSync / intervalMs);
@@ -174,168 +354,72 @@ syncWithWorldTime: function() {
             const intervalsSinceReset = Math.floor(msSinceReset / intervalMs);
             nextTime = new Date(lastReset.getTime() + (intervalsSinceReset + 1) * intervalMs);
         }
+
         return {
             type: 'ticket',
-            name: I18N_STRINGS[config.currentLanguage].showdownName,
-            description: I18N_STRINGS[config.currentLanguage].showdownDesc,
+            name: Utils.getText('timers.showdownName'),
+            description: Utils.getText('timers.showdownDesc'),
             targetDate: nextTime,
             secondsLeft: Math.floor((nextTime - now) / 1000),
             imageUrl: config.showdownTicketImageUrl
         };
     },
-    
-    /**
-     * Obtiene una lista de todos los timers de jefes activos y futuros.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     * @returns {Array<object>} Una lista de objetos de timers de jefes.
-     */
-    getBossTimers: function(now) {
-        return App.state.config.bosses.flatMap(boss =>
-            boss.spawnTimes.map(time => {
+
+    getBossTimers(now) {
+        const config = App.state.config;
+        if (!config.bosses) return [];
+        const lang = config.language || 'en';
+
+        return config.bosses.flatMap(boss =>
+            (boss.spawnTimes || []).map(time => {
                 const targetDate = this.getAbsoluteDateFromReferenceTimezone(time);
+                const isNotificationOn = config.notificationPrefs?.bosses?.[`${boss.id}_${time}`] ?? true;
                 return {
                     type: 'boss',
                     id: boss.id,
-                    name: boss.name[App.state.config.currentLanguage],
+                    name: boss.name[lang] || boss.name.en,
                     imageUrl: boss.imageUrl,
                     location: boss.location,
                     time,
                     targetDate,
-                    isAlertEnabled: !!boss.alerts[time],
+                    isAlertEnabled: config.showBossTimers, // La alerta local depende de si el timer es visible
+                    isNotificationOn: isNotificationOn,
                     secondsLeft: Math.floor((targetDate - now) / 1000)
                 };
             })
-        ).filter(t => t.secondsLeft > -300)
-         .sort((a, b) => { 
-            if (a.isAlertEnabled !== b.isAlertEnabled) return a.isAlertEnabled ? -1 : 1; 
-            return a.secondsLeft - b.secondsLeft; 
-        });
+        ).filter(t => t.secondsLeft > -300).sort((a, b) => (b.isNotificationOn - a.isNotificationOn) || (a.secondsLeft - b.secondsLeft));
+
     },
 
-    /**
-     * Obtiene una lista de todos los timers de reinicio semanal.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     * @returns {Array<object>} Una lista de objetos de timers de reinicio semanal.
-     */
-    getWeeklyResetTimers: function(now) {
+    getWeeklyResetTimers(now) {
         const weeklyData = App.state.weeklyResetsData;
-        if (!weeklyData || !weeklyData.events) {
-            return [];
-        }
-        const lang = App.state.config.currentLanguage;
+        if (!weeklyData || !weeklyData.events) return [];
+        const lang = App.state.config.language || 'en';
     
-        return weeklyData.events
-            .filter(event => event.status && event.status.resetSchedule && event.status.resetSchedule.dayOfWeek)
+        return weeklyData.events.filter(event => event.status?.resetSchedule?.dayOfWeek)
             .map(event => {
                 const resetInfo = event.status.resetSchedule;
                 const targetDate = this.getNextWeeklyResetDate(now, resetInfo.dayOfWeek.en, resetInfo.time);
-                
                 return {
                     type: 'weekly',
                     id: event.id,
                     name: event.eventName[lang],
                     category: event.eventCategory ? event.eventCategory[lang] : '',
-                    targetDate: targetDate,
+                    targetDate,
                     secondsLeft: Math.floor((targetDate - now) / 1000)
                 };
             }).sort((a, b) => a.secondsLeft - b.secondsLeft);
     },
-
-    /**
-     * Comprueba si deben dispararse alertas y las muestra.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     * @param {Array} bossTimers - Lista de timers de jefes.
-     * @param {object} dailyResetTimer - Timer de reset.
-     * @param {object} showdownTicketTimer - Timer de ticket.
-     */
-    checkAndTriggerAlerts: function(now, bossTimers, dailyResetTimer, showdownTicketTimer) {
-        const config = App.state.config;
-        if (config.showBossTimers) {
-            bossTimers.forEach(spawn => {
-                if (!spawn.isAlertEnabled) return;
-                const cycleKey = `${App.state.lastResetCycleDay}-${spawn.id}-${spawn.time}`;
-                config.preAlertMinutes.forEach(min => {
-                    const alertTime = new Date(spawn.targetDate.getTime() - min * 60000).toTimeString().slice(0, 5);
-                    const alertKey = `${cycleKey}-${min}`;
-                    if (now.toTimeString().slice(0, 5) === alertTime && !App.state.alertsShownToday[alertKey]) {
-                        const lang = I18N_STRINGS[config.currentLanguage];
-                        this.showFullAlert(lang.notificationPreAlert(spawn.name, min), lang.notificationPreAlertBody(spawn.location), spawn.imageUrl);
-                        App.state.alertsShownToday[alertKey] = true;
-                    }
-                });
-            });
-        }
-        const resetAlertKey = `${App.state.lastResetCycleDay}-reset`;
-        if (dailyResetTimer.secondsLeft <= 0 && dailyResetTimer.secondsLeft > -5 && !App.state.alertsShownToday[resetAlertKey]) {
-            const lang = I18N_STRINGS[config.currentLanguage];
-            const displayResetTime = Utils.formatDateToTimezoneString(dailyResetTimer.targetDate, config.displayTimezone, config.use24HourFormat);
-            this.showFullAlert(lang.notificationReset, lang.notificationResetBody(displayResetTime), dailyResetTimer.imageUrl);
-            App.state.alertsShownToday[resetAlertKey] = true;
-        }
-        const isSameAsReset = Math.abs(showdownTicketTimer.targetDate.getTime() - dailyResetTimer.targetDate.getTime()) < 5000;
-        const showdownAlertKey = `showdown-${showdownTicketTimer.targetDate.getTime()}`;
-        if (!isSameAsReset && showdownTicketTimer.secondsLeft <= 0 && showdownTicketTimer.secondsLeft > -5 && !App.state.alertsShownToday[showdownAlertKey]) {
-            const lang = I18N_STRINGS[config.currentLanguage];
-            this.showFullAlert(lang.notificationShowdownReady, lang.notificationShowdownReadyBody, config.showdownTicketImageUrl);
-            App.state.alertsShownToday[showdownAlertKey] = true;
-        }
-        const streamConfig = App.state.config.streamAlerts;
-        if (streamConfig && App.state.config.streams) {
-            const lang = I18N_STRINGS[App.state.config.currentLanguage];
-            App.state.config.streams.forEach(stream => {
-                const streamDate = new Date(stream.streamTimeUTC);
-
-                if (streamConfig.preStream) {
-                    const preStreamAlertTime = new Date(streamDate.getTime() - 15 * 60000);
-                    const preStreamAlertKey = `prestream-${stream.id}`;
-                    if (now >= preStreamAlertTime && now < streamDate && !App.state.alertsShownToday[preStreamAlertKey]) {
-                        this.showFullAlert(lang.notificationPreStream(stream.name), lang.notificationStreamBody, stream.imageUrl);
-                        App.state.alertsShownToday[preStreamAlertKey] = true;
-                    }
-                }
-
-                if (streamConfig.postStream && stream.durationHours) {
-                    const postStreamAlertTime = new Date(streamDate.getTime() + stream.durationHours * 3600000);
-                    const postStreamAlertKey = `poststream-${stream.id}`;
-                    if (now >= postStreamAlertTime && now < new Date(postStreamAlertTime.getTime() + 60000) && !App.state.alertsShownToday[postStreamAlertKey]) {
-                        this.showFullAlert(lang.notificationPostStream(stream.name), lang.notificationStreamBody, stream.imageUrl);
-                        App.state.alertsShownToday[postStreamAlertKey] = true;
-                    }
-                }
-            });
-        }
-    },
     
-    /** Solicita permiso para mostrar notificaciones. */
-    requestNotificationPermission: function() {
-        if (Notification.permission === 'default') {
-            Notification.requestPermission().then(UI.updateLanguage);
-        }
+    findHeroByName(name) {
+        if (!App.state.allHeroesData) return null;
+        return App.state.allHeroesData.find(hero => hero.game_name.toLowerCase() === name.toLowerCase());
     },
 
-    /**
-     * Muestra una notificación completa (sonido y/o escritorio).
-     * @param {string} title - Título de la notificación.
-     * @param {string} body - Cuerpo del mensaje.
-     * @param {string} imageUrl - URL del ícono.
-     */
-    showFullAlert: function(title, body, imageUrl) {
-        if (App.state.config.notificationTypes.desktop && Notification.permission === 'granted') {
-            new Notification(title, { body, icon: imageUrl, requireInteraction: false });
-        }
-        if (App.state.config.notificationTypes.sound) {
-            App.alertSound.play().catch(e => console.warn("Sound blocked by browser."));
-        }
-    },
-
-    /** Busca un héroe por su nombre en los datos cargados. */
-    findHeroByName: (name) => App.state.allHeroesData.find(hero => hero.game_name.toLowerCase() === name.toLowerCase()),
-
-    /** Comprueba si un evento está actualmente activo. */
-    isEventActive: function(eventName) {
+    isEventActive(eventName) {
         const now = this.getCorrectedNow();
-        const event = App.state.config.events.find(e => e.id === eventName);
-        if (!event) return false;
+        const event = App.state.config.events?.find(e => e.id === eventName);
+        if (!event || !App.state.config.dailyResetTime) return false;
         
         const startDate = this.getAbsoluteDateWithCustomDate(event.startDate, App.state.config.dailyResetTime);
         const endDate = this.getAbsoluteDateWithCustomDate(event.endDate, App.state.config.dailyResetTime);
@@ -343,77 +427,44 @@ syncWithWorldTime: function() {
         return now >= startDate && now <= endDate;
     },
 
-    /**
-     * Calcula una fecha absoluta a partir de una fecha, hora y zona horaria de referencia.
-     * @param {string} dateString - La fecha en formato "YYYY-MM-DD".
-     * @param {string} timeString - La hora en formato "HH:MM".
-     * @returns {Date} El objeto Date calculado.
-     */
-    getAbsoluteDateWithCustomDate: function(dateString, timeString) {
-        // Obtenemos la variable global de Luxon
-        const DateTime = luxon.DateTime;
-        
-        // Creamos un objeto Luxon a partir de la fecha y hora, en nuestra zona de referencia
+    getAbsoluteDateWithCustomDate(dateString, timeString) {
+        const { DateTime } = luxon;
         const [h, m] = timeString.split(':').map(Number);
         const targetDate = DateTime.fromISO(dateString, { zone: App.state.config.referenceTimezone })
             .set({ hour: h, minute: m, second: 0, millisecond: 0 });
-
-        // Devolvemos un objeto Date nativo para mantener la compatibilidad con el resto del código
         return targetDate.toJSDate();
     },
     
-    /**
-     * Calcula la próxima fecha absoluta para una hora dada en la zona horaria de referencia.
-     * @param {string} timeString - La hora en formato "HH:MM".
-     * @returns {Date} El objeto Date calculado para hoy o mañana.
-     */
-    getAbsoluteDateFromReferenceTimezone: function(timeString) {
-        // Obtenemos la variable global de Luxon
-        const DateTime = luxon.DateTime;
+    getAbsoluteDateFromReferenceTimezone(timeString) {
+        const { DateTime } = luxon;
         const config = App.state.config;
+        if (!config.referenceTimezone) return new Date();
 
-        // 1. Tomamos la hora actual (ya corregida) y la interpretamos en la zona horaria de referencia.
         const now = DateTime.fromJSDate(this.getCorrectedNow(), { zone: config.referenceTimezone });
-
-        // 2. Extraemos la hora y minutos del string de entrada.
         const [h, m] = timeString.split(':').map(Number);
-
-        // 3. Creamos una fecha objetivo para "hoy" en la zona de referencia con la hora especificada.
         let targetDate = now.set({ hour: h, minute: m, second: 0, millisecond: 0 });
 
-        // 4. Si la hora objetivo ya pasó hoy, la movemos para mañana.
         if (targetDate < now) {
             targetDate = targetDate.plus({ days: 1 });
         }
-
-        // 5. Devolvemos un objeto Date nativo para mantener la compatibilidad con el resto del código existente.
         return targetDate.toJSDate();
     },
 
-    /**
-     * Calcula la próxima fecha de reinicio para un evento semanal.
-     * @param {Date} now - La fecha y hora actual (ya corregida).
-     * @param {string} dayOfWeek - El día de la semana en inglés (ej. "Tuesday").
-     * @param {string} timeString - La hora en formato "HH:MM".
-     * @returns {Date} El objeto Date del próximo reinicio.
-     */
-    getNextWeeklyResetDate: function(now, dayOfWeek, timeString) {
+    getNextWeeklyResetDate(now, dayOfWeek, timeString) {
         const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const targetDay = weekDays.indexOf(dayOfWeek);
-        const DateTime = luxon.DateTime;
+        const { DateTime } = luxon;
         const config = App.state.config;
+        if (!config.referenceTimezone) return new Date();
 
         const nowInRefTz = DateTime.fromJSDate(now, { zone: config.referenceTimezone });
         const [h, m] = timeString.split(':').map(Number);
-
         let targetDate = nowInRefTz.set({ hour: h, minute: m, second: 0, millisecond: 0 });
         
-        // El weekday en Luxon es 1=Lunes, 7=Domingo.
         const currentDay = nowInRefTz.weekday; 
-        const targetDayLuxon = targetDay === 0 ? 7 : targetDay; // Convertimos Domingo de 0 a 7
+        const targetDayLuxon = targetDay === 0 ? 7 : targetDay;
 
         let daysToAdd = targetDayLuxon - currentDay;
-
         if (daysToAdd < 0 || (daysToAdd === 0 && targetDate < nowInRefTz)) {
             daysToAdd += 7;
         }
@@ -422,3 +473,5 @@ syncWithWorldTime: function() {
         return targetDate.toJSDate();
     }
 };
+
+export default Logic;

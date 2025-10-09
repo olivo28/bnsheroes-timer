@@ -1,14 +1,16 @@
+// js/5-main.js
+
 'use strict';
 
-/**
- * Punto de entrada principal de la aplicación.
- * Se auto-ejecuta para evitar contaminar el scope global.
- */
+import App from './2-state.js';
+import Utils from './1-utils.js';
+import Logic from './4-logic.js';
+import UI from './3-ui.js';
+
 (function () {
 
     /**
      * Reestructura el DOM para usar Swiper en dispositivos móviles.
-     * Coge los paneles existentes y los envuelve en la estructura de slides de Swiper.
      */
     function setupMobileSwiper() {
         const mainWrapper = document.querySelector('.main-wrapper');
@@ -19,16 +21,12 @@
 
         const swiperContainer = document.createElement('div');
         swiperContainer.className = 'swiper mobile-swiper-container';
-
         const swiperWrapper = document.createElement('div');
         swiperWrapper.className = 'swiper-wrapper';
-
         const slide1 = document.createElement('div');
         slide1.className = 'swiper-slide';
-
         const slide2 = document.createElement('div');
         slide2.className = 'swiper-slide';
-
         const pagination = document.createElement('div');
         pagination.className = 'swiper-pagination';
 
@@ -36,337 +34,392 @@
         slide2.appendChild(secondaryPanel);
         swiperWrapper.appendChild(slide1);
         swiperWrapper.appendChild(slide2);
-
         swiperContainer.appendChild(swiperWrapper);
         swiperContainer.appendChild(pagination);
-
         mainWrapper.innerHTML = '';
         mainWrapper.appendChild(swiperContainer);
         
         App.state.swiper = new Swiper('.mobile-swiper-container', {
-            autoHeight: true, 
+            autoHeight: true,
             loop: false,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
+            pagination: { el: '.swiper-pagination', clickable: true },
         });
     }
 
     /**
-     * Inicializa la aplicación después de cargar los datos.
-     * Configura el estado inicial, la UI y los listeners.
+     * Función principal que se ejecuta después de elegir el idioma.
+     * Carga todos los datos, fusiona configuraciones e inicia la aplicación.
+     * @param {string} locale - El idioma elegido (ej. 'en', 'es').
      */
-    function initialize() {
+    async function startApp(locale) {
+        document.getElementById('language-modal-overlay').classList.add('hidden');
+        Utils.setCookie('userLanguage', locale, 365);
+
+        try {
+            const [publicConfig, gameConfig, i18nData, heroesData, eventsData, weeklyData] = await Promise.all([
+                fetch(`${Logic.BACKEND_URL}/api/public-config`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/game-config`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/i18n/${locale}`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/heroes`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/events`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/weekly`).then(res => res.json())
+            ]);
+
+            App.state.i18n = i18nData;
+            App.state.allHeroesData = heroesData;
+            App.state.allEventsData = eventsData.gameData;
+            App.state.weeklyResetsData = weeklyData.gameData;
+
+            let userPrefs = {};
+            const isLoggedIn = !!Logic.getSessionToken();
+            App.state.isLoggedIn = isLoggedIn;
+            
+            if (isLoggedIn) {
+                const userData = await Logic.fetchUserPreferences();
+                if (userData) {
+                    // Asumimos que el backend devuelve un objeto con { preferences: {...}, user: {...} }
+                    userPrefs = userData.preferences || {};
+                    App.state.userInfo = userData.user || null;
+                }
+
+            } else {
+                const cookiePrefs = Utils.getCookie('timersDashboardConfig');
+                if (cookiePrefs) try { userPrefs = JSON.parse(cookiePrefs); } catch (e) {}
+            }
+
+            const localOffsetHours = new Date().getTimezoneOffset() / -60;
+            const sign = localOffsetHours >= 0 ? '+' : '-';
+            const hours = String(Math.abs(localOffsetHours)).padStart(2, '0');
+            const formattedLocalTimezone = `${sign}${hours}:00`;
+            
+            const defaultUserPrefs = {
+                language: locale,
+                displayTimezone: formattedLocalTimezone,
+                use24HourFormat: false,
+                preAlertMinutes: [15, 5, 1],
+                notificationTypes: { sound: true, desktop: true },
+                showBossTimers: true, showEvents: true, showWeekly: true,
+                notificationPrefs: { dailyReset: true, showdownTicket: true, streams: true, events: true, bosses: {} }
+            };
+
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Primero fusionamos todas las configuraciones en un solo objeto.
+            const mergedConfig = { 
+                ...defaultUserPrefs, 
+                ...gameConfig, 
+                ...userPrefs, 
+                publicConfig 
+            };
+
+            // 2. AHORA, validamos el resultado. Si después de la fusión, `displayTimezone`
+            //    quedó nulo o vacío, le asignamos forzosamente nuestro valor local calculado.
+            if (!mergedConfig.displayTimezone) {
+                mergedConfig.displayTimezone = formattedLocalTimezone;
+            }
+
+            // 3. Finalmente, asignamos la configuración validada al estado global.
+            App.state.config = mergedConfig;
+            // --- FIN DE LA CORRECCIÓN ---
+
+            if (isLoggedIn) {
+                const pendingTimezone = localStorage.getItem('pending_timezone_for_new_user');
+
+                // Si hay una zona horaria pendiente Y el usuario NO tiene una guardada en la DB (`!userPrefs.displayTimezone`),
+                // entonces es un usuario nuevo y debemos guardar la zona horaria.
+                if (pendingTimezone && !userPrefs.displayTimezone) {
+                    console.log(`Usuario nuevo detectado. Guardando zona horaria inicial: ${pendingTimezone}`);
+                    
+                    // Actualizamos el estado local por si acaso
+                    App.state.config.displayTimezone = pendingTimezone;
+
+                    // Llamamos a la función para guardar, pasándole solo el dato que queremos actualizar.
+                    Logic.saveUserPreferences({ displayTimezone: pendingTimezone });
+
+                    // Limpiamos el localStorage para que esto solo ocurra una vez.
+                    localStorage.removeItem('pending_timezone_for_new_user');
+                }
+            }
+
+            initializeUI();
+
+        } catch (error) {
+            console.error("Error fatal: No se pudo conectar con el backend.", error);
+            document.body.innerHTML = `<div style="color:white; text-align:center; padding: 40px;"><h1>Error de Conexión</h1><p>No se pudo conectar con el servidor.</p></div>`;
+        }
+    }
+
+    /**
+     * Inicializa los componentes de la UI y el bucle principal.
+     */
+    function initializeUI() {
         App.initializeDOM();
         
         if (App.state.isMobile) {
             setupMobileSwiper();
-            App.dom.primaryPanel = document.querySelector('.primary-panel');
-            App.dom.secondaryPanel = document.querySelector('.secondary-panel');
         }
         
-        Logic.loadSettings();
         UI.populateSelects();
-        UI.updateLanguage(); // Muestra el estado inicial (ej. "Inicializando...")
-        
-        // El código de inicialización ahora se ejecuta de forma síncrona,
-        // ya que la llamada a la API de tiempo fue movida al Service Worker.
-        Logic.requestNotificationPermission();
         addEventListeners();
-
-        // --- INICIO: LISTENER PARA MENSAJES DEL SERVICE WORKER ---
-        // Se configura para escuchar mensajes del SW que llegarán en segundo plano.
-        navigator.serviceWorker.addEventListener('message', event => {
-            if (event.data && event.data.type === 'TIME_SYNC_UPDATE') {
-                const newOffset = event.data.payload;
-                if (App.state.timeOffset !== newOffset) {
-                    console.log(`Página principal: Recibido nuevo desfase de tiempo: ${newOffset}ms`);
-                    App.state.timeOffset = newOffset;
-                    // Forzamos una actualización de la UI para reflejar el tiempo corregido.
-                    UI.updateAll(); 
-                }
-            }
-        });
-        // --- FIN: LISTENER PARA MENSAJES DEL SERVICE WORKER ---
+        UI.applyLanguage();
+        UI.updateLoginStatus();
         
-        // El bucle principal de la aplicación se inicia inmediatamente, sin bloqueos.
-        // Se coloca FUERA del listener de mensajes para que se ejecute solo una vez.
-        setTimeout(() => {
-            UI.updateAll();
-            setInterval(() => UI.updateAll(), 1000);
-        }, 100);
+        Logic.requestNotificationPermission();
+
+        UI.updateAll();
+        setInterval(() => UI.updateAll(), 1000);
     }
 
     /**
-     * Configura todos los listeners de eventos de la aplicación.
-     * Centraliza el manejo de interacciones del usuario.
+     * Contenedor para todos los event listeners de la aplicación.
      */
     function addEventListeners() {
-        // En móvil, el clic se gestiona en mainWrapper. En PC, en primaryPanel.
-        // Unimos los listeners para simplificar.
-        const clickArea1 = App.dom.primaryPanel;
-        const clickArea2 = App.dom.secondaryPanel;
-
         function handlePanelClick(e) {
             const infoBtn = e.target.closest('.info-button');
+            if (infoBtn) return UI.openInfoModal();
+
             const syncBtn = e.target.closest('.sync-button');
+            if (syncBtn) return UI.openSyncModal();
+
             const alertToggle = e.target.closest('.alert-toggle');
-            if (infoBtn) UI.openInfoModal();
-            if (syncBtn) UI.openSyncModal();
             if (alertToggle) {
-                 Logic.toggleAlertState(alertToggle.dataset.bossId, alertToggle.dataset.time);
+                const { bossId, time } = alertToggle.dataset;
+                const key = `${bossId}_${time}`;
+                if (!App.state.config.notificationPrefs) App.state.config.notificationPrefs = {};
+                if (!App.state.config.notificationPrefs.bosses) App.state.config.notificationPrefs.bosses = {};
+                const isCurrentlyDisabled = alertToggle.classList.contains('disabled');
+                App.state.config.notificationPrefs.bosses[key] = isCurrentlyDisabled;
+                const payload = { 
+                    prefs: App.state.config.notificationPrefs 
+                };
+                Logic.saveUserPreferences(payload);
+                UI.updateAll();
             }
         }
-        
-        if (clickArea1) clickArea1.addEventListener('click', handlePanelClick);
-        if (clickArea2) clickArea2.addEventListener('click', handlePanelClick);
+        App.dom.primaryPanel.addEventListener('click', handlePanelClick);
+        App.dom.secondaryPanel.addEventListener('click', handlePanelClick);
 
-
-        // Listener para clics en los items de evento
-        if(App.dom.eventsContainer) {
-            App.dom.eventsContainer.addEventListener('click', e => {
-                const eventItem = e.target.closest('.event-item');
-                if (eventItem && eventItem.dataset.eventId) {
-                    const eventId = eventItem.dataset.eventId;
-                    if (eventId === App.state.currentOpenEventId) {
-                        UI.closeEventDetailsPanel();
-                    } else {
-                        UI.openEventDetailsPanel(eventId);
-                    }
+        App.dom.eventsContainer.addEventListener('click', e => {
+            const eventItem = e.target.closest('.event-item');
+            // Usamos una comprobación para alternar: si haces clic en el mismo, se cierra.
+            if (eventItem?.dataset.eventId) {
+                if (App.state.currentOpenEventId === eventItem.dataset.eventId) {
+                    UI.closeEventDetailsPanel();
+                } else {
+                    UI.openEventDetailsPanel(eventItem.dataset.eventId);
                 }
-            });
-        }
-
-        // Listener para clics en los items de evento semanales
-        if(App.dom.weeklyContainer) {
-            App.dom.weeklyContainer.addEventListener('click', e => {
-                const weeklyItem = e.target.closest('.weekly-item');
-                if (weeklyItem && weeklyItem.dataset.weeklyId) {
-                    const weeklyId = weeklyItem.dataset.weeklyId;
-                    if (weeklyId === App.state.currentOpenWeeklyId) {
-                        UI.closeWeeklyDetailsPanel();
-                    } else {
-                        UI.openWeeklyDetailsPanel(weeklyId);
-                    }
-                }
-            });
-        }
-
-        // --- INICIO: LÓGICA DE CLIC EN HÉROES (REFACTORIZADA) ---
-        function handleHeroClick(e) {
-            const heroWrapper = e.target.closest('.banner-hero-img-container');
-            if (!heroWrapper || !heroWrapper.dataset.heroName) return;
-
-            const clickedHeroName = heroWrapper.dataset.heroName;
-            const heroData = Logic.findHeroByName(clickedHeroName);
-            if (!heroData) return;
-
-            let contextHeroes = []; // Ahora será un array de objetos {name, tag}
-
-            const weeklyContext = heroWrapper.closest('.weekly-recommended-heroes');
-            const bannerContext = heroWrapper.closest('.banner-heroes');
-
-            if (weeklyContext) {
-                // Lógica para agrupar TODOS los héroes recomendados
-                const allTagGroups = weeklyContext.querySelectorAll('.weekly-recommended-heroes-tag-group');
-                allTagGroups.forEach(group => {
-                    const tag = group.querySelector('.weekly-recommended-heroes-tag').textContent;
-                    const heroesInGroup = group.querySelectorAll('.banner-hero-img-container[data-hero-name]');
-                    heroesInGroup.forEach(heroEl => {
-                        contextHeroes.push({ name: heroEl.dataset.heroName, tag: tag });
-                    });
-                });
-            } else if (bannerContext) {
-                // Lógica original para banners (sin tags)
-                const allHeroElements = bannerContext.querySelectorAll('.banner-hero-img-container[data-hero-name]');
-                allHeroElements.forEach(el => {
-                    contextHeroes.push({ name: el.dataset.heroName, tag: null });
-                });
             }
+        });
+        App.dom.weeklyContainer.addEventListener('click', e => {
+            const weeklyItem = e.target.closest('.weekly-item');
+            if (weeklyItem?.dataset.weeklyId) {
+                if (App.state.currentOpenWeeklyId === weeklyItem.dataset.weeklyId) {
+                    UI.closeWeeklyDetailsPanel();
+                } else {
+                    UI.openWeeklyDetailsPanel(weeklyItem.dataset.weeklyId);
+                }
+            }
+        });
 
-            const currentIndex = contextHeroes.findIndex(h => h.name === clickedHeroName);
-            UI.openHeroModal(heroData, contextHeroes, currentIndex);
-        }
-        
-        if (App.dom.bannersContainer) {
-            App.dom.bannersContainer.addEventListener('click', handleHeroClick);
-        }
-        
         function handleDetailsPanelClick(e) {
+            // --- 1. Lógica para el botón de cerrar ---
+            // Si se hace clic en el botón de cerrar, cerramos ambos paneles y paramos.
+            // No importa cuál esté visible, la función .close() no hará nada si está oculto.
             if (e.target.closest('.close-details-btn')) {
                 UI.closeEventDetailsPanel();
                 UI.closeWeeklyDetailsPanel();
+                return; // Detiene la ejecución para no procesar otros clics.
             }
+
+            // --- 2. Lógica para clics en Héroes ---
+            // Esto se ejecutará si el clic no fue en el botón de cerrar.
             handleHeroClick(e);
-        }
-        
-        if (App.dom.eventDetailsPanel) {
-            App.dom.eventDetailsPanel.addEventListener('click', handleDetailsPanelClick);
-        }
-        if (App.dom.weeklyDetailsPanel) {
-            App.dom.weeklyDetailsPanel.addEventListener('click', handleDetailsPanelClick);
-        }
-        
-        // Listener para el panel de detalles de evento (semanal y normal)
-        function handleDetailsPanelClick(e) {
-            // Clic en el botón de cerrar
-            if (e.target.closest('.close-details-btn')) {
-                UI.closeEventDetailsPanel();
-                UI.closeWeeklyDetailsPanel();
+
+            // --- 3. NUEVA Lógica para los Buffs Desplegables ---
+            // Esto solo se aplicará si el clic fue dentro del panel semanal.
+            const buffItem = e.target.closest('.weekly-buff-item.expandable');
+            if (buffItem) {
+                const enhancementsList = buffItem.nextElementSibling;
+
+                // Verificamos que el siguiente elemento sea la lista que queremos expandir
+                if (enhancementsList && enhancementsList.classList.contains('weekly-enhancements-list')) {
+                    buffItem.classList.toggle('expanded');
+                    enhancementsList.classList.toggle('expanded');
+                }
             }
-            // Clic en un héroe
-            handleHeroClick(e);
         }
-        
-        if (App.dom.eventDetailsPanel) {
-            App.dom.eventDetailsPanel.addEventListener('click', handleDetailsPanelClick);
+
+        document.getElementById('event-details-panel').addEventListener('click', handleDetailsPanelClick);
+        document.getElementById('weekly-details-panel').addEventListener('click', handleDetailsPanelClick);
+
+        App.dom.settingsButton.addEventListener('click', UI.openSettingsModal);
+        document.getElementById('close-settings-btn').addEventListener('click', UI.closeSettingsModal);
+        App.dom.accountModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeAccountModal(); });
+        document.getElementById('close-account-modal-btn').addEventListener('click', UI.closeAccountModal);
+        App.dom.aboutButton.addEventListener('click', UI.openAboutModal);
+        document.getElementById('close-about-btn').addEventListener('click', UI.closeAboutModal);
+        document.getElementById('close-info-btn').addEventListener('click', UI.closeInfoModal);
+
+        document.getElementById('close-account-modal-btn').addEventListener('click', UI.closeAccountModal);
+        if (App.dom.accountModalOverlay) { // Añadimos una comprobación por si acaso
+            App.dom.accountModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeAccountModal(); });
         }
-        if (App.dom.weeklyDetailsPanel) {
-            App.dom.weeklyDetailsPanel.addEventListener('click', handleDetailsPanelClick);
-        }
-        // --- FIN: LÓGICA DE CLIC EN HÉROES ---
+        document.getElementById('account-subscribe-push-btn').addEventListener('click', () => Logic.subscribeToPushNotifications());
+        document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
+
         
-        // Listeners para botones y controles globales
-        App.dom.settingsButton.addEventListener('click', () => UI.openSettingsModal());
-        App.dom.saveSettingsBtn.addEventListener('click', () => Logic.saveSettings());
-        App.dom.closeSettingsBtn.addEventListener('click', () => UI.closeSettingsModal());
-        
-        App.dom.timeFormatSwitch.addEventListener('change', () => {
-            App.state.config.use24HourFormat = App.dom.timeFormatSwitch.checked;
-            Logic.saveConfigToCookie();
+        App.dom.modalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSettingsModal(); });
+        App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeInfoModal(); });
+        App.dom.syncModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSyncModal(); });
+        App.dom.aboutModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeAboutModal(); });
+        document.getElementById('streams-modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) document.getElementById('streams-modal-overlay').classList.remove('visible'); });
+
+        App.dom.saveSettingsBtn.addEventListener('click', async () => {
+            const newConfig = {
+                language: App.dom.languageSelect.value,
+                displayTimezone: App.dom.timezoneSelect.value,
+                use24HourFormat: App.dom.timeFormatSwitch.checked,
+                preAlertMinutes: App.dom.preAlertInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0),
+                notificationTypes: { sound: App.dom.soundToggle.checked, desktop: App.dom.desktopToggle.checked },
+                showBossTimers: App.dom.bossTimersToggle.checked,
+                showEvents: App.dom.eventsToggle.checked,
+                showWeekly: App.dom.weeklyToggle.checked,
+                notificationPrefs: App.state.config.notificationPrefs
+            };
+
+            const languageChanged = newConfig.language !== App.state.config.language;
+
+            // Si el idioma cambió, cargamos los nuevos datos de traducción
+            if (languageChanged) {
+                const newTranslations = await Logic.fetchLocaleData(newConfig.language);
+                if (newTranslations) {
+                    App.state.i18n = newTranslations;
+                    Utils.setCookie('userLanguage', newConfig.language, 365);
+                } else {
+                    console.error("No se pudo cargar el nuevo idioma. No se guardaron los cambios.");
+                    alert("Error: Could not load the new language. Settings were not saved."); // Opcional: alerta al usuario
+                    return;
+                }
+            }
+
+            // Actualizamos el estado de la aplicación con toda la nueva configuración
+            App.state.config = { ...App.state.config, ...newConfig };
+
+            // Guardamos las preferencias
+            Logic.saveUserPreferences(App.state.config);
+
+            // Cerramos el modal de configuración
+            UI.closeSettingsModal();
+
+            // Si el idioma cambió, llamamos a nuestra nueva función para aplicar los cambios de texto
+            if (languageChanged) {
+                UI.applyLanguage();
+            }
+
+            // Actualizamos el resto de la UI (relojes, timers, etc.)
             UI.updateAll();
         });
         
-        App.dom.testNotificationBtn.addEventListener('click', () => {
-            const lang = I18N_STRINGS[App.state.config.currentLanguage];
-            const testBoss = App.state.config.bosses[0];
-            if (!testBoss) return;
-            if (Notification.permission !== 'granted') {
-                Logic.requestNotificationPermission();
-                alert(lang.notificationBlocked);
-                return;
+        document.getElementById('save-sync-btn').addEventListener('click', () => {
+            const h = parseInt(document.getElementById('sync-hours').value) || 0;
+            const m = parseInt(document.getElementById('sync-minutes').value) || 0;
+            const s = parseInt(document.getElementById('sync-seconds').value) || 0;
+            const remainingSeconds = (h * 3600) + (m * 60) + s;
+            if (App.state.isLoggedIn) {
+                Logic.syncShowdownTicket(remainingSeconds);
+                App.state.config.showdownTicketSync = Date.now() + remainingSeconds * 1000;
+            } else {
+                App.state.config.showdownTicketSync = Date.now() + remainingSeconds * 1000;
+                Logic.saveUserPreferences({ showdownTicketSync: App.state.config.showdownTicketSync });
             }
-            Logic.showFullAlert(lang.notificationPreAlert(testBoss.name[App.state.config.currentLanguage], 1), lang.notificationPreAlertBody(testBoss.location), testBoss.imageUrl);
-            setTimeout(() => { const rt = Utils.formatDateToTimezoneString(new Date(), App.state.config.displayTimezone, App.state.config.use24HourFormat); Logic.showFullAlert(lang.notificationReset, lang.notificationResetBody(rt), App.state.config.dailyResetImageUrl); }, 1000);
-            setTimeout(() => { Logic.showFullAlert(lang.notificationShowdownReady, lang.notificationShowdownReadyBody, App.state.config.showdownTicketImageUrl); }, 2000);
+            UI.closeSyncModal();
+            UI.updateAll();
         });
 
-        App.dom.saveSyncBtn.addEventListener('click', () => Logic.saveSyncData());
-        App.dom.aboutButton.addEventListener('click', () => UI.openAboutModal());
-        App.dom.closeAboutBtn.addEventListener('click', () => UI.closeAboutModal());
-        App.dom.closeInfoBtn.addEventListener('click', () => UI.closeInfoModal());
-
-        // Listeners para cerrar modales haciendo clic fuera
-        App.dom.modalOverlay.addEventListener('click', e => { if (e.target === App.dom.modalOverlay) UI.closeSettingsModal(); });
-        App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === App.dom.infoModalOverlay) UI.closeInfoModal(); });
-        App.dom.syncModalOverlay.addEventListener('click', e => { if (e.target === App.dom.syncModalOverlay) UI.closeSyncModal(); });
-        App.dom.aboutModalOverlay.addEventListener('click', e => { if (e.target === App.dom.aboutModalOverlay) UI.closeAboutModal(); });
-        
-        App.dom.heroModalOverlay.addEventListener('click', (e) => {
-            if (e.target === App.dom.heroModalOverlay) {
-                // No hacemos nada, el modal permanece abierto
-            }
-        });
-        document.getElementById('hero-modal-content').addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        App.dom.heroModalCloseBtn.addEventListener('click', () => UI.closeHeroModal());
-        App.dom.heroModalPrevBtn.addEventListener('click', () => UI.navigateHeroModal('prev'));
-        App.dom.heroModalNextBtn.addEventListener('click', () => UI.navigateHeroModal('next'));
-
-        App.dom.heroModalPreviews.addEventListener('click', (e) => {
-            const previewItem = e.target.closest('.hero-preview-item');
-            if (previewItem && previewItem.dataset.heroName) {
-                const heroName = previewItem.dataset.heroName;
-                const newIndex = App.state.heroModalContext.heroes.findIndex(h => h.name === heroName);
-                if (newIndex !== -1) {
-                    UI.navigateHeroModal(newIndex);
-                }
-            }
-        });
-
-        window.addEventListener('keydown', (e) => {
-            if (!App.dom.heroModalOverlay.classList.contains('visible')) return;
-            
-            if (e.key === 'Escape') {
-                UI.closeHeroModal();
-            } else if (e.key === 'ArrowRight') {
-                UI.navigateHeroModal('next');
-            } else if (e.key === 'ArrowLeft') {
-                UI.navigateHeroModal('prev');
-            }
-        });
-
-        App.dom.twitchFab.addEventListener('click', () => {
-            App.dom.streamsModalOverlay.classList.add('visible');
+        App.dom.timeFormatSwitch.addEventListener('change', () => {
+            App.state.config.use24HourFormat = App.dom.timeFormatSwitch.checked;
+            Logic.saveUserPreferences({ use24HourFormat: App.state.config.use24HourFormat });
+            UI.updateAll();
         });
         
-        App.dom.closeStreamsModal.addEventListener('click', () => {
-            App.dom.streamsModalOverlay.classList.remove('visible');
-        });
-
-        App.dom.streamsModalOverlay.addEventListener('click', (e) => {
-            if (e.target === App.dom.streamsModalOverlay) {
-                App.dom.streamsModalOverlay.classList.remove('visible');
+        App.dom.testNotificationBtn.addEventListener('click', () => Logic.showFullAlert(Utils.getText('settings.testButton'), 'This is a test notification.', 'favicon.png'));
+        
+        function handleHeroClick(e) {
+            const heroWrapper = e.target.closest('.banner-hero-img-container');
+            if (!heroWrapper || !heroWrapper.dataset.heroName) return;
+            const clickedHeroName = heroWrapper.dataset.heroName;
+            const heroData = Logic.findHeroByName(clickedHeroName);
+            if (!heroData) return;
+            let contextHeroes = [];
+            const weeklyContext = heroWrapper.closest('.weekly-recommended-heroes');
+            const bannerContext = heroWrapper.closest('.banner-heroes');
+            if (weeklyContext) {
+                const allTagGroups = weeklyContext.querySelectorAll('.weekly-recommended-heroes-tag-group');
+                allTagGroups.forEach(group => {
+                    const tag = group.querySelector('.weekly-recommended-heroes-tag').textContent;
+                    group.querySelectorAll('.banner-hero-img-container[data-hero-name]').forEach(heroEl => contextHeroes.push({ name: heroEl.dataset.heroName, tag }));
+                });
+            } else if (bannerContext) {
+                bannerContext.querySelectorAll('.banner-hero-img-container[data-hero-name]').forEach(el => contextHeroes.push({ name: el.dataset.heroName, tag: null }));
+            }
+            const currentIndex = contextHeroes.findIndex(h => h.name === clickedHeroName);
+            UI.openHeroModal(heroData, contextHeroes, currentIndex);
+        }
+        App.dom.bannersContainer.addEventListener('click', handleHeroClick);
+        
+        document.getElementById('hero-modal-close-btn').addEventListener('click', UI.closeHeroModal);
+        document.getElementById('hero-modal-prev-btn').addEventListener('click', () => UI.navigateHeroModal('prev'));
+        document.getElementById('hero-modal-next-btn').addEventListener('click', () => UI.navigateHeroModal('next'));
+        document.getElementById('hero-modal-previews').addEventListener('click', e => {
+            const item = e.target.closest('.hero-preview-item');
+            if (item?.dataset.heroName) {
+                const index = App.state.heroModalContext.heroes.findIndex(h => h.name === item.dataset.heroName);
+                if (index > -1) UI.navigateHeroModal(index);
             }
         });
 
-        App.dom.preStreamAlertToggle.addEventListener('change', () => {
-            App.state.config.streamAlerts.preStream = App.dom.preStreamAlertToggle.checked;
-            Logic.saveConfigToCookie();
+        window.addEventListener('keydown', e => {
+            if (App.dom.heroModalOverlay?.classList.contains('visible')) {
+                if (e.key === 'Escape') UI.closeHeroModal();
+                if (e.key === 'ArrowRight') UI.navigateHeroModal('next');
+                if (e.key === 'ArrowLeft') UI.navigateHeroModal('prev');
+            }
         });
-        App.dom.postStreamAlertToggle.addEventListener('change', () => {
-            App.state.config.streamAlerts.postStream = App.dom.postStreamAlertToggle.checked;
-            Logic.saveConfigToCookie();
-        });
-
+        
+        App.dom.twitchFab.addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.remove('hidden'));
+        document.getElementById('close-streams-modal').addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.add('hidden'));
+        
         window.addEventListener('focus', () => UI.updateLanguage());
     }
 
-    // Espera a que el DOM esté listo antes de hacer nada.
     document.addEventListener('DOMContentLoaded', () => {
-        // --- INICIO: REGISTRO DEL SERVICE WORKER ---
-        // Se registra lo antes posible para acelerar su instalación.
         if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        // Detectamos si estamos en localhost
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        
-        // Asignamos la ruta correcta según el entorno
-        const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
+            const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+            const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
+            navigator.serviceWorker.register(serviceWorkerPath)
+                .then(reg => console.log('SW registrado:', reg.scope))
+                .catch(err => console.error('Error al registrar SW:', err));
+        }
 
-        navigator.serviceWorker.register(serviceWorkerPath)
-            .then(registration => {
-                console.log(`Service Worker registrado con éxito en: ${registration.scope}`);
-            })
-            .catch(err => {
-                console.error('Error en el registro del Service Worker:', err);
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        if (token) {
+            localStorage.setItem('session_token', token);
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        }
+
+        const savedLang = Utils.getCookie('userLanguage') || (navigator.language.startsWith('es') ? 'es' : 'en');
+        if (savedLang) {
+            startApp(savedLang);
+        } else {
+            const langModal = document.getElementById('language-modal-overlay');
+            langModal.classList.remove('hidden');
+            langModal.addEventListener('click', e => {
+                const langBtn = e.target.closest('.language-choice-btn');
+                if (langBtn) {
+                    startApp(langBtn.dataset.lang);
+                }
             });
-    });
-}
-        // --- FIN: REGISTRO DEL SERVICE WORKER ---
-
-        // Cargar datos externos (JSON) es lo primero.
-        Promise.all([
-            fetch('json_data/heroes_data.json').then(res => res.json()),
-            fetch('json_data/events_full.json').then(res => res.json()),
-            fetch('json_data/weekly_resets.json').then(res => res.json())
-        ])
-        .then(([heroesData, eventsData, weeklyData]) => {
-            // Una vez cargados los datos, los guardamos en el estado.
-            App.state.allHeroesData = heroesData;
-            App.state.allEventsData = eventsData.gameData;
-            App.state.weeklyResetsData = weeklyData.gameData;
-            
-            // Ahora que los datos están listos, podemos inicializar la aplicación.
-            initialize();
-        })
-        .catch(error => {
-            console.error("Error cargando los datos iniciales (heroes_data.json, events_full.json o weekly_resets.json):", error);
-            document.body.innerHTML = `<div style="text-align: center; color: white; padding: 40px;"><p>Error al cargar datos. Asegúrate de que los archivos JSON requeridos existen y son accesibles.</p><p>Revisa la consola (F12) para más detalles.</p></div>`;
-        });
+        }
     });
 
 })();

@@ -6,24 +6,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BnS Heroes - HUB/Timer</title>
-    <!-- El CSS ahora se enlaza desde un archivo externo -->
+    <!-- CSS Externo -->
     <link rel="stylesheet" href="style.css">
-    <!-- Librerías de Swiper.js (las mantenemos aquí) -->
+    <!-- Librerías Externas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <!-- Librerías de luxon (las mantenemos aquí) -->
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 
-    <!-- Metadatos Esenciales -->
+    <!-- Metadatos Esenciales y SEO -->
     <meta name="description" content="Stay up-to-date in BnS Heroes with this real-time HUB. Track the daily reset, world boss schedules, active events, and hero banners. Set up alerts and never miss a thing!">
     <meta name="author" content="olivo28">
     <meta name="theme-color" content="#bb86fc">
 
-    <!-- Open Graph (for Facebook, Discord, etc.) -->
+    <!-- Open Graph (para Redes Sociales) -->
     <meta property="og:title" content="BnS Heroes - HUB/Timer">
     <meta property="og:description" content="Real-time tracking for the daily reset, world boss schedules, active events, and hero banners for BnS Heroes.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://olivo28.github.io/bnsheroes-timer/en.html"> <!-- [MODIFICADO] apunta a en.html -->
+    <meta property="og:url" content="https://olivo28.github.io/bnsheroes-timer/">
     <meta property="og:image" content="https://olivo28.github.io/bnsheroes-timer/style/bnsheroes.webp">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
@@ -31,23 +30,29 @@
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="es_ES" />
 
-    <!-- Twitter Card (con thumbnail) -->
-    <meta name="twitter:card" content="summary"> <!-- [MODIFICADO] de 'summary_large_image' a 'summary' -->
-    <meta name="twitter:url" content="https://olivo28.github.io/bnsheroes-timer/en.html"> <!-- [MODIFICADO] apunta a en.html -->
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:url" content="https://olivo28.github.io/bnsheroes-timer/">
     <meta name="twitter:title" content="BnS Heroes - HUB/Timer">
     <meta name="twitter:description" content="The ultimate HUB for BnS Heroes: boss timers, event tracking, banners, and customizable alerts.">
     <meta name="twitter:image" content="https://olivo28.github.io/bnsheroes-timer/style/bnsheroes.webp">
     <meta name="twitter:creator" content="@olivo28">
 
-    <!-- Hreflang links for SEO -->
-    <link rel="alternate" hreflang="en" href="https://olivo28.github.io/bnsheroes-timer" />
-    <link rel="alternate" hreflang="x-default" href="https://olivo28.github.io/bnsheroes-timer" />
+    <!-- SEO y PWA -->
+    <link rel="alternate" hreflang="en" href="https://olivo28.github.io/bnsheroes-timer/" />
+    <link rel="alternate" hreflang="x-default" href="https://olivo28.github.io/bnsheroes-timer/" />
+    <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
+
+    <!-- ===== WIDGET DE USUARIO MOVIDO FUERA DEL CONTENIDO PRINCIPAL ===== -->
+    <div id="user-status">
+        <!-- El contenido de este div (avatar, nombre, botón) se genera dinámicamente con JavaScript -->
+    </div>
+
     <div class="app-container">
         <div class="content-wrapper">
-            <!-- REVERTIDO: .secondary-panel vuelve a estar dentro de .main-wrapper -->
             <div class="main-wrapper">
                 <div class="primary-panel">
                     <div class="top-bar">
@@ -65,28 +70,24 @@
                             <div id="current-time"></div>
                         </div>
                         <div class="top-bar-right">
+                            <!-- El widget de usuario ya no está aquí, solo el botón de configuración del panel -->
                             <div id="settings-button">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings"
                                     width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path
-                                        d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
                                     <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                                 </svg>
                             </div>
                         </div>
                     </div>
-
                     <div id="primary-timers-container"></div>
-
                     <div id="status-bar">
-                        <span data-lang-key="initializing"></span>
+                        <span data-lang-key="notifications.alertsEnabled"></span>
                         <div id="about-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                             </svg>
                         </div>
                     </div>
@@ -107,194 +108,150 @@
     <div id="modal-overlay">
         <div id="settings-modal">
             <button id="close-settings-btn" class="modal-close-btn">&times;</button>
-            <h2 data-lang-key="settingsTitle"></h2>
+            <h2 data-lang-key="settings.title"></h2>
             <div class="settings-section">
-                <label data-lang-key="timersSettingsLabel"></label>
+                <label data-lang-key="settings.timersLabel"></label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label" for="boss-timers-toggle">
-                        <input type="checkbox" id="boss-timers-toggle">
-                        <span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span>
-                        <span data-lang-key="bossToggleLabel"></span>
-                    </label>
-                    <label class="checkbox-label" for="events-toggle">
-                        <input type="checkbox" id="events-toggle">
-                        <span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span>
-                        <span data-lang-key="eventsToggleLabel"></span>
-                    </label>
-                    <label class="checkbox-label" for="weekly-toggle">
-                        <input type="checkbox" id="weekly-toggle">
-                        <span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span>
-                        <span data-lang-key="weeklyToggleLabel"></span>
-                    </label>
+                    <label class="checkbox-label" for="boss-timers-toggle"><input type="checkbox" id="boss-timers-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.bossToggle"></span></label>
+                    <label class="checkbox-label" for="events-toggle"><input type="checkbox" id="events-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.eventsToggle"></span></label>
+                    <label class="checkbox-label" for="weekly-toggle"><input type="checkbox" id="weekly-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.weeklyToggle"></span></label>
                 </div>
             </div>
-            <div class="settings-section"><label for="pre-alert-input" data-lang-key="preAlertLabel"></label><input
-                    type="text" id="pre-alert-input" class="settings-input" placeholder="e.g., 15, 5, 1"></div>
-            <div class="settings-section"><label data-lang-key="notificationTypeLabel"></label>
-                <div class="checkbox-group"><label class="checkbox-label" for="sound-toggle"><input type="checkbox"
-                            id="sound-toggle"><span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span><span data-lang-key="soundToggleLabel"></span></label><label
-                        class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span
-                            class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span><span data-lang-key="desktopToggleLabel"></span></label></div>
+            <div class="settings-section"><label for="pre-alert-input" data-lang-key="settings.preAlertLabel"></label><input type="text" id="pre-alert-input" class="settings-input" placeholder="e.g., 15, 5, 1"></div>
+            <div class="settings-section"><label data-lang-key="settings.notificationTypeLabel"></label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label" for="sound-toggle"><input type="checkbox" id="sound-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.soundToggle"></span></label>
+                    <label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.desktopToggle"></span></label>
+                </div>
             </div>
-            <div class="settings-section"><label for="timezone-select" data-lang-key="timezoneLabel"></label><select
-                    id="timezone-select" class="settings-input"></select></div>
-            <div class="settings-section"><label for="language-select" data-lang-key="languageLabel"></label><select
-                    id="language-select" class="settings-input"></select></div>
-            <div id="settings-buttons"><button id="test-notification-btn" class="settings-btn"
-                    data-lang-key="testButton"></button><button id="save-settings-btn" class="settings-btn"
-                    data-lang-key="saveButton"></button></div>
+            <div class="settings-section"><label for="timezone-select" data-lang-key="settings.timezoneLabel"></label><select id="timezone-select" class="settings-input"></select></div>
+            <div class="settings-section"><label for="language-select" data-lang-key="settings.languageLabel"></label><select id="language-select" class="settings-input"></select></div>
+            <div id="settings-buttons">
+                <button id="test-notification-btn" class="settings-btn" data-lang-key="settings.testButton"></button>
+                <button id="save-settings-btn" class="settings-btn" data-lang-key="common.saveButton"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="account-modal-overlay">
+        <div id="account-modal">
+            <button id="close-account-modal-btn" class="modal-close-btn">&times;</button>
+            <h2 data-lang-key="account.title"></h2>
+            
+            <div class="settings-section">
+                <label data-lang-key="account.pushNotifications"></label>
+                <p class="settings-description" data-lang-key="account.pushDescription"></p>
+                <button id="account-subscribe-push-btn" class="settings-btn push-btn" data-lang-key="settings.subscribeButton"></button>
+            </div>
+            
+            <!-- Aquí se pueden añadir más configuraciones de cuenta en el futuro -->
+
         </div>
     </div>
 
     <div id="info-modal-overlay">
         <div id="info-modal">
-            <h2 id="info-modal-title"></h2>
-            <p id="info-modal-body1"></p>
-            <p id="info-modal-body2"></p><button id="close-info-btn" class="settings-btn"></button>
+            <h2 id="info-modal-title" data-lang-key="modals.showdownInfo.title"></h2>
+            <p id="info-modal-body1" data-lang-key="modals.showdownInfo.body1"></p>
+            <p id="info-modal-body2" data-lang-key="modals.showdownInfo.body2"></p>
+            <button id="close-info-btn" class="settings-btn" data-lang-key="common.closeButton"></button>
         </div>
     </div>
 
     <div id="sync-modal-overlay">
         <div id="sync-modal">
-            <h2 data-lang-key="syncModalTitle"></h2>
-            <p data-lang-key="syncModalDesc"></p>
+            <h2 data-lang-key="modals.syncTicket.title"></h2>
+            <p data-lang-key="modals.syncTicket.description"></p>
             <div class="sync-inputs">
-                <div class="sync-input-group"><label data-lang-key="syncModalHours"></label><input type="number"
-                        id="sync-hours" class="settings-input" min="0" max="1" placeholder="H"></div>
-                <div class="sync-input-group"><label data-lang-key="syncModalMinutes"></label><input type="number"
-                        id="sync-minutes" class="settings-input" min="0" max="59" placeholder="M"></div>
-                <div class="sync-input-group"><label data-lang-key="syncModalSeconds"></label><input type="number"
-                        id="sync-seconds" class="settings-input" min="0" max="59" placeholder="S"></div>
+                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.hours"></label><input type="number" id="sync-hours" class="settings-input" min="0" max="1" placeholder="H"></div>
+                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.minutes"></label><input type="number" id="sync-minutes" class="settings-input" min="0" max="59" placeholder="M"></div>
+                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.seconds"></label><input type="number" id="sync-seconds" class="settings-input" min="0" max="59" placeholder="S"></div>
             </div>
-            <button id="save-sync-btn" class="settings-btn" data-lang-key="syncModalButton"></button>
+            <button id="save-sync-btn" class="settings-btn" data-lang-key="modals.syncTicket.button"></button>
         </div>
     </div>
 
     <div id="about-modal-overlay">
         <div id="about-modal">
-            <h2 id="about-modal-title"></h2>
-            <h3 id="about-contact-title"></h3>
-            <p id="about-contact-body"></p>
-            <p id="about-discord-handle"></p>
-            <p><span id="about-discord-server"></span> <a id="about-discord-link" href="https://discord.gg/4eKe49CkVS"
-                    target="_blank" rel="noopener noreferrer"></a></p>
-            <p id="about-donation"></p>
+            <h2 data-lang-key="about.title"></h2>
+            <h3 data-lang-key="about.contactTitle"></h3>
+            <p data-lang-key="about.contactBody"></p>
+            <p data-lang-key="about.discordHandle"></p>
+            <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link" href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer" data-lang-key="about.discordLinkText"></a></p>
+            <p data-lang-key="about.donation"></p>
             <hr>
-            <h3 id="about-disclaimer-title"></h3>
-            <p id="about-disclaimer-body" class="disclaimer"></p>
-            <button id="close-about-btn" class="settings-btn"></button>
+            <h3 data-lang-key="about.disclaimerTitle"></h3>
+            <p data-lang-key="about.disclaimerBody" class="disclaimer"></p>
+            <button id="close-about-btn" class="settings-btn" data-lang-key="common.closeButton"></button>
         </div>
     </div>
 
-<div id="hero-modal-overlay">
+    <div id="hero-modal-overlay">
         <div id="hero-modal-content">
-            <!-- BOTÓN DE CERRAR CON SVG -->
-            <button id="hero-modal-close-btn" class="modal-close-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            <!-- BOTONES DE NAVEGACIÓN CON SVG -->
-            <button id="hero-modal-prev-btn" class="hero-modal-nav-btn prev">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-            </button>
-            <button id="hero-modal-next-btn" class="hero-modal-nav-btn next">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-            </button>
-
+            <button id="hero-modal-close-btn" class="modal-close-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <button id="hero-modal-prev-btn" class="hero-modal-nav-btn prev"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
+            <button id="hero-modal-next-btn" class="hero-modal-nav-btn next"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
             <img id="hero-modal-image" src="" alt="Hero Image">
             <div id="hero-modal-info">
                 <h4 id="hero-modal-tag"></h4>
                 <h3 id="hero-modal-name"></h3>
                 <div class="hero-modal-details">
-                    <div>
-                        <img id="hero-modal-element-icon" src="" alt="Element">
-                        <span id="hero-modal-rarity"></span>
-                    </div>
-                    <div>
-                        <img id="hero-modal-role-icon" src="" alt="Role">
-                        <span id="hero-modal-role"></span>
-                    </div>
+                    <div><img id="hero-modal-element-icon" src="" alt="Element"><span id="hero-modal-rarity"></span></div>
+                    <div><img id="hero-modal-role-icon" src="" alt="Role"><span id="hero-modal-role"></span></div>
                 </div>
                 <div id="hero-modal-previews"></div>
             </div>
         </div>
     </div>
+
     <div id="twitch-fab" class="hidden">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path
-                d="M11.571 4.714h1.715v5.143H11.57zm4.715 0h1.714v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
+            <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0h1.714v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
         </svg>
+        <span class="notification-dot"></span>
     </div>
 
-    <!-- 1. MODIFICA EL BOTÓN FLOTANTE -->
-    <div id="twitch-fab" class="hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path
-                d="M11.571 4.714h1.715v5.143H11.57zm4.715 0h1.714v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
-        </svg>
-        <span class="notification-dot"></span> <!-- <-- AÑADE ESTE SPAN -->
-    </div>
-
-    <!-- 2. MODIFICA EL MODAL DE STREAMS -->
     <div id="streams-modal-overlay">
         <div id="streams-modal">
             <div class="streams-modal-header">
-                <h2 data-lang-key="streamsModalTitle">Próximos Streams</h2>
+                <h2 data-lang-key="modals.streams.title"></h2>
                 <button id="close-streams-modal">&times;</button>
             </div>
-            <div id="streams-modal-content">
-                <!-- El contenido se generará aquí -->
-            </div>
-            <!-- AÑADE ESTE FOOTER -->
+            <div id="streams-modal-content"></div>
             <div class="streams-modal-footer">
-                <h3 data-lang-key="streamAlertsTitle"></h3>
+                <h3 data-lang-key="streams.alertsTitle"></h3>
                 <div class="checkbox-group">
-                    <label class="checkbox-label" for="pre-stream-alert-toggle">
-                        <input type="checkbox" id="pre-stream-alert-toggle">
-                        <span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span>
-                        <span data-lang-key="preStreamAlertLabel"></span>
-                    </label>
-                    <label class="checkbox-label" for="post-stream-alert-toggle">
-                        <input type="checkbox" id="post-stream-alert-toggle">
-                        <span class="checkbox-custom"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg></span>
-                        <span data-lang-key="postStreamAlertLabel"></span>
-                    </label>
+                    <label class="checkbox-label" for="pre-stream-alert-toggle"><input type="checkbox" id="pre-stream-alert-toggle"><span class="checkbox-custom"></span><span data-lang-key="streams.preStreamAlertLabel"></span></label>
+                    <label class="checkbox-label" for="post-stream-alert-toggle"><input type="checkbox" id="post-stream-alert-toggle"><span class="checkbox-custom"></span><span data-lang-key="streams.postStreamAlertLabel"></span></label>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="js/0-data.js" defer></script>
-    <script src="js/1-utils.js" defer></script>
-    <script src="js/2-state.js" defer></script>
-    <script src="js/3-ui.js" defer></script>
-    <script src="js/4-logic.js" defer></script>
-    <script src="js/5-main.js" defer></script>
+    <!-- MODAL DE SELECCIÓN DE IDIOMA PARA LA PRIMERA VISITA -->
+    <div id="language-modal-overlay" class="hidden">
+        <div id="language-modal">
+            <h2>Select your language / Selecciona tu idioma</h2>
+            <div id="language-options">
+                <button class="language-choice-btn" data-lang="en">
+                    <span class="flag">EN</span>
+                    <span>English</span>
+                </button>
+                <button class="language-choice-btn" data-lang="es">
+                    <span class="flag">ES</span>
+                    <span>Español</span>
+                </button>
+            </div>
+            <p class="language-modal-footer">You can change this later in the settings.</p>
+        </div>
+    </div>
+
+    <!-- CARGA DE SCRIPTS COMO MÓDULOS -->
+    <script src="js/1-utils.js" type="module"></script>
+    <script src="js/2-state.js" type="module"></script>
+    <script src="js/3-ui.js" type="module"></script>
+    <script src="js/4-logic.js" type="module"></script>
+    <script src="js/5-main.js" type="module"></script>
 </body>
+
 </html>
