@@ -1027,6 +1027,10 @@ const UI = {
     },
 
     openAboutModal: function() {
+        // --- INICIO DE LA CORRECCIÓN ---
+        document.body.classList.add('no-scroll'); // <-- AÑADE ESTA LÍNEA
+        // --- FIN DE LA CORRECCIÓN ---
+
         // Añadimos la lógica de traducción aquí
         document.querySelectorAll('#about-modal-overlay [data-lang-key]').forEach(el => {
             const key = el.dataset.langKey;
@@ -1037,6 +1041,10 @@ const UI = {
     },
 
     closeAboutModal: function() { 
+        // --- INICIO DE LA CORRECCIÓN ---
+        document.body.classList.remove('no-scroll'); // <-- AÑADE ESTA LÍNEA
+        // --- FIN DE LA CORRECCIÓN ---
+
         App.dom.aboutModalOverlay.classList.remove('visible');
     },
 

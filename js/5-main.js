@@ -176,6 +176,11 @@ import UI from './3-ui.js';
 
         if (App.state.isMobile) {
             setupMobileSwiper();
+            const mobileHeader = document.getElementById('mobile-header');
+            const userStatusWidget = App.dom.userStatus;
+            if (mobileHeader && userStatusWidget) {
+                mobileHeader.appendChild(userStatusWidget);
+            }
         }
 
         UI.populateSelects();

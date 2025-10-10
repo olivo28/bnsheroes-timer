@@ -45,6 +45,9 @@
 </head>
 
 <body>
+     <header id="mobile-header">
+        <!-- El widget de usuario (#user-status) se moverá aquí con JavaScript -->
+    </header>
 
     <!-- INICIO DE LA CORRECCIÓN: Pantalla de carga -->
     <div id="loading-overlay">
@@ -122,54 +125,78 @@
         <div id="settings-modal">
             <button id="close-settings-btn" class="modal-close-btn">&times;</button>
             <h2 data-lang-key="settings.title"></h2>
-            <div class="settings-section">
-                <label data-lang-key="settings.timersLabel"></label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label" for="boss-timers-toggle"><input type="checkbox" id="boss-timers-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.bossToggle"></span></label>
-                    <label class="checkbox-label" for="events-toggle"><input type="checkbox" id="events-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.eventsToggle"></span></label>
-                    <label class="checkbox-label" for="weekly-toggle"><input type="checkbox" id="weekly-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.weeklyToggle"></span></label>
-                </div>
-            </div>
-            <div class="settings-section"><label for="pre-alert-input" data-lang-key="settings.preAlertLabel"></label><input type="text" id="pre-alert-input" class="settings-input" placeholder="e.g., 15, 5, 1"></div>
-            <div class="settings-section"><label data-lang-key="settings.notificationTypeLabel"></label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label" for="sound-toggle"><input type="checkbox" id="sound-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.soundToggle"></span></label>
-                    <label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.desktopToggle"></span></label>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <label data-lang-key="settings.reminders.title"></label>
-                <div class="settings-row-vertical">
-                    <div class="settings-row">
-                        <label class="checkbox-label"><input type="checkbox" id="event-dailies-reminder-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.reminders.eventDailies"></span></label>
-                        <select id="event-dailies-reminder-hours" class="settings-input small-input">
-                            <option value="12">12</option>
-                            <option value="8">8</option>
-                            <option value="6">6</option>
-                            <option value="4">4</option>
-                        </select>
-                        <span data-lang-key="settings.reminders.hoursBefore"></span>
-                    </div>
-                    <div class="settings-row">
-                        <label class="checkbox-label"><input type="checkbox" id="weekly-reminder-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.reminders.weeklyReset"></span></label>
-                        <input type="number" id="weekly-reminder-days" class="settings-input small-input" min="1" max="6" value="3">
-                        <span data-lang-key="settings.reminders.daysBefore"></span>
-                    </div>
-                    <div class="settings-row">
-                        <label class="checkbox-label"><input type="checkbox" id="banner-reminder-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.reminders.newBanner"></span></label>
-                        <input type="number" id="banner-reminder-days" class="settings-input small-input" min="1" max="6" value="4">
-                        <span data-lang-key="settings.reminders.daysBefore"></span>
+            <div class="settings-content">
+    
+                <div class="settings-section">
+                    <label data-lang-key="settings.timersLabel"></label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label" for="boss-timers-toggle"><input type="checkbox"
+                                id="boss-timers-toggle"><span class="checkbox-custom"></span><span
+                                data-lang-key="settings.bossToggle"></span></label>
+                        <label class="checkbox-label" for="events-toggle"><input type="checkbox" id="events-toggle"><span
+                                class="checkbox-custom"></span><span data-lang-key="settings.eventsToggle"></span></label>
+                        <label class="checkbox-label" for="weekly-toggle"><input type="checkbox" id="weekly-toggle"><span
+                                class="checkbox-custom"></span><span data-lang-key="settings.weeklyToggle"></span></label>
                     </div>
                 </div>
+                <div class="settings-section"><label for="pre-alert-input"
+                        data-lang-key="settings.preAlertLabel"></label><input type="text" id="pre-alert-input"
+                        class="settings-input" placeholder="e.g., 15, 5, 1"></div>
+                <div class="settings-section"><label data-lang-key="settings.notificationTypeLabel"></label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label" for="sound-toggle"><input type="checkbox" id="sound-toggle"><span
+                                class="checkbox-custom"></span><span data-lang-key="settings.soundToggle"></span></label>
+                        <label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span
+                                class="checkbox-custom"></span><span data-lang-key="settings.desktopToggle"></span></label>
+                    </div>
+                </div>
+    
+                <div class="settings-section">
+                    <label data-lang-key="settings.reminders.title"></label>
+                    <div class="settings-row-vertical">
+                        <div class="settings-row">
+                            <label class="checkbox-label"><input type="checkbox" id="event-dailies-reminder-toggle"><span
+                                    class="checkbox-custom"></span><span
+                                    data-lang-key="settings.reminders.eventDailies"></span></label>
+                            <select id="event-dailies-reminder-hours" class="settings-input small-input">
+                                <option value="12">12</option>
+                                <option value="8">8</option>
+                                <option value="6">6</option>
+                                <option value="4">4</option>
+                            </select>
+                            <span data-lang-key="settings.reminders.hoursBefore"></span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="checkbox-label"><input type="checkbox" id="weekly-reminder-toggle"><span
+                                    class="checkbox-custom"></span><span
+                                    data-lang-key="settings.reminders.weeklyReset"></span></label>
+                            <input type="number" id="weekly-reminder-days" class="settings-input small-input" min="1"
+                                max="6" value="3">
+                            <span data-lang-key="settings.reminders.daysBefore"></span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="checkbox-label"><input type="checkbox" id="banner-reminder-toggle"><span
+                                    class="checkbox-custom"></span><span
+                                    data-lang-key="settings.reminders.newBanner"></span></label>
+                            <input type="number" id="banner-reminder-days" class="settings-input small-input" min="1"
+                                max="6" value="4">
+                            <span data-lang-key="settings.reminders.daysBefore"></span>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="settings-section"><label for="timezone-select"
+                        data-lang-key="settings.timezoneLabel"></label><select id="timezone-select"
+                        class="settings-input"></select></div>
+                <div class="settings-section"><label for="language-select"
+                        data-lang-key="settings.languageLabel"></label><select id="language-select"
+                        class="settings-input"></select></div>
+                <div id="settings-buttons">
+                    <button id="test-notification-btn" class="settings-btn" data-lang-key="settings.testButton"></button>
+                    <button id="save-settings-btn" class="settings-btn" data-lang-key="common.saveButton"></button>
+                </div>
             </div>
-
-            <div class="settings-section"><label for="timezone-select" data-lang-key="settings.timezoneLabel"></label><select id="timezone-select" class="settings-input"></select></div>
-            <div class="settings-section"><label for="language-select" data-lang-key="settings.languageLabel"></label><select id="language-select" class="settings-input"></select></div>
-            <div id="settings-buttons">
-                <button id="test-notification-btn" class="settings-btn" data-lang-key="settings.testButton"></button>
-                <button id="save-settings-btn" class="settings-btn" data-lang-key="common.saveButton"></button>
-            </div>
+    
         </div>
     </div>
 
@@ -422,59 +449,64 @@
         <div id="about-modal">
             <h2 data-lang-key="about.title"></h2>
 
-            <div class="info-grid">
-                <!-- Tarjeta de Información -->
-                <div class="info-card">
-                    <h3 data-lang-key="timers.dailyResetName"></h3>
-                    <p data-lang-key="timersInfo.dailyResetDesc"></p>
-                </div>
-                <!-- Tarjeta de Información -->
-                <div class="info-card">
-                    <h3 data-lang-key="timers.showdownName"></h3>
-                    <p data-lang-key="timersInfo.showdownDesc"></p>
-                </div>
-                <!-- Tarjeta de Información -->
-                <div class="info-card">
-                    <h3 data-lang-key="timersInfo.bossesTitle"></h3>
-                    <p data-lang-key="timersInfo.bossesDesc"></p>
-                </div>
-                <!-- Tarjeta de Información -->
-                <div class="info-card">
-                    <h3 data-lang-key="notifications.title"></h3>
-                    <p data-lang-key="timersInfo.notificationsDesc"></p>
+                <div class="about-modal-content">
+                
+                    <div class="info-grid">
+                        <!-- Tarjeta de Información -->
+                        <div class="info-card">
+                            <h3 data-lang-key="timers.dailyResetName"></h3>
+                            <p data-lang-key="timersInfo.dailyResetDesc"></p>
+                        </div>
+                        <!-- Tarjeta de Información -->
+                        <div class="info-card">
+                            <h3 data-lang-key="timers.showdownName"></h3>
+                            <p data-lang-key="timersInfo.showdownDesc"></p>
+                        </div>
+                        <!-- Tarjeta de Información -->
+                        <div class="info-card">
+                            <h3 data-lang-key="timersInfo.bossesTitle"></h3>
+                            <p data-lang-key="timersInfo.bossesDesc"></p>
+                        </div>
+                        <!-- Tarjeta de Información -->
+                        <div class="info-card">
+                            <h3 data-lang-key="notifications.title"></h3>
+                            <p data-lang-key="timersInfo.notificationsDesc"></p>
+                        </div>
+                
+                        <!-- --- INICIO DE LAS TARJETAS AÑADIDAS --- -->
+                        <!-- Tarjeta de Información -->
+                        <div class="info-card">
+                            <h3 data-lang-key="events.title"></h3>
+                            <p data-lang-key="timersInfo.eventsDesc"></p>
+                        </div>
+                        <!-- Tarjeta de Información -->
+                        <div class="info-card">
+                            <h3 data-lang-key="weekly.title"></h3>
+                            <p data-lang-key="timersInfo.weeklyDesc"></p>
+                        </div>
+                        <!-- --- FIN DE LAS TARJETAS AÑADIDAS --- -->
+                
+                        <!-- Tarjeta de Información (ocupa dos columnas) -->
+                        <div class="info-card full-width">
+                            <h3 data-lang-key="banners.title"></h3>
+                            <p data-lang-key="timersInfo.bannersDesc"></p>
+                        </div>
+                    </div>
+                
+                    <!-- Sección de contacto al final -->
+                    <hr>
+                    <div class="contact-section">
+                        <h3 data-lang-key="about.contactTitle"></h3>
+                        <!-- INICIO DE LA LÍNEA A AÑADIR -->
+                        <p data-lang-key="about.discordHandle"></p>
+                        <!-- FIN DE LA LÍNEA A AÑADIR -->
+                        <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link"
+                                href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer"
+                                data-lang-key="about.discordLinkText"></a></p>
+                    </div>
+                
                 </div>
 
-                <!-- --- INICIO DE LAS TARJETAS AÑADIDAS --- -->
-                <!-- Tarjeta de Información -->
-                <div class="info-card">
-                    <h3 data-lang-key="events.title"></h3>
-                    <p data-lang-key="timersInfo.eventsDesc"></p>
-                </div>
-                <!-- Tarjeta de Información -->
-                <div class="info-card">
-                    <h3 data-lang-key="weekly.title"></h3>
-                    <p data-lang-key="timersInfo.weeklyDesc"></p>
-                </div>
-                <!-- --- FIN DE LAS TARJETAS AÑADIDAS --- -->
-
-                <!-- Tarjeta de Información (ocupa dos columnas) -->
-                <div class="info-card full-width">
-                    <h3 data-lang-key="banners.title"></h3>
-                    <p data-lang-key="timersInfo.bannersDesc"></p>
-                </div>
-            </div>
-
-            <!-- Sección de contacto al final -->
-            <hr>
-            <div class="contact-section">
-                <h3 data-lang-key="about.contactTitle"></h3>
-                <!-- INICIO DE LA LÍNEA A AÑADIR -->
-                <p data-lang-key="about.discordHandle"></p>
-                <!-- FIN DE LA LÍNEA A AÑADIR -->
-                <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link" href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer" data-lang-key="about.discordLinkText"></a></p>
-            </div>
-
-            
             <button id="close-about-btn" class="settings-btn" data-lang-key="common.closeButton"></button>
         </div>
     </div>

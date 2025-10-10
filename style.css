@@ -112,6 +112,9 @@ body {
     padding: 20px;
 }
 
+#mobile-header {
+    display: none;
+}
 
 /* --- 1.4. Scrollbar Personalizado --- */
 ::-webkit-scrollbar {
@@ -882,6 +885,8 @@ input:checked+.slider:before {
 #about-modal-overlay.visible #about-modal,
 #streams-modal-overlay.visible #streams-modal {
     transform: scale(1);
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 #settings-modal h2,
@@ -1136,8 +1141,8 @@ input:checked+.slider:before {
 
 #about-modal {
     width: 90%;
-    max-width: 850px; 
-    text-align: center; /* Centramos todo el contenido */
+    max-width: 850px;
+    max-height: 85vh; /* Se mantiene la altura máxima */
     background-color: var(--box-bg-color);
     padding: 30px;
     border-radius: 16px;
@@ -1145,12 +1150,25 @@ input:checked+.slider:before {
     position: relative;
     transform: scale(0.95);
     transition: transform 0.3s ease;
+    
+    /* Convertimos el modal en un contenedor flex vertical */
+    display: flex;
+    flex-direction: column;
+}
+
+.about-modal-content {
+    /* El nuevo div interno es el que ahora tiene el scroll */
+    overflow-y: auto;
+    /* Ajustes para que la barra de scroll no se pegue al contenido */
+    padding-right: 15px;
+    margin-right: -15px;
 }
 
 #about-modal h2 {
     margin-top: 0;
     margin-bottom: 25px;
     color: var(--color-primary);
+    text-align: center; /* Aseguramos que el título siga centrado */
 }
 
 .info-grid {
@@ -1257,10 +1275,36 @@ input:checked+.slider:before {
 }
 
 /* --- 3.8.4. Modal de Configuración --- */
+
+/* --- INICIO DE LA CORRECCIÓN --- */
+#settings-modal {
+    background-color: var(--box-bg-color);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    text-align: center;
+    position: relative;
+    
+    /* Convertimos en flexbox vertical y limitamos altura */
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+}
+
+.settings-content {
+    overflow-y: auto;
+    /* Pequeño padding para que la barra de scroll no se pegue al contenido */
+    padding: 10px 15px 10px 0;
+    margin-right: -15px;
+    flex-grow: 1; /* Permite que este div ocupe el espacio disponible */
+    text-align: left; /* Restablecemos la alineación del texto para el contenido */
+}
+
 .settings-section {
     margin-bottom: 25px;
     text-align: left;
-
 }
 
 .settings-section > label {
@@ -1281,14 +1325,14 @@ input:checked+.slider:before {
 }
 
 .settings-input.small-input {
-    width: 70px; /* Ancho fijo para los inputs pequeños */
+    width: 70px;
     text-align: center;
 }
 
 .settings-row-vertical {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Espacio entre cada fila de recordatorio */
+    gap: 12px;
 }
 
 .settings-row {
@@ -1298,7 +1342,7 @@ input:checked+.slider:before {
 }
 
 .settings-row .checkbox-label {
-    flex-grow: 1; /* Hace que el label ocupe el espacio sobrante */
+    flex-grow: 1;
 }
 
 select.settings-input {
@@ -1313,7 +1357,7 @@ select.settings-input option {
 .checkbox-group {
     display: flex;
     gap: 20px;
-    justify-content: center;
+    /* justify-content: center; <-- Lo quitamos para que se alinee a la izquierda por defecto */
     flex-wrap: wrap;
 }
 
@@ -1325,8 +1369,11 @@ select.settings-input option {
 }
 
 .checkbox-label input {
-    display: none;
+    display: none; /* Oculta el checkbox nativo */
 }
+
+
+/* ===== INICIO DE LA CORRECCIÓN CLAVE ===== */
 
 .checkbox-custom {
     width: 20px;
@@ -1338,30 +1385,40 @@ select.settings-input option {
     justify-content: center;
     align-items: center;
     transition: background-color 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0; /* Evita que el cuadrado se encoja */
 }
 
-.checkbox-custom svg {
-    width: 14px;
-    height: 14px;
+/* Creamos la marca de "check" con un pseudo-elemento */
+.checkbox-custom::before {
+    content: '✓'; /* Puedes usar '✔' o '\2713' también */
+    font-weight: bold;
+    font-size: 14px;
     color: white;
-    opacity: 0;
+    opacity: 0; /* Oculto por defecto */
     transition: opacity 0.2s ease;
 }
 
+/* Cuando el input está :checked, cambiamos el estilo del span que le sigue (.checkbox-custom) */
 .checkbox-label input:checked + .checkbox-custom {
     background-color: var(--color-normal);
     border-color: var(--color-normal);
 }
 
-.checkbox-label input:checked + .checkbox-custom svg {
+/* Y mostramos la marca de "check" */
+.checkbox-label input:checked + .checkbox-custom::before {
     opacity: 1;
 }
+
+/* ===== FIN DE LA CORRECCIÓN CLAVE ===== */
+
 
 #settings-buttons {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 30px;
+    padding-top: 20px; /* Añadimos un poco de espacio arriba */
+    border-top: 1px solid var(--border-color); /* Separador visual */
 }
 
 .settings-btn {
@@ -3091,7 +3148,113 @@ select.settings-input option {
 /* --- FIN DE ANIMACIONES --- */
 
 
-/* --- 6. DISEÑO ADAPTATIVO (MEDIA QUERIES) --- */
+@media (max-width: 900px) {
+    /* --- 6.1. Ajustes Generales de Layout Móvil --- */
+    body {
+        display: block;
+        padding: 0;
+    }
+
+    body.no-scroll {
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    .app-container,
+    .content-wrapper {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+
+    .main-wrapper {
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: none;
+        overflow: visible;
+        order: 1;
+    }
+
+    .primary-panel,
+    .secondary-panel {
+        width: 100%;
+        box-sizing: border-box;
+        border-left: none;
+        padding: 20px;
+    }
+
+    .primary-panel {
+        padding-bottom: 2px;
+    }
+
+    #status-bar {
+        border-radius: 0;
+    }
+
+    /* --- 6.2. Componentes en Móvil (Ajustes existentes) --- */
+    #events-container,
+    #weekly-container {
+        padding: 0 0 7px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    #primary-timers-container {
+        gap: 30px;
+        flex-grow: 1;
+    }
+
+    .spawn-item {
+        font-size: 0.9em;
+        padding: 10px 0;
+    }
+    
+    #banners-container {
+        width: 100%;
+        border-radius: 0;
+        border: none;
+        flex-direction: column;
+        order: 2;
+        padding-top: 15px;
+    }
+
+    .banner-heroes {
+        gap: 10px;
+    }
+
+    .banner-hero-img-container {
+        width: 70px;
+        height: 70px;
+    }
+
+    /* --- 6.3. Estilos del Swiper (Específico para Móvil) --- */
+    .mobile-swiper-container {
+        padding-bottom: 30px;
+    }
+
+    .swiper-slide {
+        width: 100%;
+        height: auto;
+        min-height: 450px;
+    }
+
+    .swiper-pagination {
+        position: absolute;
+        bottom: 10px;
+    }
+
+    .swiper-pagination-bullet {
+        background-color: var(--text-muted-color);
+    }
+
+    .swiper-pagination-bullet-active {
+        background-color: var(--color-primary);
+    }
+
+    /* style.css (DENTRO de @media (max-width: 900px)) */
 
 @media (max-width: 900px) {
     /* --- 6.1. Ajustes Generales de Layout Móvil --- */
@@ -3140,40 +3303,23 @@ select.settings-input option {
         border-radius: 0;
     }
 
-    /* --- 6.2. Componentes en Móvil --- */
+    /* --- 6.2. Componentes en Móvil (Ajustes existentes) --- */
     #events-container,
     #weekly-container {
-        padding: 0 0px 7px 0px;
+        padding: 0 0 7px 0;
         border-bottom: 1px solid var(--border-color);
     }
 
     #primary-timers-container {
-        display: flex;
-        flex-direction: column;
         gap: 30px;
-        align-items: center;
-        justify-content: center;
         flex-grow: 1;
     }
 
     .spawn-item {
         font-size: 0.9em;
-        display: flex;
-        align-items: center;
-        padding: 10px 0px;
-        border-bottom: 1px solid var(--border-color);
-        transition: opacity 0.3s ease;
+        padding: 10px 0;
     }
-
-    .stream-thumbnail {
-        width: 311px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 15px;
-        position: relative;
-        height: 200px;
-    }
-
+    
     #banners-container {
         width: 100%;
         border-radius: 0;
@@ -3185,35 +3331,11 @@ select.settings-input option {
 
     .banner-heroes {
         gap: 10px;
-        padding-left: 0;
     }
 
     .banner-hero-img-container {
         width: 70px;
         height: 70px;
-    }
-
-    .banner-element-icon {
-        display: none;
-    }
-
-    #event-details-panel,
-    #weekly-details-panel {
-        position: fixed;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        height: 100vh !important;
-        border-radius: 0;
-        z-index: 1100;
-        transition: top 0.4s ease;
-    }
-
-    #event-details-panel.visible,
-    #weekly-details-panel.visible {
-        top: 0;
-        width: 100%;
-        margin-left: 0px;
     }
 
     /* --- 6.3. Estilos del Swiper (Específico para Móvil) --- */
@@ -3239,6 +3361,155 @@ select.settings-input option {
     .swiper-pagination-bullet-active {
         background-color: var(--color-primary);
     }
-}
 
-/* --- FIN DE DISEÑO ADAPTATIVO --- */
+    /* --- 6.4. Adaptación Específica de Componentes en Móvil (VERSIÓN FINAL) --- */
+    
+    /* --- Barra Superior Móvil y Widget de Usuario --- */
+    #mobile-header {
+        display: flex;
+        justify-content: flex-end; /* Alinea el widget a la derecha */
+        align-items: center;
+        padding: 8px 15px;
+        background-color: var(--box-bg-color);
+        border-bottom: 1px solid var(--border-color);
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    /* Anulamos el posicionamiento 'fixed' del widget de usuario y lo integramos en el header */
+    #user-status {
+        position: static; /* <-- La clave: El widget ahora forma parte del flujo normal */
+        top: auto;
+        right: auto;
+        left: auto;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: none;
+        background-color: transparent;
+        padding: 0;
+    }
+
+    #user-status .user-name {
+        display: block; /* Aseguramos que el nombre sea visible */
+    }
+
+    #user-status .user-widget-divider {
+        display: none; /* El divisor no es necesario aquí */
+    }
+
+    /* --- Adaptación del Modal de Cuenta --- */
+    #account-modal {
+        flex-direction: column;
+        max-height: 100vh;
+        height: 100%;
+        border-radius: 0;
+    }
+    .account-sidebar {
+        width: 100%;
+        height: auto;
+        padding: 0;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .account-sidebar-scroller {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #settings-modal {
+        width: 90vw;
+        padding: 20px;
+    }
+
+    .settings-content {
+        padding-right: 10px;
+        margin-right: -10px;
+    }
+
+    .checkbox-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    }
+    .settings-row {
+        flex-wrap: wrap;
+    }
+
+    #settings-buttons {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    #settings-buttons .settings-btn {
+        width: 100%;
+    }
+
+    .sidebar-header, .sidebar-footer, .secondary-nav {
+        display: none;
+    }
+    .sidebar-nav {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+        padding: 5px;
+    }
+    .nav-item {
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+    .account-content-scroller {
+        padding: 25px 20px;
+    }
+    .close-fullscreen-modal-btn {
+        top: 5px;
+        right: 5px;
+    }
+
+    /* --- Adaptación de los Paneles de Detalles (Evento/Semanal) --- */
+    #event-details-panel,
+    #weekly-details-panel {
+        position: fixed;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        height: 100vh !important;
+        border-radius: 0;
+        z-index: 1100;
+        transition: top 0.4s ease;
+        box-sizing: border-box;
+    }
+    #event-details-panel.visible,
+    #weekly-details-panel.visible {
+        top: 0;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* --- Adaptación de otros Modales --- */
+    #hero-modal-content { max-width: 95vw; }
+    #hero-modal-image { max-height: calc(95vh - 250px); }
+    .hero-modal-nav-btn { width: 36px; height: 36px; top: 35%; }
+    .hero-modal-nav-btn.prev { left: 5px; }
+    .hero-modal-nav-btn.next { right: 5px; }
+    #hero-modal-info { padding: 5px 10px; }
+    #hero-modal-name { font-size: 1.3em; }
+
+    #about-modal { 
+        max-width: 95vw;
+        /* Ya no necesitamos overflow-y aquí porque se maneja en la regla general */
+    } 
+    .info-grid { grid-template-columns: 1fr; }
+
+    #streams-modal { max-width: 95vw; }
+    #streams-modal-content { padding: 15px; }
+    .stream-thumbnail {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+    }
+}
+}
