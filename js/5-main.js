@@ -52,10 +52,20 @@ import UI from './3-ui.js';
      * @param {string} locale - El idioma elegido (ej. 'en', 'es').
      */
     async function startApp(locale) {
+        // --- 1. PREPARACIÓN DE LA PANTALLA DE CARGA ---
         document.getElementById('language-modal-overlay').classList.add('hidden');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessageEl = document.getElementById('loading-message');
+        const appWrapper = document.querySelector('.app-wrapper');
+
         Utils.setCookie('userLanguage', locale, 365);
 
+        // --- 2. LÓGICA DE CARGA Y PROCESAMIENTO DE DATOS ---
         try {
+            // Empezamos a medir el tiempo para la carga mínima
+            const loadStartTime = Date.now();
+
+            // Cargamos TODOS los datos necesarios en paralelo
             const [publicConfig, gameConfig, i18nData, heroesData, eventsData, weeklyData] = await Promise.all([
                 fetch(`${Logic.BACKEND_URL}/api/public-config`).then(res => res.json()),
                 fetch(`${Logic.BACKEND_URL}/api/data/game-config`).then(res => res.json()),
@@ -65,33 +75,48 @@ import UI from './3-ui.js';
                 fetch(`${Logic.BACKEND_URL}/api/data/weekly`).then(res => res.json())
             ]);
 
+            // Guardamos los datos en el estado global
             App.state.i18n = i18nData;
             App.state.allHeroesData = heroesData;
             App.state.allEventsData = eventsData.gameData;
             App.state.weeklyResetsData = weeklyData.gameData;
 
+            // --- Lógica para mensajes de carga aleatorios (ahora que tenemos i18nData) ---
+            const getRandomLoadingMessage = () => {
+                const messages = i18nData.loadingMessages || ['Loading...'];
+                return messages[Math.floor(Math.random() * messages.length)];
+            };
+
+            loadingMessageEl.textContent = getRandomLoadingMessage();
+            const messageInterval = setInterval(() => {
+                loadingMessageEl.style.opacity = 0;
+                setTimeout(() => {
+                    loadingMessageEl.textContent = getRandomLoadingMessage();
+                    loadingMessageEl.style.opacity = 1;
+                }, 300);
+            }, Math.random() * (500 - 1000) + 1000); // Cambia cada 4 a 7 segundos
+
+            // ... (el resto de la lógica de configuración no cambia)
             let userPrefs = {};
             const isLoggedIn = !!Logic.getSessionToken();
             App.state.isLoggedIn = isLoggedIn;
-            
+
             if (isLoggedIn) {
                 const userData = await Logic.fetchUserPreferences();
                 if (userData) {
-                    // Asumimos que el backend devuelve un objeto con { preferences: {...}, user: {...} }
                     userPrefs = userData.preferences || {};
                     App.state.userInfo = userData.user || null;
                 }
-
             } else {
                 const cookiePrefs = Utils.getCookie('timersDashboardConfig');
-                if (cookiePrefs) try { userPrefs = JSON.parse(cookiePrefs); } catch (e) {}
+                if (cookiePrefs) try { userPrefs = JSON.parse(cookiePrefs); } catch (e) { }
             }
 
             const localOffsetHours = new Date().getTimezoneOffset() / -60;
             const sign = localOffsetHours >= 0 ? '+' : '-';
             const hours = String(Math.abs(localOffsetHours)).padStart(2, '0');
             const formattedLocalTimezone = `${sign}${hours}:00`;
-            
+
             const defaultUserPrefs = {
                 language: locale,
                 displayTimezone: formattedLocalTimezone,
@@ -102,49 +127,44 @@ import UI from './3-ui.js';
                 notificationPrefs: { dailyReset: true, showdownTicket: true, streams: true, events: true, bosses: {} }
             };
 
-            // --- INICIO DE LA CORRECCIÓN ---
-            // Primero fusionamos todas las configuraciones en un solo objeto.
-            const mergedConfig = { 
-                ...defaultUserPrefs, 
-                ...gameConfig, 
-                ...userPrefs, 
-                publicConfig 
+            const mergedConfig = {
+                ...defaultUserPrefs,
+                ...gameConfig,
+                ...userPrefs,
+                publicConfig
             };
-
-            // 2. AHORA, validamos el resultado. Si después de la fusión, `displayTimezone`
-            //    quedó nulo o vacío, le asignamos forzosamente nuestro valor local calculado.
             if (!mergedConfig.displayTimezone) {
                 mergedConfig.displayTimezone = formattedLocalTimezone;
             }
-
-            // 3. Finalmente, asignamos la configuración validada al estado global.
             App.state.config = mergedConfig;
-            // --- FIN DE LA CORRECCIÓN ---
 
+            // Lógica de guardado de zona horaria para nuevos usuarios... (sin cambios)
             if (isLoggedIn) {
                 const pendingTimezone = localStorage.getItem('pending_timezone_for_new_user');
-
-                // Si hay una zona horaria pendiente Y el usuario NO tiene una guardada en la DB (`!userPrefs.displayTimezone`),
-                // entonces es un usuario nuevo y debemos guardar la zona horaria.
                 if (pendingTimezone && !userPrefs.displayTimezone) {
-                    console.log(`Usuario nuevo detectado. Guardando zona horaria inicial: ${pendingTimezone}`);
-                    
-                    // Actualizamos el estado local por si acaso
                     App.state.config.displayTimezone = pendingTimezone;
-
-                    // Llamamos a la función para guardar, pasándole solo el dato que queremos actualizar.
                     Logic.saveUserPreferences({ displayTimezone: pendingTimezone });
-
-                    // Limpiamos el localStorage para que esto solo ocurra una vez.
                     localStorage.removeItem('pending_timezone_for_new_user');
                 }
             }
 
-            initializeUI();
+            // --- 3. TRANSICIÓN FINAL: OCULTAR CARGA Y MOSTRAR APP ---
+            const elapsedTime = Date.now() - loadStartTime;
+            const minLoadTime = Math.random() * (6000 - 3000) + 3000; // 3 a 6 segundos
+            const remainingTime = Math.max(0, minLoadTime - elapsedTime);
+
+            setTimeout(() => {
+                clearInterval(messageInterval);
+                loadingOverlay.classList.add('hidden');
+                appWrapper.classList.remove('hidden');
+
+                // Inicializamos la UI DESPUÉS de que todos los datos están listos y el tiempo ha pasado.
+                initializeUI();
+            }, remainingTime);
 
         } catch (error) {
-            console.error("Error fatal: No se pudo conectar con el backend.", error);
-            document.body.innerHTML = `<div style="color:white; text-align:center; padding: 40px;"><h1>Error de Conexión</h1><p>No se pudo conectar con el servidor.</p></div>`;
+            console.error("Error fatal durante la inicialización:", error);
+            loadingMessageEl.textContent = 'Error: Could not load application data.';
         }
     }
 
@@ -153,21 +173,22 @@ import UI from './3-ui.js';
      */
     function initializeUI() {
         App.initializeDOM();
-        
+
         if (App.state.isMobile) {
             setupMobileSwiper();
         }
-        
+
         UI.populateSelects();
         addEventListeners();
         UI.applyLanguage();
         UI.updateLoginStatus();
-        
+
         Logic.requestNotificationPermission();
 
         UI.updateAll();
         setInterval(() => UI.updateAll(), 1000);
     }
+
 
     /**
      * Contenedor para todos los event listeners de la aplicación.

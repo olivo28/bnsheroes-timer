@@ -46,64 +46,77 @@
 
 <body>
 
+    <!-- INICIO DE LA CORRECCIÓN: Pantalla de carga -->
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div id="loading-message">Initializing...</div>
+        </div>
+    </div>
+    <!-- FIN DE LA CORRECCIÓN -->
+
     <!-- ===== WIDGET DE USUARIO MOVIDO FUERA DEL CONTENIDO PRINCIPAL ===== -->
     <div id="user-status">
         <!-- El contenido de este div (avatar, nombre, botón) se genera dinámicamente con JavaScript -->
     </div>
-
-    <div class="app-container">
-        <div class="content-wrapper">
-            <div class="main-wrapper">
-                <div class="primary-panel">
-                    <div class="top-bar">
-                        <div class="top-bar-left">
-                            <div class="time-format-container">
-                                <span>12h</span>
-                                <label class="time-format-switch">
-                                    <input type="checkbox" id="time-format-switch">
-                                    <span class="slider"></span>
-                                </label>
-                                <span>24h</span>
+    
+    <!-- INICIO DE LA CORRECCIÓN: Contenedor principal de la app, inicialmente oculto -->
+    <div class="app-wrapper hidden">
+    <!-- FIN DE LA CORRECCIÓN -->
+        <div class="app-container">
+            <div class="content-wrapper">
+                <div class="main-wrapper">
+                    <div class="primary-panel">
+                        <div class="top-bar">
+                            <div class="top-bar-left">
+                                <div class="time-format-container">
+                                    <span>12h</span>
+                                    <label class="time-format-switch">
+                                        <input type="checkbox" id="time-format-switch">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>24h</span>
+                                </div>
+                            </div>
+                            <div class="top-bar-center">
+                                <div id="current-time"></div>
+                            </div>
+                            <div class="top-bar-right">
+                                <!-- El widget de usuario ya no está aquí, solo el botón de configuración del panel -->
+                                <div id="settings-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings"
+                                        width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
-                        <div class="top-bar-center">
-                            <div id="current-time"></div>
-                        </div>
-                        <div class="top-bar-right">
-                            <!-- El widget de usuario ya no está aquí, solo el botón de configuración del panel -->
-                            <div id="settings-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings"
-                                    width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
-                                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                        <div id="primary-timers-container"></div>
+                        <div id="status-bar">
+                            <span data-lang-key="notifications.alertsEnabled"></span>
+                            <div id="about-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                 </svg>
                             </div>
                         </div>
                     </div>
-                    <div id="primary-timers-container"></div>
-                    <div id="status-bar">
-                        <span data-lang-key="notifications.alertsEnabled"></span>
-                        <div id="about-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                        </div>
+                    <div class="secondary-panel">
+                        <div id="events-container"></div>
+                        <div id="weekly-container"></div>
+                        <div id="sticky-ticket-container"></div>
+                        <div id="timers-container"></div>
                     </div>
                 </div>
-                <div class="secondary-panel">
-                    <div id="events-container"></div>
-                    <div id="weekly-container"></div>
-                    <div id="sticky-ticket-container"></div>
-                    <div id="timers-container"></div>
-                </div>
+                <div id="banners-container"></div>
             </div>
-            <div id="banners-container"></div>
+            <div id="event-details-panel"></div>
+            <div id="weekly-details-panel"></div>
         </div>
-        <div id="event-details-panel"></div>
-        <div id="weekly-details-panel"></div>
-    </div>
+    </div> <!-- Cierre del nuevo app-wrapper -->
 
     <div id="modal-overlay">
         <div id="settings-modal">
@@ -125,7 +138,6 @@
                 </div>
             </div>
 
-            <!-- INICIO DE LA CORRECCIÓN: Nueva sección de Recordatorios -->
             <div class="settings-section">
                 <label data-lang-key="settings.reminders.title"></label>
                 <div class="settings-row-vertical">
@@ -151,7 +163,6 @@
                     </div>
                 </div>
             </div>
-            <!-- FIN DE LA CORRECCIÓN -->
 
             <div class="settings-section"><label for="timezone-select" data-lang-key="settings.timezoneLabel"></label><select id="timezone-select" class="settings-input"></select></div>
             <div class="settings-section"><label for="language-select" data-lang-key="settings.languageLabel"></label><select id="language-select" class="settings-input"></select></div>
