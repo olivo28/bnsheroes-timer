@@ -42,6 +42,138 @@ const Utils = {
     },
 
     /**
+     * Muestra un modal de confirmación personalizado.
+     * @param {string} titleKey - Clave de traducción para el título.
+     * @param {string} bodyKey - Clave de traducción para el cuerpo del mensaje.
+     * @returns {Promise<boolean>} - Resuelve a 'true' si se confirma, 'false' si se cancela.
+     */
+    confirm(titleKey, bodyKey) {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('confirmation-modal-overlay');
+            const titleEl = document.getElementById('confirmation-modal-title');
+            const bodyEl = document.getElementById('confirmation-modal-body');
+            const confirmBtn = document.getElementById('confirmation-confirm-btn');
+            const cancelBtn = document.getElementById('confirmation-cancel-btn');
+
+            // --- LÓGICA DE LIMPIEZA Y CIERRE ---
+            const closeModal = (result) => {
+                // Removemos los listeners para evitar llamadas múltiples
+                confirmBtn.removeEventListener('click', confirmHandler);
+                cancelBtn.removeEventListener('click', cancelHandler);
+                overlay.removeEventListener('click', overlayHandler);
+                
+                // Ocultamos el overlay
+                overlay.classList.remove('visible');
+                
+                // Resolvemos la promesa
+                resolve(result);
+            };
+
+            // --- LÓGICA DE LOS HANDLERS ---
+            const confirmHandler = () => closeModal(true);
+            const cancelHandler = () => closeModal(false);
+            const overlayHandler = (e) => {
+                if (e.target === overlay) {
+                    closeModal(false);
+                }
+            };
+
+            // --- INICIALIZACIÓN ---
+            // Asignamos textos
+            titleEl.textContent = this.getText(titleKey);
+            bodyEl.textContent = this.getText(bodyKey);
+            confirmBtn.textContent = this.getText('common.confirmButton');
+            cancelBtn.textContent = this.getText('common.cancelButton');
+            
+            // Añadimos los listeners
+            confirmBtn.addEventListener('click', confirmHandler);
+            cancelBtn.addEventListener('click', cancelHandler);
+            overlay.addEventListener('click', overlayHandler);
+            
+            // Mostramos el modal
+            overlay.classList.add('visible');
+        });
+    },
+
+    /**
+     * Muestra un modal de alerta personalizado.
+     * @param {string} titleKey - Clave de traducción para el título.
+     * @param {string} bodyKey - Clave de traducción para el cuerpo.
+     */
+    alert(titleKey, bodyKey) {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('alert-modal-overlay');
+            const titleEl = document.getElementById('alert-modal-title');
+            const bodyEl = document.getElementById('alert-modal-body');
+            const okBtn = document.getElementById('alert-ok-btn');
+
+            titleEl.textContent = this.getText(titleKey);
+            bodyEl.textContent = this.getText(bodyKey);
+            okBtn.textContent = this.getText('common.okButton');
+            
+            overlay.classList.add('visible');
+
+            const cleanup = () => {
+                okBtn.onclick = null;
+                overlay.onclick = null;
+                overlay.classList.remove('visible');
+                resolve();
+            };
+
+            okBtn.onclick = cleanup;
+            overlay.onclick = e => { if (e.target === overlay) cleanup(); };
+        });
+    },
+
+    /**
+     * Muestra un modal de prompt personalizado.
+     * @param {string} titleKey - Clave de traducción para el título.
+     * @param {string} bodyKey - Clave de traducción para la descripción.
+     * @param {string} defaultValueKey - Clave de traducción para el valor por defecto del input.
+     * @returns {Promise<string|null>} - Resuelve con el texto del input o null si se cancela.
+     */
+    prompt(titleKey, bodyKey, defaultValue) {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('prompt-modal-overlay');
+            const titleEl = document.getElementById('prompt-modal-title');
+            const bodyEl = document.getElementById('prompt-modal-body');
+            const inputEl = document.getElementById('prompt-modal-input');
+            const confirmBtn = document.getElementById('prompt-confirm-btn');
+            const cancelBtn = document.getElementById('prompt-cancel-btn');
+
+            titleEl.textContent = this.getText(titleKey);
+            bodyEl.textContent = this.getText(bodyKey);
+            // --- INICIO DE LA CORRECCIÓN: Usar el valor directamente ---
+            inputEl.value = defaultValue;
+            // --- FIN DE LA CORRECCIÓN ---
+            confirmBtn.textContent = this.getText('common.confirmButton');
+            cancelBtn.textContent = this.getText('common.cancelButton');
+            
+            overlay.classList.add('visible');
+            inputEl.focus();
+            inputEl.select();
+
+            const cleanup = () => {
+                confirmBtn.onclick = null;
+                cancelBtn.onclick = null;
+                overlay.onclick = null;
+                overlay.classList.remove('visible');
+            };
+
+            confirmBtn.onclick = () => {
+                cleanup();
+                resolve(inputEl.value);
+            };
+            
+            cancelBtn.onclick = () => {
+                cleanup();
+                resolve(null);
+            };
+
+            overlay.onclick = e => { if (e.target === overlay) { cleanup(); resolve(null); } };
+        });
+    },
+    /**
      * Formatea una fecha a una cadena de tiempo localizada (ej: "10:30:05 PM").
      */
     formatDateToTimezoneString(date, offsetString, use24HourFormat, showSeconds = false) {

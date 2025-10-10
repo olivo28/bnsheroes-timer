@@ -195,17 +195,45 @@
                     </div>
     
                     <!-- Sección 2: Notificaciones Push (Oculta por defecto) -->
-                    <div class="content-section" id="section-push-notifications">
-                        <h2 data-lang-key="account.nav.pushNotifications"></h2>
-                        <p class="settings-description" data-lang-key="account.pushDescription"></p>
-                        <button id="account-subscribe-push-btn" class="settings-btn push-btn"
-                            data-lang-key="settings.subscribeButton"></button>
-                        <hr class="section-divider">
-                        <h3 data-lang-key="account.activeSubscriptions"></h3>
-                        <div id="active-subscriptions-list">
-                            <!-- La lista de suscripciones se generará aquí con JS -->
+                                    <div class="content-section" id="section-push-notifications">
+                    <h2 data-lang-key="account.nav.pushNotifications"></h2>
+                    <p class="settings-description" data-lang-key="account.pushDescription"></p>
+                    
+                    <!-- Controles de Notificaciones Generales -->
+                    <div class="settings-section">
+                        <label data-lang-key="pushSettings.generalTitle"></label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" id="push-daily-reset-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.dailyReset"></span></label>
+                            <label class="checkbox-label"><input type="checkbox" id="push-showdown-ticket-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.showdownTicket"></span></label>
                         </div>
                     </div>
+
+                    <!-- Controles de Notificaciones de Eventos y Resets -->
+                    <div class="settings-section">
+                        <label data-lang-key="pushSettings.remindersTitle"></label>
+                        <div class="settings-row">
+                            <label class="checkbox-label"><input type="checkbox" id="push-weekly-reset-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.weeklyReset"></span></label>
+                            <input type="number" id="push-weekly-days-input" class="settings-input small-input" min="1" max="6">
+                            <span data-lang-key="pushSettings.daysBefore"></span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="checkbox-label"><input type="checkbox" id="push-event-dailies-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.eventDailies"></span></label>
+                            <input type="number" id="push-event-hours-input" class="settings-input small-input" min="1" max="23">
+                            <span data-lang-key="pushSettings.hoursBefore"></span>
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 data-lang-key="account.activeSubscriptions"></h3>
+                    <p class="settings-description" data-lang-key="pushSettings.bossesDesc"></p>
+                    <div id="active-subscriptions-list">
+                        <!-- La lista de suscripciones se genera aquí -->
+                    </div>
+
+                    <div class="save-section">
+                        <button id="save-push-settings-btn" class="settings-btn" data-lang-key="common.saveButton"></button>
+                    </div>
+                </div>
 
                     <div class="content-section" id="section-support-me">
                         <h2 data-lang-key="account.nav.supportMe"></h2>
@@ -304,6 +332,40 @@
             <button id="close-info-btn" class="settings-btn" data-lang-key="common.closeButton"></button>
         </div>
     </div>
+
+    <!-- INICIO DE LA REVERSIÓN: Volvemos a tu HTML original -->
+    <div id="confirmation-modal-overlay">
+        <div id="confirmation-modal">
+            <h3 id="confirmation-modal-title"></h3>
+            <p id="confirmation-modal-body"></p>
+            <div class="confirmation-buttons">
+                <button id="confirmation-cancel-btn" class="settings-btn secondary-btn" data-lang-key="common.cancelButton"></button>
+                <button id="confirmation-confirm-btn" class="settings-btn danger-btn" data-lang-key="common.confirmButton"></button>
+            </div>
+        </div>
+    </div>
+
+        <div id="alert-modal-overlay">
+        <div id="alert-modal">
+            <h3 id="alert-modal-title"></h3>
+            <p id="alert-modal-body"></p>
+            <button id="alert-ok-btn" class="settings-btn"></button>
+        </div>
+    </div>
+
+        <div id="prompt-modal-overlay">
+        <div id="prompt-modal">
+            <h3 id="prompt-modal-title"></h3>
+            <p id="prompt-modal-body"></p>
+            <input type="text" id="prompt-modal-input" class="settings-input">
+            <div class="prompt-buttons">
+                <button id="prompt-cancel-btn" class="settings-btn secondary-btn"></button>
+                <button id="prompt-confirm-btn" class="settings-btn"></button>
+            </div>
+        </div>
+    </div>
+    <!-- FIN DE LA REVERSIÓN -->
+
 
     <div id="sync-modal-overlay">
         <div id="sync-modal">

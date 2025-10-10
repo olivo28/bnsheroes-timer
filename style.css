@@ -1946,6 +1946,20 @@ select.settings-input option {
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
     text-align: right;
+}´
+.add-new-device {
+    border-style: dashed;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted-color);
+}
+.add-new-device span {
+    font-weight: 500;
+}
+.add-new-device .settings-btn {
+    font-size: 1.5em;
+    line-height: 1;
+    padding: 2px 10px;
 }
 /*  3.8.8. MODAL: LOGIN REQUERIDO --- */
 #login-required-modal-overlay {
@@ -1996,6 +2010,123 @@ select.settings-input option {
 .settings-btn.secondary-btn {
     background-color: var(--border-color);
     color: var(--text-color);
+}
+
+/* --- 3.8.9. MODAL DE CONFIRMACIÓN --- */
+#alert-modal-overlay, #prompt-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1350; /* Z-index alto */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+}
+#alert-modal-overlay.visible, #prompt-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Estilos comunes para los modales simples */
+#alert-modal, #prompt-modal {
+    background-color: var(--box-bg-color);
+    padding: 25px 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+#alert-modal-overlay.visible #alert-modal, 
+#prompt-modal-overlay.visible #prompt-modal {
+    transform: scale(1);
+}
+#alert-modal h3, #prompt-modal h3 {
+    margin: 0 0 10px;
+    color: var(--text-color);
+}
+#alert-modal p, #prompt-modal p {
+    color: var(--text-muted-color);
+    margin: 0 0 25px;
+    line-height: 1.5;
+}
+
+/* Botón del Alert Modal */
+#alert-ok-btn {
+    width: 100%;
+}
+
+/* Input y Botones del Prompt Modal */
+#prompt-modal-input {
+    margin-bottom: 25px;
+}
+.prompt-buttons {
+    display: flex;
+    justify-content: flex-end; /* Alinea los botones a la derecha */
+    gap: 10px;
+}
+
+/* --- AJUSTE GLOBAL PARA BOTONES DE MODALES --- */
+/* Centra los botones del modal de confirmación y login-required */
+#confirmation-modal .confirmation-buttons,
+#login-required-modal .login-required-buttons {
+    justify-content: center; /* <-- CAMBIO A CENTER */
+    width: 100%;
+}
+#confirmation-modal .confirmation-buttons .settings-btn,
+#login-required-modal .login-required-buttons .settings-btn {
+    flex-grow: 1; /* Hace que los botones ocupen el mismo espacio */
+}
+
+/* --- INICIO DE LA CORRECCIÓN: Estilos para el modal de confirmación --- */
+#confirmation-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1400; /* Z-index alto para estar sobre el modal de cuenta (1200) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+}
+#confirmation-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+#confirmation-modal {
+    background-color: var(--box-bg-color);
+    padding: 25px 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+#confirmation-modal-overlay.visible #confirmation-modal {
+    transform: scale(1);
+}
+#confirmation-modal h3 {
+    margin: 0 0 10px;
+    color: var(--color-warning);
+}
+#confirmation-modal p {
+    color: var(--text-muted-color);
+    margin: 0 0 25px;
+    line-height: 1.5;
+}
+.settings-btn.danger-btn {
+    background-color: var(--color-danger);
+    color: var(--bg-color);
 }
 
 /* --- 3.9. Panel de Detalles de Evento (Lateral Derecho) --- */

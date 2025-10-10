@@ -248,6 +248,38 @@ import UI from './3-ui.js';
             }
         }
 
+        // Listener para el botón de guardar de "Account Settings"
+        const savePushSettingsBtn = document.getElementById('save-push-settings-btn');
+        if (savePushSettingsBtn) {
+            savePushSettingsBtn.addEventListener('click', async () => {
+                if (!App.state.isLoggedIn) return;
+
+                const newPushPrefs = {
+                    dailyReset: document.getElementById('push-daily-reset-toggle').checked,
+                    showdownTicket: document.getElementById('push-showdown-ticket-toggle').checked,
+                    weeklyResetReminder: {
+                        enabled: document.getElementById('push-weekly-reset-toggle').checked,
+                        daysBefore: parseInt(document.getElementById('push-weekly-days-input').value) || 2
+                    },
+                    eventDailiesReminder: {
+                        enabled: document.getElementById('push-event-dailies-toggle').checked,
+                        hoursBeforeReset: parseInt(document.getElementById('push-event-hours-input').value) || 4
+                    },
+                    bosses: App.state.config.notificationPrefs?.bosses || {}
+                };
+
+                // Actualizamos el estado local
+                App.state.config.notificationPrefs = newPushPrefs;
+
+                // --- ESTA ES LA LÍNEA CLAVE ---
+                // Enviamos SOLO las preferencias de notificaciones al backend
+                Logic.saveUserPreferences({ notificationPrefs: newPushPrefs });
+
+                await Utils.alert('alert.settingsSaved.title', 'alert.settingsSaved.body');
+                UI.closeAccountModal();
+            });
+        }
+
         document.getElementById('event-details-panel').addEventListener('click', handleDetailsPanelClick);
         document.getElementById('weekly-details-panel').addEventListener('click', handleDetailsPanelClick);
 
@@ -261,29 +293,43 @@ import UI from './3-ui.js';
 
         document.getElementById('close-account-modal-btn').addEventListener('click', UI.closeAccountModal);
         if (App.dom.accountModalOverlay) {
-            // Clic en los enlaces de navegación de la barra lateral
-            App.dom.accountModalOverlay.addEventListener('click', e => {
+            App.dom.accountModalOverlay.addEventListener('click', async (e) => { // <-- La función ahora es ASYNC
+
+                // Clic en los enlaces de navegación de la barra lateral
                 const navItem = e.target.closest('.nav-item');
                 if (navItem) {
                     e.preventDefault();
                     const sectionId = navItem.dataset.section;
-
-                    // --- INICIO DE LA LÓGICA DE BLOQUEO ---
-                    // Secciones que requieren inicio de sesión
-                    const protectedSections = ['push-notifications'];
-
+                    const protectedSections = ['push-notifications', 'support-me'];
                     if (protectedSections.includes(sectionId) && !App.state.isLoggedIn) {
-                        // Si el usuario es invitado y la sección está protegida, muestra una alerta.
                         UI.openLoginRequiredModal();
                     } else {
-                        // Si no, permite el cambio de sección.
                         UI.switchAccountModalSection(sectionId);
                     }
-                    // --- FIN DE LA LÓGICA DE BLOQUEO ---
+                    return;
+                }
+
+                // Clic en el botón de AÑADIR dispositivo
+                if (e.target.closest('#account-subscribe-push-btn')) {
+                    UI.handleAddNewSubscription();
+                    return;
                 }
                 
-                // Clic para cerrar si se pulsa fuera del modal
-                if (e.target === e.currentTarget) {
+                // Clic en el botón de BORRAR dispositivo
+                const deleteButton = e.target.closest('.delete-subscription-btn');
+                if (deleteButton) {
+                    const endpoint = deleteButton.dataset.endpoint;
+                    const confirmed = await Utils.confirm('confirm.deleteSub.title', 'confirm.deleteSub.body');
+                    if (confirmed) {
+                        await Logic.unsubscribeFromPushNotifications(endpoint);
+                        // No cerramos el modal, solo refrescamos la lista
+                        UI.renderActiveSubscriptions();
+                    }
+                    return; // Importante: detenemos la ejecución aquí
+                }
+
+                // Clic para cerrar si se pulsa el botón X o fuera del modal
+                if (e.target.closest('#close-account-modal-btn') || e.target === e.currentTarget) {
                     UI.closeAccountModal();
                 }
             });
@@ -307,10 +353,9 @@ import UI from './3-ui.js';
                 const deleteButton = e.target.closest('.delete-subscription-btn');
                 if (deleteButton) {
                     const endpoint = deleteButton.dataset.endpoint;
-                    if (confirm('Are you sure you want to remove this subscription?')) { // Idealmente, este texto también iría en i18n
-                        // Reutilizamos la función de desuscripción, pero ahora la adaptamos
+                    const confirmed = await Utils.confirm('confirm.deleteSub.title', 'confirm.deleteSub.body');
+                    if (confirmed) {
                         await Logic.unsubscribeFromPushNotifications(endpoint);
-                        // Después de eliminar, volvemos a renderizar la lista para que desaparezca el elemento
                         UI.renderActiveSubscriptions();
                     }
                 }

@@ -159,7 +159,7 @@ const Logic = {
         if (subscribeButton) subscribeButton.disabled = true;
 
         try {
-            const alias = prompt(Utils.getText('account.promptAlias'), Utils.getText('account.promptAliasDefault'));
+            const alias = await Utils.prompt('account.promptAlias.title', 'account.promptAlias.body', 'account.promptAliasDefault');
 
             if (!alias) {
                 if (subscribeButton) subscribeButton.disabled = false;

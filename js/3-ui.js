@@ -797,26 +797,19 @@ const UI = {
             myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
             myAccountSection.querySelector('.user-profile-name').textContent = global_name;
 
-            // Actualizar estado del botón de suscripción/desuscripción
-            const subscribeButton = document.getElementById('account-subscribe-push-btn');
-            subscribeButton.disabled = true;
-            try {
-                const registration = await navigator.serviceWorker.ready;
-                const subscription = await registration.pushManager.getSubscription();
-                if (subscription) {
-                    subscribeButton.textContent = Utils.getText('account.unsubscribeButton');
-                    subscribeButton.classList.add('unsubscribe-btn');
-                } else {
-                    subscribeButton.textContent = Utils.getText('settings.subscribeButton');
-                    subscribeButton.classList.remove('unsubscribe-btn');
-                }
-            } catch (error) {
-                subscribeButton.textContent = "Error";
-            } finally {
-                subscribeButton.disabled = false;
-            }
+            // Cargar preferencias de push en la UI
+            const prefs = App.state.config.notificationPrefs || {};
+            document.getElementById('push-daily-reset-toggle').checked = prefs.dailyReset ?? true;
+            document.getElementById('push-showdown-ticket-toggle').checked = prefs.showdownTicket ?? true;
+            document.getElementById('push-weekly-reset-toggle').checked = prefs.weeklyResetReminder?.enabled ?? true;
+            document.getElementById('push-weekly-days-input').value = prefs.weeklyResetReminder?.daysBefore ?? 2;
+            document.getElementById('push-event-dailies-toggle').checked = prefs.eventDailiesReminder?.enabled ?? true;
+            document.getElementById('push-event-hours-input').value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
 
-            this.renderActiveSubscriptions();
+            // El botón de Suscribir/Desuscribir ahora está en la lista de suscripciones,
+            // así que ya no necesitamos manejarlo aquí. La lista se renderiza abajo.
+
+            this.renderActiveSubscriptions(); // Esta función ahora manejará el botón de "Añadir este dispositivo"
             this.switchAccountModalSection('my-account');
 
         } else {
@@ -890,96 +883,93 @@ const UI = {
         const listContainer = document.getElementById('active-subscriptions-list');
         if (!listContainer) return;
 
-        // --- INICIO DE LA MEJORA ---
-        // Objeto de mapeo para asociar nombres de navegador con archivos de icono.
-        const browserIconMap = {
-            'chrome': 'chrome',
-            'firefox': 'firefox',
-            'safari': 'safari',
-            'edge': 'edge',
-            'brave': 'brave',
-            'opera': 'opera',
-            'opera gx': 'operagx',
-            'opera mini': 'operamini',
-            'opera touch': 'operatouch',
-            'vivaldi': 'vivaldi',
-            'arc': 'arc',
-            'tor': 'tor' // Aunque Tor se detecta como Firefox, lo dejamos por si la detección mejora
-        };
-
-        const getDefaultIcon = () => 'default.png'; // <-- Prepara un icono 'default.png' en tu carpeta de assets/browsers
-        // --- FIN DE LA MEJORA ---
-
         listContainer.innerHTML = `<p class="settings-description">${Utils.getText('account.loadingSubscriptions')}</p>`;
 
         try {
+            // Obtenemos los datos más recientes del usuario, incluidas las suscripciones
             const userData = await Logic.fetchUserPreferences();
             const subscriptions = userData?.preferences?.pushSubscriptions || [];
 
+            // Obtenemos la suscripción del navegador actual para compararla
+            const registration = await navigator.serviceWorker.ready;
+            const currentSubscription = await registration.pushManager.getSubscription();
+
+            let listHTML = '';
+
             if (subscriptions.length === 0) {
-                listContainer.innerHTML = `<p class="settings-description">No active subscriptions found.</p>`;
-                return;
-            }
+                listHTML = `<p class="settings-description">No active subscriptions found.</p>`;
+            } else {
+                listHTML = subscriptions.map(sub => {
+                    const subscribedOnText = Utils.getText('account.subscribedOn');
+                    const { DateTime } = luxon;
+                    const date = DateTime.fromISO(sub.subscribedAt);
+                    const formattedDate = date.setLocale(App.state.config.language).toLocaleString(DateTime.DATE_FULL);
 
-            listContainer.innerHTML = subscriptions.map(sub => {
-                const subscribedOnText = Utils.getText('account.subscribedOn');
-                const { DateTime } = luxon;
-                const date = DateTime.fromISO(sub.subscribedAt);
-                const formattedDate = date.setLocale(App.state.config.language).toLocaleString(DateTime.DATE_FULL);
+                    const browserIconMap = { 'chrome': 'chrome', 'firefox': 'firefox', 'safari': 'safari', 'edge': 'edge', 'brave': 'brave', 'opera': 'opera', 'opera gx': 'operagx', 'opera mini': 'operamini', 'opera touch': 'operatouch', 'vivaldi': 'vivaldi', 'arc': 'arc' };
+                    const browserName = sub.browser || '';
+                    const browserKey = browserName.toLowerCase();
+                    const iconFileName = browserIconMap[browserKey] || 'default';
 
-                // --- LÓGICA DE ICONO MÁS ROBUSTA ---
-                const browserName = sub.browser || ''; // Asegura que no sea undefined
-                const browserKey = browserName.toLowerCase();
-                const iconFileName = browserIconMap[browserKey] || 'default'; // Usa el mapeo o 'default'
-
-                return `
-                    <div class="subscription-item">
-                        <div class="subscription-info">
-                            <span class="subscription-alias">${sub.alias}</span>
-                            <div class="subscription-details">
-                                <span class="detail-item browser-detail">
-                                    <img src="assets/browsers/${iconFileName}.png" alt="${browserName}" class="browser-icon">
-                                    ${browserName}
-                                </span>
-                                <span class="detail-item os-detail">
-                                    ${this.getDeviceIcon(sub.os || '')}
-                                    ${sub.os || 'SO Desconocido'}
-                                </span>
-                                <span class="detail-item date-detail">
-                                    - ${subscribedOnText} ${formattedDate}
-                                </span>
+                    return `
+                        <div class="subscription-item">
+                            <div class="subscription-info">
+                                <span class="subscription-alias">${sub.alias}</span>
+                                <div class="subscription-details">
+                                    <span class="detail-item browser-detail">
+                                        <img src="assets/browsers/${iconFileName}.png" alt="${browserName}" class="browser-icon">
+                                        ${browserName}
+                                    </span>
+                                    <span class="detail-item os-detail">
+                                        ${this.getDeviceIcon(sub.os || '')}
+                                        ${sub.os || 'SO Desconocido'}
+                                    </span>
+                                    <span class="detail-item date-detail">
+                                        - ${subscribedOnText} ${formattedDate}
+                                    </span>
+                                </div>
                             </div>
+                            <button class="delete-subscription-btn" data-endpoint="${sub.endpoint}">
+                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                            </button>
                         </div>
-                        <button class="delete-subscription-btn" data-endpoint="${sub.endpoint}">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                        </button>
+                    `;
+                }).join('');
+            }
+            
+            listContainer.innerHTML = listHTML;
+
+            // Comprobamos si el dispositivo actual ya está en la lista de suscripciones guardadas
+            const isCurrentDeviceSubscribed = currentSubscription && subscriptions.some(sub => sub.endpoint === currentSubscription.endpoint);
+
+            // Si el dispositivo actual NO está suscrito, mostramos el botón para añadirlo
+            if (!isCurrentDeviceSubscribed) {
+                const addButtonHTML = `
+                    <div class="subscription-item add-new-device">
+                        <span data-lang-key="pushSettings.addDevice"></span>
+                        <button id="account-subscribe-push-btn" class="settings-btn">+</button>
                     </div>
                 `;
-            }).join('');
+                listContainer.insertAdjacentHTML('beforeend', addButtonHTML);
+                // Volvemos a aplicar las traducciones solo para este nuevo elemento
+                listContainer.querySelector('[data-lang-key]').innerHTML = Utils.getText('pushSettings.addDevice');
+            }
+
         } catch (error) {
             console.error("Error al cargar las suscripciones:", error);
             listContainer.innerHTML = `<p class="settings-description" style="color: var(--color-danger);">Error loading subscriptions.</p>`;
         }
     },
     
-    async togglePushSubscription() {
-        // ... (esta función no necesita cambios por ahora)
-    },
-
-    async togglePushSubscription() {
-        const subscribeButton = document.getElementById('account-subscribe-push-btn');
-        subscribeButton.disabled = true;
-
-        const isSubscribed = subscribeButton.classList.contains('unsubscribe-btn');
-
-        if (isSubscribed) {
-            await Logic.unsubscribeFromPushNotifications();
-        } else {
+    async handleAddNewSubscription() {
+        try {
+            // Logic.subscribeToPushNotifications ya se encarga de pedir el alias
             await Logic.subscribeToPushNotifications();
+            // Una vez suscrito, volvemos a renderizar la lista para que se actualice
+            this.renderActiveSubscriptions();
+        } catch (error) {
+            console.error("Fallo al añadir nueva suscripción:", error);
+            alert("Could not add subscription. Please try again.");
         }
-
-        // Después de la acción, volvemos a abrir/actualizar el modal para reflejar el nuevo estado
-        this.openAccountModal();
     },
 
     closeAccountModal: function() {
