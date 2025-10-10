@@ -300,7 +300,7 @@ import UI from './3-ui.js';
                 if (navItem) {
                     e.preventDefault();
                     const sectionId = navItem.dataset.section;
-                    const protectedSections = ['push-notifications', 'support-me'];
+                    const protectedSections = ['push-notifications'];
                     if (protectedSections.includes(sectionId) && !App.state.isLoggedIn) {
                         UI.openLoginRequiredModal();
                     } else {

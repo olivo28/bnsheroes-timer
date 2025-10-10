@@ -144,7 +144,7 @@ const Utils = {
             titleEl.textContent = this.getText(titleKey);
             bodyEl.textContent = this.getText(bodyKey);
             // --- INICIO DE LA CORRECCIÓN: Usar el valor directamente ---
-            inputEl.value = defaultValue;
+            inputEl.value = this.getText(defaultValue);
             // --- FIN DE LA CORRECCIÓN ---
             confirmBtn.textContent = this.getText('common.confirmButton');
             cancelBtn.textContent = this.getText('common.cancelButton');

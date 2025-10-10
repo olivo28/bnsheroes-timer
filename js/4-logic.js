@@ -159,7 +159,7 @@ const Logic = {
         if (subscribeButton) subscribeButton.disabled = true;
 
         try {
-            const alias = await Utils.prompt('account.promptAlias.title', 'account.promptAlias.body', 'account.promptAliasDefault');
+            const alias = await Utils.prompt('account.promptAlias.title', 'account.promptAlias.body', 'account.promptAlias.placeholder')
 
             if (!alias) {
                 if (subscribeButton) subscribeButton.disabled = false;
@@ -193,7 +193,7 @@ const Logic = {
             });
             // --- FIN DE LA MODIFICACIÓN ---
 
-            alert(Utils.getText('settings.subscribeButtonSuccess'));
+            await Utils.alert('settings.subscribeButtonSuccess', 'notifications.subscribeButtonSuccessBody');
 
             if (subscribeButton) {
                 subscribeButton.textContent = Utils.getText('account.pushEnabled');
