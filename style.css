@@ -1751,11 +1751,13 @@ select.settings-input option {
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow: hidden; 
 }
 
 .account-content-scroller {
     padding: 60px 40px 40px;
     overflow-y: auto;
+    flex-grow: 1; 
 }
 
 .content-section {

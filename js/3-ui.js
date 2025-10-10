@@ -796,6 +796,9 @@ const UI = {
     },
 
     async openAccountModal() {
+                if (App.state.isMobile) {
+            document.body.classList.add('no-scroll');
+        }
         // Llenar datos de traducción cada vez que se abre
         App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
             const key = el.dataset.langKey;
@@ -1003,7 +1006,11 @@ const UI = {
     },
 
     closeAccountModal: function() {
-        App.dom.accountModalOverlay.classList.remove('visible');
+        if (App.dom.accountModalOverlay) {
+            App.dom.accountModalOverlay.classList.remove('visible');
+        }
+        // La parte clave: SIEMPRE eliminamos la clase no-scroll al cerrar
+        document.body.classList.remove('no-scroll');
     },
 
     openInfoModal: function() {
