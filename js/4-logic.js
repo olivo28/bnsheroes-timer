@@ -321,10 +321,13 @@ const Logic = {
         }
     },
 
-    checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer) {
+    checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, events, banners) {
         const config = App.state.config;
         if (!config || !config.notificationTypes) return;
 
+        const lang = config.language;
+
+        // --- Lógica existente para Jefes ---
         if (config.showBossTimers) {
             bossTimers.forEach(spawn => {
                 if (!spawn.isAlertEnabled) return;
@@ -344,6 +347,7 @@ const Logic = {
             });
         }
 
+        // --- Lógica existente para Reset Diario y Ticket ---
         const resetAlertKey = `${App.state.lastResetCycleDay}-reset`;
         if (dailyResetTimer.secondsLeft <= 0 && dailyResetTimer.secondsLeft > -5 && !App.state.alertsShownToday[resetAlertKey]) {
             const displayResetTime = Utils.formatDateToTimezoneString(dailyResetTimer.targetDate, config.displayTimezone, config.use24HourFormat);
@@ -363,6 +367,89 @@ const Logic = {
                 config.showdownTicketImageUrl
             );
             App.state.alertsShownToday[showdownAlertKey] = true;
+        }
+
+        // --- NUEVA LÓGICA: Recordatorio de Misiones Diarias de Evento (12h) ---
+        if (events) {
+            const dailyMissionAlertTime = new Date(dailyResetTimer.targetDate.getTime() - (12 * 3600 * 1000)).toTimeString().slice(0, 5);
+            events.forEach(event => {
+                const eventData = App.state.allEventsData.events[event.id];
+                if (eventData?.hasDailyMissions && this.isEventActive(event.id)) {
+                    const alertKey = `${App.state.lastResetCycleDay}-dailyMission-${event.id}`;
+                    if (now.toTimeString().slice(0, 5) === dailyMissionAlertTime && !App.state.alertsShownToday[alertKey]) {
+                        this.showFullAlert(
+                            Utils.getText('notifications.dailyMissionReminderTitle'),
+                            Utils.getText('notifications.dailyMissionReminderBody', { eventName: event.name[lang] }),
+                            'favicon.png'
+                        );
+                        App.state.alertsShownToday[alertKey] = true;
+                    }
+                }
+            });
+        }
+
+        // --- NUEVA LÓGICA: Recordatorio de Fin de Evento (3 días) ---
+        if (events) {
+            const threeDaysInSeconds = 3 * 24 * 60 * 60;
+            events.forEach(event => {
+                const eventData = App.state.allEventsData.events[event.id];
+                // Solo para eventos que NO tienen misiones diarias
+                if (!eventData?.hasDailyMissions) {
+                    const endDate = this.getAbsoluteDateWithCustomDate(event.endDate, config.dailyResetTime);
+                    const secondsLeft = (endDate - now) / 1000;
+                    const alertKey = `event-ending-${event.id}`;
+                    // Se activa una sola vez cuando el contador cruza el umbral de 3 días
+                    if (secondsLeft <= threeDaysInSeconds && secondsLeft > (threeDaysInSeconds - 5) && !App.state.alertsShownToday[alertKey]) {
+                         this.showFullAlert(
+                            Utils.getText('notifications.eventEndingSoonTitle'),
+                            Utils.getText('notifications.eventEndingSoonBody', { eventName: event.name[lang] }),
+                            'favicon.png'
+                        );
+                        App.state.alertsShownToday[alertKey] = true;
+                    }
+                }
+            });
+        }
+        
+        // --- NUEVA LÓGICA: Recordatorio de Reset Semanal (3 días) ---
+        const weeklyTimers = this.getWeeklyResetTimers(now);
+        if (weeklyTimers) {
+            const threeDaysInSeconds = 3 * 24 * 60 * 60;
+            weeklyTimers.forEach(timer => {
+                const alertKey = `weekly-ending-${timer.id}-${timer.targetDate.toISOString().split('T')[0]}`;
+                 if (timer.secondsLeft <= threeDaysInSeconds && timer.secondsLeft > (threeDaysInSeconds - 5) && !App.state.alertsShownToday[alertKey]) {
+                    this.showFullAlert(
+                        Utils.getText('notifications.weeklyResetReminderTitle'),
+                        Utils.getText('notifications.weeklyResetReminderBody', { weeklyName: timer.name }),
+                        'favicon.png'
+                    );
+                    App.state.alertsShownToday[alertKey] = true;
+                }
+            });
+        }
+
+        // --- NUEVA LÓGICA: Recordatorio de Nuevo Banner (3 días) ---
+        if (banners) {
+            const threeDaysInSeconds = 3 * 24 * 60 * 60;
+            const futureBanners = banners
+                .filter(b => b.startDate && this.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime) > now)
+                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            
+            if (futureBanners.length > 0) {
+                const nextBanner = futureBanners[0];
+                const startDate = this.getAbsoluteDateWithCustomDate(nextBanner.startDate, config.dailyResetTime);
+                const secondsLeft = (startDate - now) / 1000;
+                const alertKey = `banner-starting-${nextBanner.startDate}`;
+
+                if (secondsLeft <= threeDaysInSeconds && secondsLeft > (threeDaysInSeconds - 5) && !App.state.alertsShownToday[alertKey]) {
+                    this.showFullAlert(
+                        Utils.getText('notifications.newBannerSoonTitle'),
+                        Utils.getText('notifications.newBannerSoonBody'),
+                        'favicon.png'
+                    );
+                    App.state.alertsShownToday[alertKey] = true;
+                }
+            }
         }
     },
 

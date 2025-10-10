@@ -446,7 +446,66 @@ import UI from './3-ui.js';
             UI.updateAll();
         });
         
-        App.dom.testNotificationBtn.addEventListener('click', () => Logic.showFullAlert(Utils.getText('settings.testButton'), 'This is a test notification.', 'favicon.png'));
+App.dom.testNotificationBtn.addEventListener('click', async () => {
+            const config = App.state.config;
+            const lang = config.language;
+            
+            // 1. Notificación de prueba genérica (la que ya tenías)
+            Logic.showFullAlert(Utils.getText('settings.testButton'), 'This is a test notification.', 'favicon.png');
+            
+            // Pausa de 2 segundos para no solapar las notificaciones
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 2. Prueba de recordatorio de Misiones Diarias
+            const dailyMissionEvent = config.events?.find(e => App.state.allEventsData.events[e.id]?.hasDailyMissions);
+            if (dailyMissionEvent) {
+                Logic.showFullAlert(
+                    Utils.getText('notifications.dailyMissionReminderTitle'),
+                    Utils.getText('notifications.dailyMissionReminderBody', { eventName: dailyMissionEvent.name[lang] }),
+                    'favicon.png'
+                );
+            } else { // Fallback si no hay eventos de misión diaria
+                Logic.showFullAlert('Test: Daily Mission Event', 'This is a test for a daily mission event reminder.', 'favicon.png');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 3. Prueba de recordatorio de Fin de Evento
+            const regularEvent = config.events?.find(e => !App.state.allEventsData.events[e.id]?.hasDailyMissions);
+            if (regularEvent) {
+                Logic.showFullAlert(
+                    Utils.getText('notifications.eventEndingSoonTitle'),
+                    Utils.getText('notifications.eventEndingSoonBody', { eventName: regularEvent.name[lang] }),
+                    'favicon.png'
+                );
+            } else { // Fallback si no hay eventos regulares
+                 Logic.showFullAlert('Test: Event Ending Soon', 'This is a test for an event ending soon reminder.', 'favicon.png');
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 4. Prueba de recordatorio de Reset Semanal
+            const weeklyTimers = Logic.getWeeklyResetTimers(Logic.getCorrectedNow());
+            if (weeklyTimers.length > 0) {
+                // Selecciona uno al azar
+                const randomWeekly = weeklyTimers[Math.floor(Math.random() * weeklyTimers.length)];
+                Logic.showFullAlert(
+                    Utils.getText('notifications.weeklyResetReminderTitle'),
+                    Utils.getText('notifications.weeklyResetReminderBody', { weeklyName: randomWeekly.name }),
+                    'favicon.png'
+                );
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 5. Prueba de recordatorio de Nuevo Banner
+            Logic.showFullAlert(
+                Utils.getText('notifications.newBannerSoonTitle'),
+                Utils.getText('notifications.newBannerSoonBody'),
+                'favicon.png'
+            );
+        });
+        
         
         function handleHeroClick(e) {
             const heroWrapper = e.target.closest('.banner-hero-img-container');

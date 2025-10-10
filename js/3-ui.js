@@ -102,8 +102,7 @@ const UI = {
 
         this.renderPrimaryPanel(primaryTimers);
 
-        Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer);
-
+        Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, config.events, config.banners);
         this.updateStreamsFeature();
     },
 
