@@ -782,49 +782,50 @@ const UI = {
     },
 
     async openAccountModal() {
+        // Llenar datos de traducción cada vez que se abre
         App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
             const key = el.dataset.langKey;
             const text = Utils.getText(key);
-            if (text !== key) el.textContent = text;
+            if (text !== key) el.innerHTML = text;
         });
-        // Si no está logueado, no abre el modal. El widget de usuario debería prevenir esto.
-        if (!App.state.isLoggedIn || !App.state.userInfo) return;
 
-        // --- LÓGICA DE POBLACIÓN DE DATOS ---
-        const { global_name, avatarUrl } = App.state.userInfo;
-        const profileCard = App.dom.accountModalOverlay.querySelector('.user-profile-card');
-        if (profileCard) {
-            profileCard.querySelector('.user-profile-avatar').src = avatarUrl;
-            profileCard.querySelector('.user-profile-name').textContent = global_name;
-        }
+        const myAccountSection = document.getElementById('section-my-account');
 
-        // --- LÓGICA DEL BOTÓN PUSH ---
-        const subscribeButton = document.getElementById('account-subscribe-push-btn');
-        subscribeButton.disabled = true; // Desactivar mientras comprobamos
+        if (App.state.isLoggedIn && App.state.userInfo) {
+            // --- LÓGICA PARA USUARIO LOGUEADO ---
+            const { global_name, avatarUrl } = App.state.userInfo;
+            myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
+            myAccountSection.querySelector('.user-profile-name').textContent = global_name;
 
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
-
-            if (subscription) {
-                subscribeButton.textContent = Utils.getText('account.unsubscribeButton');
-                subscribeButton.classList.add('unsubscribe-btn');
-            } else {
-                subscribeButton.textContent = Utils.getText('settings.subscribeButton');
-                subscribeButton.classList.remove('unsubscribe-btn');
+            // Actualizar estado del botón de suscripción/desuscripción
+            const subscribeButton = document.getElementById('account-subscribe-push-btn');
+            subscribeButton.disabled = true;
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
+                if (subscription) {
+                    subscribeButton.textContent = Utils.getText('account.unsubscribeButton');
+                    subscribeButton.classList.add('unsubscribe-btn');
+                } else {
+                    subscribeButton.textContent = Utils.getText('settings.subscribeButton');
+                    subscribeButton.classList.remove('unsubscribe-btn');
+                }
+            } catch (error) {
+                subscribeButton.textContent = "Error";
+            } finally {
+                subscribeButton.disabled = false;
             }
-        } catch (error) {
-            console.error("Error al comprobar la suscripción push:", error);
-            subscribeButton.textContent = "Error";
-        } finally {
-            subscribeButton.disabled = false;
+
+            this.renderActiveSubscriptions();
+            this.switchAccountModalSection('my-account');
+
+        } else {
+            // --- LÓGICA PARA INVITADO ---
+            myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
+            myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
+            this.switchAccountModalSection('my-account');
         }
 
-        // Renderizar la lista de suscripciones activas
-        this.renderActiveSubscriptions();
-
-        // Asegurarse de que la primera sección esté visible al abrir
-        this.switchAccountModalSection('my-account');
         App.dom.accountModalOverlay.classList.add('visible');
     },
 
@@ -1006,6 +1007,12 @@ const UI = {
     },
 
     openAboutModal: function() {
+        // Añadimos la lógica de traducción aquí
+        document.querySelectorAll('#about-modal-overlay [data-lang-key]').forEach(el => {
+            const key = el.dataset.langKey;
+            const text = Utils.getText(key);
+            if (text !== key) el.textContent = text;
+        });
         App.dom.aboutModalOverlay.classList.add('visible');
     },
 
@@ -1017,29 +1024,86 @@ const UI = {
         if (!heroData) return;
 
         App.state.heroModalContext = { heroes: contextHeroes, currentIndex: index };
+        
+        const skinPreviewsContainer = document.getElementById('skin-previews-container');
+        const skinPreviewsList = document.getElementById('skin-previews-list');
+        const relatedHeroesContainer = document.getElementById('related-heroes-container');
+        const relatedHeroesList = document.getElementById('related-heroes-list');
+        
+        skinPreviewsList.innerHTML = '';
+        relatedHeroesList.innerHTML = '';
 
-        const previewsContainer = document.getElementById('hero-modal-previews');
-        previewsContainer.innerHTML = '';
+        const setImage = (path) => { document.getElementById('hero-modal-image').src = path; };
 
-        if (contextHeroes.length > 1) {
-            document.getElementById('hero-modal-prev-btn').classList.add('visible');
-            document.getElementById('hero-modal-next-btn').classList.add('visible');
-            
-            contextHeroes.forEach((heroContext, i) => {
-                const hero = Logic.findHeroByName(heroContext.name);
-                if (hero) {
+        // Lógica de Skins
+        const availableSkins = [{ 
+            imgPath: `assets/heroes_full/${heroData.long_image}`, 
+            thumbPath: `assets/heroes_icon/${heroData.short_image}`
+        }];
+        if (heroData.skins) {
+            Object.keys(heroData.skins).forEach(skinKey => {
+                availableSkins.push({
+                    imgPath: `assets/heroes_full/${heroData.skins[skinKey]}`,
+                    thumbPath: `assets/heroes_full/${heroData.skins[skinKey]}`
+                });
+            });
+        }
+        
+        if (availableSkins.length > 1) {
+            skinPreviewsContainer.style.display = 'block';
+            availableSkins.forEach((skin, i) => {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = `hero-preview-item ${i === 0 ? 'active' : ''}`;
+                previewDiv.innerHTML = `<img src="${skin.thumbPath}" alt="Skin ${i + 1}">`;
+                previewDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setImage(skin.imgPath);
+                    skinPreviewsList.querySelectorAll('.hero-preview-item').forEach(p => p.classList.remove('active'));
+                    previewDiv.classList.add('active');
+                });
+                skinPreviewsList.appendChild(previewDiv);
+            });
+        } else {
+            skinPreviewsContainer.style.display = 'none';
+        }
+
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Lógica de Héroes Relacionados
+        // Eliminamos el .filter() para mostrar SIEMPRE todos los héroes del contexto.
+        if (contextHeroes.length > 0) {
+            relatedHeroesContainer.style.display = 'block';
+            contextHeroes.forEach(contextHero => { // <-- Se itera sobre 'contextHeroes' directamente
+                const otherHeroData = Logic.findHeroByName(contextHero.name);
+                if (otherHeroData) {
                     const previewDiv = document.createElement('div');
-                    previewDiv.className = `hero-preview-item ${i === index ? 'active' : ''}`;
-                    previewDiv.dataset.heroName = hero.game_name;
-                    previewDiv.innerHTML = `<img src="assets/heroes_icon/${hero.short_image}" alt="${hero.game_name}">`;
-                    previewsContainer.appendChild(previewDiv);
+                    previewDiv.className = 'hero-preview-item';
+                    
+                    // Si el héroe de la lista es el que estamos viendo, lo marcamos como activo.
+                    if (otherHeroData.game_name === heroData.game_name) {
+                        previewDiv.classList.add('active');
+                    }
+
+                    previewDiv.innerHTML = `<img src="assets/heroes_icon/${otherHeroData.short_image}" alt="${otherHeroData.game_name}">`;
+                    previewDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const newIndex = contextHeroes.findIndex(h => h.name === otherHeroData.game_name);
+                        this.navigateHeroModal(newIndex);
+                    });
+                    relatedHeroesList.appendChild(previewDiv);
                 }
             });
         } else {
-            document.getElementById('hero-modal-prev-btn').classList.remove('visible');
-            document.getElementById('hero-modal-next-btn').classList.remove('visible');
+            relatedHeroesContainer.style.display = 'none';
         }
+        // --- FIN DE LA CORRECCIÓN ---
         
+        // El resto de la función sigue igual...
+        setImage(`assets/heroes_full/${heroData.long_image}`);
+
+        const showNav = contextHeroes.length > 1;
+        document.getElementById('hero-modal-prev-btn').classList.toggle('visible', showNav);
+        document.getElementById('hero-modal-next-btn').classList.toggle('visible', showNav);
+
         const currentHeroContext = contextHeroes[index] || {};
         const tagEl = document.getElementById('hero-modal-tag');
         if (currentHeroContext.tag) {
@@ -1048,28 +1112,37 @@ const UI = {
         } else {
             tagEl.classList.remove('visible');
         }
-
-        const elementColorVar = `--color-${heroData.element || 'default'}-role`;
-        const elementColor = getComputedStyle(document.documentElement).getPropertyValue(elementColorVar).trim();
-        document.getElementById('hero-modal-content').style.borderColor = elementColor || 'var(--border-color)';
         
-        const rarityBgColorVar = `--rarity${heroData.rarity}-modal-bg`;
-        document.getElementById('hero-modal-info').style.backgroundColor = `var(${rarityBgColorVar})`;
+        document.getElementById('hero-modal-content').style.borderColor = getComputedStyle(document.documentElement).getPropertyValue(`--color-${heroData.element || 'default'}-role`).trim();
+        document.getElementById('hero-modal-info').style.backgroundColor = `var(--rarity${heroData.rarity}-modal-bg)`;
         
         const nameEl = document.getElementById('hero-modal-name');
         nameEl.textContent = heroData.game_name;
         nameEl.style.color = heroData.rarity === 1 ? 'var(--color-exalted-gold)' : '';
         
-        document.getElementById('hero-modal-image').src = `assets/heroes_full/${heroData.long_image}`;
-        
-        const rarityEl = document.getElementById('hero-modal-rarity');
-        rarityEl.textContent = Utils.getText(`hero.rarity${heroData.rarity}`);
-        rarityEl.className = `rarity-text-${heroData.rarity}`;
-        
+        document.getElementById('hero-modal-rarity').textContent = Utils.getText(`hero.rarity${heroData.rarity}`);
+        document.getElementById('hero-modal-rarity').className = `rarity-text-${heroData.rarity}`;
         document.getElementById('hero-modal-role').textContent = Utils.getText(`hero.role${heroData.role.charAt(0).toUpperCase() + heroData.role.slice(1)}`);
-        
         document.getElementById('hero-modal-element-icon').src = `assets/elements/${heroData.element}_icon.png`;
         document.getElementById('hero-modal-role-icon').src = `assets/roles/${heroData.role}_icon.png`;
+        
+        const rangeEl = document.getElementById('hero-modal-range');
+        if (heroData.range) {
+            let rangeText = Array.isArray(heroData.range)
+                ? heroData.range.map(r => Utils.getText(`hero.range${r.charAt(0).toUpperCase() + r.slice(1)}`)).join(' / ')
+                : Utils.getText(`hero.range${heroData.range.charAt(0).toUpperCase() + heroData.range.slice(1)}`);
+            rangeEl.textContent = rangeText;
+        } else {
+            rangeEl.textContent = '';
+        }
+
+        const distanceEl = document.getElementById('hero-modal-distance');
+        if (heroData.attack_distance) {
+            const distanceText = Utils.getText(`hero.attackDistance${heroData.attack_distance.charAt(0).toUpperCase() + heroData.attack_distance.slice(1)}`);
+            distanceEl.textContent = distanceText;
+        } else {
+            distanceEl.textContent = '';
+        }
         
         App.dom.heroModalOverlay.classList.add('visible');
     },
@@ -1103,51 +1176,91 @@ const UI = {
         }
     },
 
+    /**
+     * Abre el modal que indica al usuario que necesita iniciar sesión.
+     */
+    openLoginRequiredModal: function() {
+        // Aplica traducciones
+        const modalOverlay = document.getElementById('login-required-modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.dataset.langKey;
+                const text = Utils.getText(key);
+                if (text && text !== key) {
+                    el.innerHTML = text;
+                }
+            });
+            modalOverlay.classList.add('visible');
+        }
+    },
+
+    /**
+     * Cierra el modal de "requiere inicio de sesión".
+     */
+    closeLoginRequiredModal: function() {
+        const modalOverlay = document.getElementById('login-required-modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.classList.remove('visible');
+        }
+    },
+
     updateLoginStatus: function () {
         const userStatusDiv = App.dom.userStatus;
         if (!userStatusDiv) return;
         
-        // Creamos el SVG una vez para reutilizarlo
-        const settingsIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.48.398.668 1.05.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+        const settingsIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.48.398.668 1.05.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37.49l1.217.456c.355.133.75.072 1.076.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
         const powerIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" /></svg>`;
+        
+        let userInfoHTML = '';
+        let actionButtonHTML = '';
 
         if (App.state.isLoggedIn && App.state.userInfo) {
-            // --- VISTA PARA USUARIO LOGUEADO ---
+            // --- LÓGICA PARA USUARIO LOGUEADO ---
             const { global_name, avatarUrl } = App.state.userInfo;
-            const displayName = global_name || Utils.getText('common.user');
-
-            userStatusDiv.innerHTML = `
+            userInfoHTML = `
                 <div class="user-info-static">
                     <img src="${avatarUrl}" alt="User Avatar" class="user-avatar">
-                    <p class="user-name">${displayName}</p>
-                </div>
-                <div class="user-actions-hover">
-                    <button id="user-settings-btn" class="user-action-btn settings-icon" title="${Utils.getText('settings.title')}">${settingsIconSVG}</button>
-                    <button id="logout-btn" class="user-action-btn logout-icon" title="${Utils.getText('common.logout')}">${powerIconSVG}</button>
+                    <p class="user-name">${global_name || 'User'}</p>
                 </div>
             `;
-            // Añadimos los listeners para los nuevos botones
-            document.getElementById('user-settings-btn').addEventListener('click', () => this.openAccountModal());
-            document.getElementById('logout-btn').addEventListener('click', () => Logic.logout());
-
+            // Se genera el botón de LOGOUT
+            actionButtonHTML = `
+                <button id="logout-btn" class="user-action-btn logout-icon" title="${Utils.getText('common.logout')}">${powerIconSVG}</button>
+            `;
         } else {
-            // --- VISTA PARA INVITADO ---
-            const defaultAvatar = 'assets/wimp_default.jpg';
-
-            userStatusDiv.innerHTML = `
+            // --- LÓGICA PARA INVITADO ---
+            userInfoHTML = `
                 <div class="user-info-static">
-                    <img src="${defaultAvatar}" alt="Guest Avatar" class="user-avatar">
+                    <img src="assets/wimp_default.jpg" alt="Guest Avatar" class="user-avatar">
                     <p class="user-name guest" data-lang-key="common.guest"></p>
                 </div>
-                <div class="user-actions-hover">
-                    <button id="login-btn" class="user-action-btn login-icon" title="${Utils.getText('common.login')}">${powerIconSVG}</button>
-                </div>
             `;
+            // Se genera el botón de LOGIN
+            actionButtonHTML = `
+                <button id="login-btn" class="user-action-btn login-icon" title="${Utils.getText('common.login')}">${powerIconSVG}</button>
+            `;
+        }
+
+        // Se construye el HTML completo
+        userStatusDiv.innerHTML = `
+            ${userInfoHTML}
+            <div class="user-widget-divider"></div>
+            <button id="user-settings-btn" class="user-action-btn settings-icon" title="${Utils.getText('settings.title')}">${settingsIconSVG}</button>
+            ${actionButtonHTML}
+        `;
+        
+        // Se añaden los listeners a los botones que ACABAMOS de crear
+        document.getElementById('user-settings-btn').addEventListener('click', () => this.openAccountModal());
+        
+        if (App.state.isLoggedIn) {
+            document.getElementById('logout-btn').addEventListener('click', () => Logic.logout());
+        } else {
             document.getElementById('login-btn').addEventListener('click', () => Logic.redirectToDiscordLogin());
         }
 
         this.applyLanguage();
     },
+
     
     updateLanguage: function() {
     // Esta función ahora solo actualiza elementos dinámicos que no dependen de un cambio de idioma

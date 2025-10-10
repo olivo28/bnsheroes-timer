@@ -138,24 +138,38 @@
             <!-- Columna de Navegación (Barra Lateral) -->
             <div class="account-sidebar">
                 <div class="account-sidebar-scroller">
-                    <div class="sidebar-header">
-                        <h3 data-lang-key="account.userSettings"></h3>
-                    </div>
-                    <div class="sidebar-nav">
+                    <!-- NAV PRINCIPAL -->
+                    <nav class="sidebar-nav">
+                        <!-- INICIO DE LA CORRECCIÓN: SE ELIMINA EL HEADER DUPLICADO DE AQUÍ -->
+                        <div class="sidebar-header">
+                            <h3 data-lang-key="account.userSettings"></h3>
+                        </div>
+                        <!-- FIN DE LA CORRECCIÓN -->
                         <a href="#" class="nav-item active" data-section="my-account">
                             <span data-lang-key="account.nav.myAccount"></span>
                         </a>
                         <a href="#" class="nav-item" data-section="push-notifications">
                             <span data-lang-key="account.nav.pushNotifications"></span>
                         </a>
-                        <!-- Aquí se pueden añadir más enlaces de navegación en el futuro -->
-                    </div>
+                    </nav>
+            
+                    <!-- NAV SECUNDARIO -->
+                    <nav class="sidebar-nav secondary-nav">
+                        <div class="nav-divider"></div>
+                        <a href="#" class="nav-item" data-section="support-me">
+                            <span data-lang-key="account.nav.supportMe"></span>
+                        </a>
+                        <a href="#" class="nav-item" data-section="disclaimer">
+                            <span data-lang-key="account.nav.disclaimer"></span>
+                        </a>
+                    </nav>
+            
+                    <!-- FOOTER -->
                     <div class="sidebar-footer">
                         <button id="logout-btn-modal" class="logout-button">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                 stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
                             </svg>
                             <span data-lang-key="common.logout"></span>
                         </button>
@@ -192,15 +206,92 @@
                             <!-- La lista de suscripciones se generará aquí con JS -->
                         </div>
                     </div>
+
+                    <div class="content-section" id="section-support-me">
+                        <h2 data-lang-key="account.nav.supportMe"></h2>
+                        <p class="support-text" data-lang-key="support.intro"></p>
+                    
+                        <div class="support-methods">
+                            <!-- PayPal Card -->
+                            <div class="support-card">
+                                <h4>
+                                    <svg class="support-icon paypal" viewBox="0 0 24 24">
+                                        <path
+                                            d="M7.183 18.261c.211.77.728 1.258 1.48 1.258h2.09c.473 0 .825-.136 1.028-.512l.186-.36.035.166c.159.74.685 1.18 1.438 1.18h2.15c.53 0 .866-.18 1.018-.621.151-.441.015-.99-.33-1.64l-.004.007c-.454-.783-.87-1.385-1.246-1.802-.375-.417-.827-.625-1.353-.625h-2.583l-.213-.918h3.313c1.783 0 2.871-1.012 3.167-2.673.238-1.287-.216-2.185-.98-2.693-.764-.508-1.92-.56-3.473-.56h-4.322l-.963-4.102H3.844l1.64 6.99h3.313l-.212-.918H5.976c-1.36 0-2.227.797-2.433 2.115-.205 1.317.29 2.193 1.247 2.768.956.575 2.275.663 3.96.663h.001l.426 1.817zm2.492-7.238l.685-2.923h2.32c1.334 0 2.05.352 2.226 1.205.176.853-.25 1.446-1.11 1.624-.31.066-.657.098-.98.098h-2.456l-.685-.004z">
+                                        </path>
+                                    </svg>
+                                    PayPal
+                                </h4>
+                                <p data-lang-key="support.paypal"></p>
+                            </div>
+                    
+                            <!-- Binance Card -->
+                            <div class="support-card">
+                                <h4>
+                                    <svg class="support-icon binance" viewBox="0 0 24 24">
+                                        <path
+                                            d="m11.96 17.57-2.96 2.96L6.04 17.57l2.96-2.96zm0-11.14 2.96-2.96 2.96 2.96-2.96 2.96zm-5.92 5.57L3.08 9.04l2.96-2.96 2.96 2.96zm11.84 0 2.96 2.96-2.96 2.96-2.96-2.96zM12 14.61 9.04 11.65 12 8.69l2.96 2.96z">
+                                        </path>
+                                    </svg>
+                                    Binance
+                                </h4>
+                                <div class="binance-details">
+                                    <div class="binance-item">
+                                        <span class="binance-label">Binance Pay ID:</span>
+                                        <code class="support-code">196153443</code>
+                                    </div>
+                                    <div class="binance-item">
+                                        <span class="binance-label">USDT Wallet (BEP20):</span>
+                                        <code class="support-code">0x041bedc9c0aab1955552a6a0c4a1bfa44276cabe</code>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Ko-fi Card -->
+                            <div class="support-card">
+                                <h4>
+                                    <svg class="support-icon kofi" viewBox="0 0 24 24">
+                                        <path
+                                            d="M23.16 3.161c-.48-.54-1.332-.676-2.004-.337-.89.428-1.29.932-1.575 1.411-.035.06-.07.12-.105.18-.327.562-1.281 2.404-1.281 2.404s-.007.012-.014.024l-.001.001c-.812 1.41-1.42 2.14-1.83 2.502-.41.362-1.026.54-1.846.54h-1.46c-1.47 0-2.925.795-3.465 1.832-.54 1.037-.54 2.05 0 3.087.54 1.038 2.085 1.833 3.465 1.833h1.46c.805 0 1.42-.18 1.83-.54.41-.362.977-1.066 1.83-2.502 0 0 .007-.012.014-.024l.001-.001s.954-1.841 1.28-2.404c.036-.06.071-.12.106-.18.286-.48.686-.983 1.575-1.411.672-.34 1.524-.203 2.004.337.48.54.48 1.34 0 1.88l-.138.165c0 .012-.996 1.154-2.128 2.469-.427.5-1.127.85-2.227.85h-1.46c-1.025 0-2.07-.54-2.61-1.575-.54-1.038-.54-2.051 0-3.088.54-1.038 1.585-1.576 2.61-1.576h1.46c1.1 0 1.8-.35 2.227-.85C22.026 7.18 23.023 6.03 23.023 6.015l.137-.165c.48-.54.48-1.34 0-1.88l-.001-.001zM4.46 3.332c-1.1 0-1.785.89-1.785 1.99v8.663c0 1.1.685 1.99 1.785 1.99h3.69c1.1 0 1.785-.89 1.785-1.99V5.322c0-1.1-.685-1.99-1.785-1.99H4.46z">
+                                        </path>
+                                    </svg>
+                                    Ko-fi
+                                </h4>
+                                <p data-lang-key="support.kofi"></p>
+                                <a href="https://ko-fi.com/olivo28" class="support-link" target="_blank" rel="noopener noreferrer"
+                                    data-lang-key="support.kofiLink"></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-section" id="section-disclaimer">
+                        <h2 data-lang-key="account.nav.disclaimer"></h2>
+                        
+                        <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleLegal"></h4>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p1"></p>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p2"></p>
+
+                        <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleTerms"></h4>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p3"></p>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p4"></p>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p5"></p>
+
+                        <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titlePrivacy"></h4>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p6"></p>
+
+                        <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleConduct"></h4>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p7"></p>
+                        
+                        <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleCopyright"></h4>
+                        <p class="disclaimer-text" data-lang-key="disclaimer.p8"></p>
+                    </div>
     
                 </div>
-                <div id="close-account-modal-btn" class="close-fullscreen-modal-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor">
+                <button id="close-account-modal-btn" class="close-fullscreen-modal-btn" title="Cerrar (Esc)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span data-lang-key="common.escape"></span>
-                </div>
+                </button>
             </div>
         </div>
     </div>
@@ -230,15 +321,72 @@
     <div id="about-modal-overlay">
         <div id="about-modal">
             <h2 data-lang-key="about.title"></h2>
-            <h3 data-lang-key="about.contactTitle"></h3>
-            <p data-lang-key="about.contactBody"></p>
-            <p data-lang-key="about.discordHandle"></p>
-            <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link" href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer" data-lang-key="about.discordLinkText"></a></p>
-            <p data-lang-key="about.donation"></p>
+
+            <div class="info-grid">
+                <!-- Tarjeta de Información -->
+                <div class="info-card">
+                    <h3 data-lang-key="timers.dailyResetName"></h3>
+                    <p data-lang-key="timersInfo.dailyResetDesc"></p>
+                </div>
+                <!-- Tarjeta de Información -->
+                <div class="info-card">
+                    <h3 data-lang-key="timers.showdownName"></h3>
+                    <p data-lang-key="timersInfo.showdownDesc"></p>
+                </div>
+                <!-- Tarjeta de Información -->
+                <div class="info-card">
+                    <h3 data-lang-key="timersInfo.bossesTitle"></h3>
+                    <p data-lang-key="timersInfo.bossesDesc"></p>
+                </div>
+                <!-- Tarjeta de Información -->
+                <div class="info-card">
+                    <h3 data-lang-key="notifications.title"></h3>
+                    <p data-lang-key="timersInfo.notificationsDesc"></p>
+                </div>
+
+                <!-- --- INICIO DE LAS TARJETAS AÑADIDAS --- -->
+                <!-- Tarjeta de Información -->
+                <div class="info-card">
+                    <h3 data-lang-key="events.title"></h3>
+                    <p data-lang-key="timersInfo.eventsDesc"></p>
+                </div>
+                <!-- Tarjeta de Información -->
+                <div class="info-card">
+                    <h3 data-lang-key="weekly.title"></h3>
+                    <p data-lang-key="timersInfo.weeklyDesc"></p>
+                </div>
+                <!-- --- FIN DE LAS TARJETAS AÑADIDAS --- -->
+
+                <!-- Tarjeta de Información (ocupa dos columnas) -->
+                <div class="info-card full-width">
+                    <h3 data-lang-key="banners.title"></h3>
+                    <p data-lang-key="timersInfo.bannersDesc"></p>
+                </div>
+            </div>
+
+            <!-- Sección de contacto al final -->
             <hr>
-            <h3 data-lang-key="about.disclaimerTitle"></h3>
-            <p data-lang-key="about.disclaimerBody" class="disclaimer"></p>
+            <div class="contact-section">
+                <h3 data-lang-key="about.contactTitle"></h3>
+                <!-- INICIO DE LA LÍNEA A AÑADIR -->
+                <p data-lang-key="about.discordHandle"></p>
+                <!-- FIN DE LA LÍNEA A AÑADIR -->
+                <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link" href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer" data-lang-key="about.discordLinkText"></a></p>
+            </div>
+
+            
             <button id="close-about-btn" class="settings-btn" data-lang-key="common.closeButton"></button>
+        </div>
+    </div>
+
+    <div id="login-required-modal-overlay">
+        <div id="login-required-modal">
+            <h3 data-lang-key="loginRequired.title"></h3>
+            <p data-lang-key="settings.loginRequired"></p>
+            <div class="login-required-buttons">
+                <button id="close-login-required-btn" class="settings-btn secondary-btn" data-lang-key="common.cancelButton"></button>
+                <button id="go-to-login-btn" class="settings-btn" data-lang-key="common.login"></button>
+            </div>
         </div>
     </div>
 
@@ -247,15 +395,40 @@
             <button id="hero-modal-close-btn" class="modal-close-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
             <button id="hero-modal-prev-btn" class="hero-modal-nav-btn prev"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
             <button id="hero-modal-next-btn" class="hero-modal-nav-btn next"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
+            
             <img id="hero-modal-image" src="" alt="Hero Image">
+            
             <div id="hero-modal-info">
                 <h4 id="hero-modal-tag"></h4>
                 <h3 id="hero-modal-name"></h3>
-                <div class="hero-modal-details">
-                    <div><img id="hero-modal-element-icon" src="" alt="Element"><span id="hero-modal-rarity"></span></div>
-                    <div><img id="hero-modal-role-icon" src="" alt="Role"><span id="hero-modal-role"></span></div>
+
+                <div id="hero-modal-details-container">
+                    <!-- Fila 1: Rareza y Rol -->
+                    <div class="hero-modal-details-row">
+                        <div><img id="hero-modal-element-icon" src="" alt="Element"><span id="hero-modal-rarity"></span></div>
+                        <div><img id="hero-modal-role-icon" src="" alt="Role"><span id="hero-modal-role"></span></div>
+                    </div>
+                    <!-- Fila 2: Rango y Distancia de Ataque (solo texto) -->
+                    <div class="hero-modal-details-row secondary-details">
+                        <span id="hero-modal-range"></span>
+                        <span id="hero-modal-distance"></span>
+                    </div>
                 </div>
-                <div id="hero-modal-previews"></div>
+                <img id="hero-modal-range-icon" src="" alt="" style="display:none;">
+                <img id="hero-modal-distance-icon" src="" alt="" style="display:none;">
+
+                <div id="hero-modal-previews">
+                    <!-- Contenedor para Skins -->
+                    <div id="skin-previews-container" class="preview-section">
+                        <h5 class="preview-title" data-lang-key="hero.skinsTitle"></h5>
+                        <div id="skin-previews-list" class="preview-list"></div>
+                    </div>
+                    <!-- Contenedor para Otros Héroes -->
+                    <div id="related-heroes-container" class="preview-section">
+                        <h5 class="preview-title" data-lang-key="hero.relatedHeroesTitle"></h5>
+                        <div id="related-heroes-list" class="preview-list"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

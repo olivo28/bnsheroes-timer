@@ -33,6 +33,7 @@
 *          3.8.6. Modal de Selección de Idioma
 *          3.8.7. Modal de Configuración de Cuenta (NUEVO)
 *                3.8.7.1 Estilos para la lista de suscripciones activas
+*          3.8.8. MODAL: LOGIN REQUERIDO ---
 *      3.9. Panel de Detalles de Evento (Lateral Derecho)
 *      3.10. Botón Flotante (FAB) de Twitch
 *      3.11. Estilos para el Widget de Usuario
@@ -910,7 +911,6 @@ input:checked+.slider:before {
     transition: border-color 0.3s ease;
 }
 
-/* --- REDISEÑO DE BOTONES DE NAVEGACIÓN Y CIERRE --- */
 #hero-modal-close-btn {
     position: absolute;
     top: 15px;
@@ -964,13 +964,8 @@ input:checked+.slider:before {
     width: 28px;
     height: 28px;
 }
-.hero-modal-nav-btn.prev {
-    left: 15px;
-}
-.hero-modal-nav-btn.next {
-    right: 15px;
-}
-
+.hero-modal-nav-btn.prev { left: 15px; }
+.hero-modal-nav-btn.next { right: 15px; }
 
 #hero-modal-image {
     display: block;
@@ -995,9 +990,7 @@ input:checked+.slider:before {
     font-weight: bold;
     display: none;
 }
-#hero-modal-tag.visible {
-    display: block;
-}
+#hero-modal-tag.visible { display: block; }
 
 #hero-modal-name {
     font-size: 1.5em;
@@ -1006,23 +999,55 @@ input:checked+.slider:before {
     transition: color 0.3s ease;
 }
 
-.hero-modal-details {
+/* Contenedor principal de detalles */
+#hero-modal-details-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px; /* Espacio entre las dos filas */
+    margin: 10px 0;
+}
+
+/* Estilo para ambas filas */
+.hero-modal-details-row {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 20px;
-    font-size: 1em;
 }
 
-.hero-modal-details > div {
+/* Estilo para los items de la primera fila */
+.hero-modal-details-row > div {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.hero-modal-details img { width: 28px; height: 28px; filter: none; }
-#hero-modal-element-icon { width: 32px; height: 32px; }
-.hero-modal-details span { font-weight: bold; }
+.hero-modal-details-row img {
+    width: 28px;
+    height: 28px;
+}
+
+.hero-modal-details-row span {
+    font-weight: bold;
+}
+
+/* Estilos específicos para la segunda fila (solo texto) */
+.secondary-details {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    gap: 15px;
+}
+.secondary-details span:not(:empty)::after {
+    content: '•';
+    margin-left: 15px;
+    color: var(--border-color);
+}
+.secondary-details span:last-child::after {
+    content: '';
+    margin-left: 0;
+}
+
 
 #hero-modal-previews {
     display: flex;
@@ -1042,9 +1067,55 @@ input:checked+.slider:before {
     border: 2px solid transparent;
     transition: border-color 0.2s ease, transform 0.2s ease;
 }
-.hero-preview-item:hover {
-    transform: scale(1.1);
+.hero-preview-item:hover { transform: scale(1.1); }
+.hero-preview-item.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary);
 }
+.hero-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#hero-modal-previews {
+    display: flex;
+    flex-direction: column; /* Apila las secciones verticalmente */
+    gap: 15px; /* Espacio entre la sección de skins y la de héroes */
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-section {
+    width: 100%;
+}
+
+.preview-title {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    text-align: left;
+    margin: 0 0 10px 5px;
+    font-weight: 500;
+}
+
+.preview-list {
+    display: flex;
+    justify-content: center; /* <-- CAMBIA 'flex-start' de vuelta a 'center' */
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hero-preview-item {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.hero-preview-item:hover { transform: scale(1.1); }
 .hero-preview-item.active {
     border-color: var(--color-primary);
     box-shadow: 0 0 10px var(--color-primary);
@@ -1056,36 +1127,64 @@ input:checked+.slider:before {
 }
 
 /* --- 3.8.2. Modal de Información y 'Acerca de' --- */
-#info-modal,
+#about-modal-overlay.visible #about-modal {
+    transform: scale(1);
+}
+
 #about-modal {
-    width: 420px;
+    width: 90%;
+    max-width: 700px; /* Hacemos el modal más ancho para la rejilla */
+    text-align: center; /* Centramos todo el contenido */
+    background-color: var(--box-bg-color);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
 }
-#about-modal { text-align: center; }
 
-#info-modal p,
-#about-modal p {
-    color: var(--text-muted-color);
-    font-size: 0.95em;
-    line-height: 1.6;
-    margin: 15px 0;
+#about-modal h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: var(--color-primary);
 }
 
-#info-modal p:last-of-type { margin-bottom: 25px; }
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
+    gap: 20px; /* Espacio entre las tarjetas */
+    margin-bottom: 25px;
+}
 
-#info-modal strong {
+.info-card {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    /* --- INICIO DE LAS LÍNEAS A AÑADIR --- */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* --- FIN DE LAS LÍNEAS A AÑADIR --- */
+}
+
+.info-card.full-width {
+    grid-column: 1 / -1; /* Hace que esta tarjeta ocupe todo el ancho */
+}
+
+.info-card h3 {
     color: var(--text-color);
-    font-weight: normal;
-}
-
-#about-modal h3 {
-    color: var(--text-color);
-    margin-top: 25px; margin-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 10px;
     font-size: 1.1em;
 }
 
-#about-modal .disclaimer {
-    font-size: 0.8em;
-    opacity: 0.7;
+.info-card p {
+    color: var(--text-muted-color);
+    font-size: 0.9em;
+    line-height: 1.6;
+    margin: 0;
 }
 
 #about-modal hr {
@@ -1095,18 +1194,28 @@ input:checked+.slider:before {
     margin: 25px 0;
 }
 
+.contact-section {
+    font-size: 0.95em;
+}
+
+.contact-section h3 {
+    margin: 0 0 10px;
+}
+
+.contact-section p {
+    color: var(--text-muted-color);
+    margin: 0;
+}
+
 #about-modal a {
     color: var(--color-normal);
     text-decoration: none;
 }
 #about-modal a:hover { text-decoration: underline; }
 
-#close-info-btn,
 #close-about-btn {
     display: block;
     margin: 25px auto 0 auto;
-    background-color: var(--border-color);
-    color: var(--text-color);
 }
 
 /* --- 3.8.3. Modal de Sincronización --- */
@@ -1418,12 +1527,12 @@ select.settings-input option {
     margin: 0;
 }
 
-/* --- 3.8.7. Modal de Configuración de Cuenta (NUEVO - Estilo Pantalla Completa) --- */
+/* --- 3.8.7. Modal de Configuración de Cuenta (Estilo Pantalla Completa - FINAL) --- */
 #account-modal-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background-color: transparent; /* El fondo lo manejará el modal interno */
+    background-color: rgba(0,0,0,0.6); /* Fondo oscuro semitransparente */
     z-index: 1200;
     display: flex;
     justify-content: center;
@@ -1431,22 +1540,21 @@ select.settings-input option {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
-    backdrop-filter: blur(0px);
+    backdrop-filter: blur(8px);
 }
 
 #account-modal-overlay.visible {
     opacity: 1;
     visibility: visible;
-    backdrop-filter: blur(8px);
 }
 
 #account-modal {
     display: flex;
     width: 100%;
     height: 100%;
-    max-width: 1000px; /* Ancho máximo del modal */
-    max-height: 80vh; /* Altura máxima, dejando un poco de espacio arriba/abajo */
-    background-color: #2f3136; /* Un gris oscuro, similar a Discord */
+    max-width: 1000px;
+    max-height: 80vh;
+    background-color: #2f3136;
     border-radius: 8px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.4);
     transform: scale(0.95) translateY(10px);
@@ -1461,9 +1569,9 @@ select.settings-input option {
 /* Columna Izquierda: Barra Lateral de Navegación */
 .account-sidebar {
     width: 220px;
-    background-color: #292b2f; /* Un poco más oscuro que el contenido */
+    background-color: #292b2f;
     flex-shrink: 0;
-    padding: 60px 10px 20px 20px;
+    padding: 20px 10px 20px 20px;
     display: flex;
     flex-direction: column;
 }
@@ -1473,11 +1581,12 @@ select.settings-input option {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    /* justify-content: space-between; <-- Esta línea puede ser útil si falla el flex-grow */
 }
 
 .sidebar-header {
-    padding: 0 10px 10px;
-    margin-bottom: 10px;
+    padding: 0 10px;
+    margin-bottom: 20px;
 }
 
 .sidebar-header h3 {
@@ -1487,8 +1596,17 @@ select.settings-input option {
     font-weight: 700;
 }
 
-.sidebar-nav {
-    flex-grow: 1;
+/* AÑADE esta regla */
+.sidebar-nav:first-of-type {
+    flex-grow: 1; /* Solo el primer <nav> debe crecer y ocupar el espacio */
+}
+.secondary-nav .nav-divider { /* Estilo específico para el divisor del nav secundario */
+    margin: 0 10px 10px 0; /* Ajustamos el margen */
+}
+.nav-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 10px 10px 10px 0;
 }
 
 .nav-item {
@@ -1502,12 +1620,10 @@ select.settings-input option {
     font-weight: 500;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
-
 .nav-item:hover {
     background-color: rgba(255,255,255,0.05);
     color: var(--text-color);
 }
-
 .nav-item.active {
     background-color: rgba(255,255,255,0.08);
     color: #fff;
@@ -1533,7 +1649,6 @@ select.settings-input option {
     border-radius: 5px;
     transition: background-color 0.2s ease;
 }
-
 .logout-button:hover {
     background-color: rgba(255, 138, 128, 0.1);
 }
@@ -1554,10 +1669,10 @@ select.settings-input option {
 }
 
 .content-section {
-    display: none; /* Oculto por defecto */
+    display: none;
 }
 .content-section.active {
-    display: block; /* Visible cuando está activo */
+    display: block;
 }
 .content-section h2 {
     color: #fff;
@@ -1566,28 +1681,31 @@ select.settings-input option {
     font-size: 1.5em;
 }
 
-/* Botón de cierre */
+/* Botón de cierre (REDISEÑADO) */
 .close-fullscreen-modal-btn {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 12px;
+    right: 12px;
     cursor: pointer;
     color: var(--text-muted-color);
-    border: 2px solid transparent;
+    background-color: transparent;
+    border: none;
     border-radius: 50%;
-    padding: 5px;
+    width: 36px;
+    height: 36px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    transition: border-color 0.2s ease;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
 }
 .close-fullscreen-modal-btn:hover {
-    border-color: var(--text-muted-color);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
-.close-fullscreen-modal-btn svg { width: 28px; height: 28px; }
-.close-fullscreen-modal-btn span { font-size: 0.8em; margin-top: 2px; }
+.close-fullscreen-modal-btn svg { width: 24px; height: 24px; }
 
-/* Estilos específicos para la sección "Mi Cuenta" */
+
+/* Estilos para la sección "Mi Cuenta" */
 .user-profile-card {
     border-radius: 8px;
     overflow: hidden;
@@ -1595,7 +1713,7 @@ select.settings-input option {
 }
 .user-profile-banner {
     height: 120px;
-    background-color: var(--color-primary); /* Un color de banner por defecto */
+    background-color: var(--color-primary);
 }
 .user-profile-info {
     padding: 16px;
@@ -1610,7 +1728,7 @@ select.settings-input option {
     border: 6px solid var(--bg-color);
     position: absolute;
     left: 20px;
-    top: -48px; /* Mitad de la altura para que sobresalga */
+    top: -48px;
 }
 .user-profile-name {
     font-size: 1.5em;
@@ -1618,12 +1736,105 @@ select.settings-input option {
     color: #fff;
 }
 
-/* Divisor para secciones */
-.section-divider {
-    border: none;
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 30px 0;
+/* Estilos para la sección "Disclaimer" */
+.disclaimer-subtitle {
+    font-size: 1.1em;
+    color: var(--color-primary);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+}
+.disclaimer-subtitle:first-of-type {
+    margin-top: 0;
+}
+.disclaimer-text {
+    color: var(--text-muted-color);
+    font-size: 0.9em;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Estilos para la nueva sección "Apóyame" */
+.support-text {
+    color: var(--text-muted-color);
+    font-size: 0.95em;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-align: center;
+}
+.support-methods {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+.support-card {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: left; /* Alineamos el texto de las tarjetas a la izquierda */
+}
+.support-card h4 {
+    margin: 0 0 15px;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2em;
+}
+
+.support-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor; /* El icono tomará el color del texto (var(--color-primary)) */
+}
+
+.support-card p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    line-height: 1.5;
+}
+
+.support-code {
+    display: block;
+    background-color: #202225;
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-family: monospace;
+    word-break: break-all;
+    font-size: 0.85em;
+}
+
+/* Estilos para la tarjeta de Binance */
+.binance-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+.binance-item .binance-label {
+    font-size: 0.8em;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Estilos para el enlace de Ko-fi */
+.support-link {
+    display: inline-block;
+    margin-top: 15px;
+    background-color: var(--color-normal);
+    color: var(--bg-color);
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: transform 0.2s;
+}
+.support-link:hover {
+    transform: scale(1.05);
 }
 
 /* 3.8.7.1 Estilos para la lista de suscripciones activas */
@@ -1709,6 +1920,82 @@ select.settings-input option {
 .delete-subscription-btn svg {
     width: 24px;
     height: 24px;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.settings-input.small-input {
+    width: 60px;
+    text-align: center;
+}
+#section-push-notifications .settings-section > label {
+    text-align: left;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+#section-push-notifications .checkbox-group {
+    justify-content: flex-start;
+}
+.save-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: right;
+}
+/*  3.8.8. MODAL: LOGIN REQUERIDO --- */
+#login-required-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1300; /* Un z-index alto para que aparezca sobre otros modales si es necesario */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+#login-required-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+#login-required-modal {
+    background-color: var(--box-bg-color);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+#login-required-modal-overlay.visible #login-required-modal {
+    transform: scale(1);
+}
+#login-required-modal h3 {
+    margin-top: 0;
+    color: var(--color-warning); /* Usamos el color de advertencia */
+}
+#login-required-modal p {
+    color: var(--text-muted-color);
+    margin: 15px 0 25px;
+}
+.login-required-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+/* Estilo para el botón secundario (Cancelar) */
+.settings-btn.secondary-btn {
+    background-color: var(--border-color);
+    color: var(--text-color);
 }
 
 /* --- 3.9. Panel de Detalles de Evento (Lateral Derecho) --- */
@@ -2356,20 +2643,21 @@ select.settings-input option {
 
 /* --- 3.11. Estilos para el Widget de Usuario --- */
 
+/* --- 3.11. Estilos para el Widget de Usuario --- */
+
 #user-status {
     position: fixed;
     top: 20px;
     left: 20px;
     z-index: 1000;
-
     display: flex;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(30, 30, 30, 0.5); /* Un poco más oscuro */
+    backdrop-filter: blur(5px);
     border-radius: 20px;
     border: 1px solid var(--border-color);
     padding: 4px;
     cursor: pointer;
-    overflow: hidden; /* Clave para el efecto de expansión */
     transition: all 0.3s ease-in-out;
 }
 
@@ -2377,8 +2665,8 @@ select.settings-input option {
 .user-info-static {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding-right: 8px; /* Pequeño espacio a la derecha */
+    gap: 10px;
+    padding: 0 8px;
 }
 
 .user-avatar {
@@ -2394,13 +2682,52 @@ select.settings-input option {
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
-    white-space: nowrap; /* Evita que el nombre se parta */
+    white-space: nowrap;
 }
 
 .user-name.guest {
     font-weight: normal;
     color: var(--text-muted-color);
 }
+
+/* Separador visual */
+.user-widget-divider {
+    width: 1px;
+    height: 20px;
+    background-color: var(--border-color);
+    margin: 0 4px;
+}
+
+/* Estilo unificado para los botones de acción */
+.user-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background-color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+}
+
+.user-action-btn:hover {
+    background-color: var(--border-color);
+    transform: scale(1.1);
+}
+
+.user-action-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Colores específicos para cada botón */
+.settings-icon svg { stroke: var(--text-muted-color); }
+.login-icon svg { stroke: var(--color-success); }
+.logout-icon svg { stroke: var(--color-danger); }
 
 /* Contenedor de acciones que aparece al hacer hover */
 .user-actions-hover {

@@ -263,14 +263,40 @@ import UI from './3-ui.js';
         if (App.dom.accountModalOverlay) {
             // Clic en los enlaces de navegación de la barra lateral
             App.dom.accountModalOverlay.addEventListener('click', e => {
-                if (e.target.closest('.nav-item')) {
+                const navItem = e.target.closest('.nav-item');
+                if (navItem) {
                     e.preventDefault();
-                    const sectionId = e.target.closest('.nav-item').dataset.section;
-                    UI.switchAccountModalSection(sectionId);
+                    const sectionId = navItem.dataset.section;
+
+                    // --- INICIO DE LA LÓGICA DE BLOQUEO ---
+                    // Secciones que requieren inicio de sesión
+                    const protectedSections = ['push-notifications'];
+
+                    if (protectedSections.includes(sectionId) && !App.state.isLoggedIn) {
+                        // Si el usuario es invitado y la sección está protegida, muestra una alerta.
+                        UI.openLoginRequiredModal();
+                    } else {
+                        // Si no, permite el cambio de sección.
+                        UI.switchAccountModalSection(sectionId);
+                    }
+                    // --- FIN DE LA LÓGICA DE BLOQUEO ---
                 }
+                
                 // Clic para cerrar si se pulsa fuera del modal
                 if (e.target === e.currentTarget) {
                     UI.closeAccountModal();
+                }
+            });
+        }
+
+        const loginRequiredOverlay = document.getElementById('login-required-modal-overlay');
+        if (loginRequiredOverlay) {
+            loginRequiredOverlay.addEventListener('click', e => {
+                if (e.target === e.currentTarget || e.target.closest('#close-login-required-btn')) {
+                    UI.closeLoginRequiredModal();
+                }
+                if (e.target.closest('#go-to-login-btn')) {
+                    Logic.redirectToDiscordLogin();
                 }
             });
         }
@@ -296,7 +322,7 @@ import UI from './3-ui.js';
             App.dom.logoutBtnModal.addEventListener('click', () => Logic.logout());
         }
         
-        document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
+        //document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
         
         App.dom.modalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSettingsModal(); });
         App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeInfoModal(); });
@@ -348,7 +374,10 @@ import UI from './3-ui.js';
 
             // Actualizamos el resto de la UI (relojes, timers, etc.)
             UI.updateAll();
+            
         });
+
+        
         
         document.getElementById('save-sync-btn').addEventListener('click', () => {
             const h = parseInt(document.getElementById('sync-hours').value) || 0;
@@ -409,10 +438,29 @@ import UI from './3-ui.js';
         });
 
         window.addEventListener('keydown', e => {
-            if (App.dom.heroModalOverlay?.classList.contains('visible')) {
-                if (e.key === 'Escape') UI.closeHeroModal();
-                if (e.key === 'ArrowRight') UI.navigateHeroModal('next');
-                if (e.key === 'ArrowLeft') UI.navigateHeroModal('prev');
+            // Primero, comprobamos si hay algún modal de pantalla completa abierto
+            const isAccountModalVisible = App.dom.accountModalOverlay?.classList.contains('visible');
+            const isHeroModalVisible = App.dom.heroModalOverlay?.classList.contains('visible');
+
+            // Lógica para la tecla Escape
+            if (e.key === 'Escape') {
+                if (isAccountModalVisible) {
+                    UI.closeAccountModal();
+                }
+                if (isHeroModalVisible) {
+                    UI.closeHeroModal();
+                }
+                // Añade aquí más comprobaciones para otros modales si es necesario
+            }
+            
+            // Lógica para las flechas (SOLO si el modal de héroe está visible)
+            if (isHeroModalVisible) {
+                if (e.key === 'ArrowRight') {
+                    UI.navigateHeroModal('next');
+                }
+                if (e.key === 'ArrowLeft') {
+                    UI.navigateHeroModal('prev');
+                }
             }
         });
         

@@ -1,0 +1,677 @@
+[
+    {
+        "asset_name": "aggyocw",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_aggyocw_base.png"
+    },
+    {
+        "asset_name": "amheugl",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_amheugl_base.png"
+    },
+    {
+        "asset_name": "ayura",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ayura_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_ayura_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "baeggaha",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_baeggaha_base.png"
+    },
+    {
+        "asset_name": "baegmu",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_baegmu_base.png"
+    },
+    {
+        "asset_name": "baekbuyong",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "baekbuyong_a_fm.png",
+        "long_image": "full_illust_hero_baekbuyong_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_baekbuyong_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "bocksle",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_bocksle_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_bocksle_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "boglin",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_boglin_base.png"
+    },
+    {
+        "asset_name": "chachaung",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_chachaung_base.png"
+    },
+    {
+        "asset_name": "cheonjingwon",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_cheonjingwon_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_cheonjingwon_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "cheonseo",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_cheonseo_base.png"
+    },
+    {
+        "asset_name": "choejina",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_choejina_base.png"
+    },
+    {
+        "asset_name": "dangyeowol",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_dangyeowol_base.png"
+    },
+    {
+        "asset_name": "docheonpung",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_docheonpung_base.png"
+    },
+    {
+        "asset_name": "dodanha",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_dodanha_base.png"
+    },
+    {
+        "asset_name": "dogchogeosa",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_dogchogeosa_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_dogchogeosa_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "doyul",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_doyul_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_doyul_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "eunag",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_eunag_base.png"
+    },
+    {
+        "asset_name": "eungwangi",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_eungwangi_base.png"
+    },
+    {
+        "asset_name": "eungwangil",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_eungwangil_base.png"
+    },
+    {
+        "asset_name": "gammadeung",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_gammadeung_base.png",
+        "skins": {
+            "bm_02": "full_illust_hero_gammadeung_bm_02.png"
+        }
+    },
+    {
+        "asset_name": "ganmyowol",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ganmyowol_base.png"
+    },
+    {
+        "asset_name": "geonhyang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_geonhyang_base.png"
+    },
+    {
+        "asset_name": "geonma",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_geonma_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_geonma_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "geumgangys",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_geumgangys_base.png"
+    },
+    {
+        "asset_name": "guho",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_guho_base.png"
+    },
+    {
+        "asset_name": "gunmahye",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_gunmahye_base.png"
+    },
+    {
+        "asset_name": "guri",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_guri_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_guri_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "gwanhwi",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_gwanhwi_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_gwanhwi_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "gwihwan",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_gwihwan_base.png"
+    },
+    {
+        "asset_name": "hansilang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_hansilang_base.png"
+    },
+    {
+        "asset_name": "hanuibalam",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_hanuibalam_base.png"
+    },
+    {
+        "asset_name": "harin",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_harin_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_harin_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "heugsaman",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_heugsaman_base.png"
+    },
+    {
+        "asset_name": "hongbi",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_hongbi_base.png"
+    },
+    {
+        "asset_name": "hongdoni",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_hongdoni_base.png"
+    },
+    {
+        "asset_name": "hongsam",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_hongsam_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_hongsam_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "hwajung",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_hwajung_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_hwajung_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "ilang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ilang_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_ilang_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "iolag",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_iolag_base.png"
+    },
+    {
+        "asset_name": "jeonghado",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_jeonghado_base.png"
+    },
+    {
+        "asset_name": "jinsoa",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_jinsoa_base.png"
+    },
+    {
+        "asset_name": "jinung",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_jinung_base.png"
+    },
+    {
+        "asset_name": "jinyeong",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_jinyeong_base.png"
+    },
+    {
+        "asset_name": "juhorang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_juhorang_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_juhorang_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "julia",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_julia_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_julia_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "mayeongg",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_mayeongg_base.png"
+    },
+    {
+        "asset_name": "minou",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_minou_base.png"
+    },
+    {
+        "asset_name": "nagwonds",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_nagwonds_base.png"
+    },
+    {
+        "asset_name": "namsoyu",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_namsoyu_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_namsoyu_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "pohwalan",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_pohwalan_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_pohwalan_bm_01.png",
+            "bm_02": "full_illust_hero_pohwalan_bm_02.png"
+        }
+    },
+    {
+        "asset_name": "ryeon",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ryeon_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_ryeon_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "ryuara",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ryuara_base_reverse.png",
+        "skins": {
+            "bm_01": "full_illust_hero_ryuara_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "sehwa",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_sehwa_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_sehwa_bm_01.png",
+            "bm_02": "full_illust_hero_sehwa_bm_02.png"
+        }
+    },
+    {
+        "asset_name": "seonyuna",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_seonyuna_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_seonyuna_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "somyeong",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_somyeong_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_somyeong_bm_01.png",
+            "bm_02": "full_illust_hero_somyeong_bm_02.png"
+        }
+    },
+    {
+        "asset_name": "sonyeoneum",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_sonyeoneum_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_sonyeoneum_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "soyeonhwa",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_soyeonhwa_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_soyeonhwa_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "sulawang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_sulawang_base.png"
+    },
+    {
+        "asset_name": "susam",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_susam_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_susam_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "suwadaeseong",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_suwadaeseong_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_suwadaeseong_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "taeag",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_taeag_base.png"
+    },
+    {
+        "asset_name": "taewang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_taewang_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_taewang_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "ukaha",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ukaha_base.png"
+    },
+    {
+        "asset_name": "ungjin",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_ungjin_base.png"
+    },
+    {
+        "asset_name": "uwon",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_uwon_base.png"
+    },
+    {
+        "asset_name": "yamyo",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_yamyo_base.png"
+    },
+    {
+        "asset_name": "yehalang",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_yehalang_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_yehalang_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "yonggaeg",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_yonggaeg_base.png"
+    },
+    {
+        "asset_name": "yugson",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_yugson_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_yugson_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "yulan",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_yulan_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_yulan_bm_01.png"
+        }
+    },
+    {
+        "asset_name": "yuseol",
+        "game_name": "",
+        "rarity": 0,
+        "available": false,
+        "short_image": "",
+        "long_image": "full_illust_hero_yuseol_base.png",
+        "skins": {
+            "bm_01": "full_illust_hero_yuseol_bm_01.png"
+        }
+    }
+]
