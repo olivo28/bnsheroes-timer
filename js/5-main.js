@@ -376,6 +376,21 @@ import UI from './3-ui.js';
         document.getElementById('streams-modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) document.getElementById('streams-modal-overlay').classList.remove('visible'); });
 
         App.dom.saveSettingsBtn.addEventListener('click', async () => {
+            const reminderSettings = {
+                eventDailies: {
+                    enabled: document.getElementById('event-dailies-reminder-toggle').checked,
+                    hours: parseInt(document.getElementById('event-dailies-reminder-hours').value)
+                },
+                weekly: {
+                    enabled: document.getElementById('weekly-reminder-toggle').checked,
+                    days: parseInt(document.getElementById('weekly-reminder-days').value)
+                },
+                banner: {
+                    enabled: document.getElementById('banner-reminder-toggle').checked,
+                    days: parseInt(document.getElementById('banner-reminder-days').value)
+                }
+            };
+
             const newConfig = {
                 language: App.dom.languageSelect.value,
                 displayTimezone: App.dom.timezoneSelect.value,
@@ -385,7 +400,8 @@ import UI from './3-ui.js';
                 showBossTimers: App.dom.bossTimersToggle.checked,
                 showEvents: App.dom.eventsToggle.checked,
                 showWeekly: App.dom.weeklyToggle.checked,
-                notificationPrefs: App.state.config.notificationPrefs
+                notificationPrefs: App.state.config.notificationPrefs,
+                reminderSettings: reminderSettings
             };
 
             const languageChanged = newConfig.language !== App.state.config.language;

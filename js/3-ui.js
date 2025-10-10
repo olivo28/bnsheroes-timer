@@ -773,6 +773,21 @@ const UI = {
         App.dom.desktopToggle.checked = config.notificationTypes.desktop;
         App.dom.timezoneSelect.value = config.displayTimezone;
         App.dom.languageSelect.value = config.language;
+
+        // --- INICIO DE LA CORRECCIÓN: Cargar valores de recordatorios ---
+        const reminders = config.reminderSettings || {};
+        const eventDailies = reminders.eventDailies || { enabled: true, hours: 12 };
+        const weekly = reminders.weekly || { enabled: true, days: 3 };
+        const banner = reminders.banner || { enabled: true, days: 4 };
+
+        document.getElementById('event-dailies-reminder-toggle').checked = eventDailies.enabled;
+        document.getElementById('event-dailies-reminder-hours').value = eventDailies.hours;
+        document.getElementById('weekly-reminder-toggle').checked = weekly.enabled;
+        document.getElementById('weekly-reminder-days').value = weekly.days;
+        document.getElementById('banner-reminder-toggle').checked = banner.enabled;
+        document.getElementById('banner-reminder-days').value = banner.days;
+        // --- FIN DE LA CORRECCIÓN ---
+
         App.dom.modalOverlay.classList.add('visible');
     },
 

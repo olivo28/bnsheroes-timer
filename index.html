@@ -124,6 +124,35 @@
                     <label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.desktopToggle"></span></label>
                 </div>
             </div>
+
+            <!-- INICIO DE LA CORRECCIÓN: Nueva sección de Recordatorios -->
+            <div class="settings-section">
+                <label data-lang-key="settings.reminders.title"></label>
+                <div class="settings-row-vertical">
+                    <div class="settings-row">
+                        <label class="checkbox-label"><input type="checkbox" id="event-dailies-reminder-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.reminders.eventDailies"></span></label>
+                        <select id="event-dailies-reminder-hours" class="settings-input small-input">
+                            <option value="12">12</option>
+                            <option value="8">8</option>
+                            <option value="6">6</option>
+                            <option value="4">4</option>
+                        </select>
+                        <span data-lang-key="settings.reminders.hoursBefore"></span>
+                    </div>
+                    <div class="settings-row">
+                        <label class="checkbox-label"><input type="checkbox" id="weekly-reminder-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.reminders.weeklyReset"></span></label>
+                        <input type="number" id="weekly-reminder-days" class="settings-input small-input" min="1" max="6" value="3">
+                        <span data-lang-key="settings.reminders.daysBefore"></span>
+                    </div>
+                    <div class="settings-row">
+                        <label class="checkbox-label"><input type="checkbox" id="banner-reminder-toggle"><span class="checkbox-custom"></span><span data-lang-key="settings.reminders.newBanner"></span></label>
+                        <input type="number" id="banner-reminder-days" class="settings-input small-input" min="1" max="6" value="4">
+                        <span data-lang-key="settings.reminders.daysBefore"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- FIN DE LA CORRECCIÓN -->
+
             <div class="settings-section"><label for="timezone-select" data-lang-key="settings.timezoneLabel"></label><select id="timezone-select" class="settings-input"></select></div>
             <div class="settings-section"><label for="language-select" data-lang-key="settings.languageLabel"></label><select id="language-select" class="settings-input"></select></div>
             <div id="settings-buttons">
@@ -333,7 +362,6 @@
         </div>
     </div>
 
-    <!-- INICIO DE LA REVERSIÓN: Volvemos a tu HTML original -->
     <div id="confirmation-modal-overlay">
         <div id="confirmation-modal">
             <h3 id="confirmation-modal-title"></h3>
@@ -364,7 +392,6 @@
             </div>
         </div>
     </div>
-    <!-- FIN DE LA REVERSIÓN -->
 
 
     <div id="sync-modal-overlay">

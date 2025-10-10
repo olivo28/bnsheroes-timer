@@ -73,7 +73,8 @@ const Logic = {
                 showBossTimers: config.showBossTimers,
                 showEvents: config.showEvents,
                 showWeekly: config.showWeekly,
-                showdownTicketSync: config.showdownTicketSync
+                showdownTicketSync: config.showdownTicketSync,
+                reminderSettings: config.reminderSettings
             };
             
             Utils.setCookie('timersDashboardConfig', JSON.stringify(configForCookie), 365);

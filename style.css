@@ -889,6 +889,8 @@ input:checked+.slider:before {
 #about-modal h2 {
     margin-top: 0;
     color: var(--color-primary);
+    text-align: center;
+
 }
 
 /* --- 3.8.1. Modal de Héroe --- */
@@ -1256,6 +1258,8 @@ input:checked+.slider:before {
 /* --- 3.8.4. Modal de Configuración --- */
 .settings-section {
     margin-bottom: 25px;
+    text-align: left;
+
 }
 
 .settings-section > label {
@@ -1273,6 +1277,27 @@ input:checked+.slider:before {
     padding: 10px;
     border-radius: 8px;
     font-size: 1em;
+}
+
+.settings-input.small-input {
+    width: 70px; /* Ancho fijo para los inputs pequeños */
+    text-align: center;
+}
+
+.settings-row-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espacio entre cada fila de recordatorio */
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-row .checkbox-label {
+    flex-grow: 1; /* Hace que el label ocupe el espacio sobrante */
 }
 
 select.settings-input {
