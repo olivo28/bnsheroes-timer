@@ -804,6 +804,8 @@ const UI = {
         });
 
         const myAccountSection = document.getElementById('section-my-account');
+        const logoutButton = document.getElementById('logout-btn-modal');
+        const footer = logoutButton.parentElement;
 
         if (App.state.isLoggedIn && App.state.userInfo) {
             // --- LÓGICA PARA USUARIO LOGUEADO ---
@@ -827,12 +829,26 @@ const UI = {
             this.switchAccountModalSection('my-account');
 
         } else {
-            // --- LÓGICA PARA INVITADO ---
             myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
             myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
-            this.switchAccountModalSection('my-account');
+
+            // Ocultar el botón de Logout estático
+            logoutButton.style.display = 'none';
+
+            // Crear y añadir un botón de Login dinámicamente
+            const loginButtonHTML = `
+                <button id="login-btn-modal" class="logout-button login-button">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    <span data-lang-key="common.login">${Utils.getText('common.login')}</span>
+                </button>
+            `;
+            footer.insertAdjacentHTML('beforeend', loginButtonHTML);
+            document.getElementById('login-btn-modal').addEventListener('click', () => Logic.redirectToDiscordLogin());
         }
 
+        this.switchAccountModalSection('my-account');
         App.dom.accountModalOverlay.classList.add('visible');
     },
 

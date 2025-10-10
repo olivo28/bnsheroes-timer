@@ -1680,6 +1680,13 @@ select.settings-input option {
 }
 .logout-button svg { width: 20px; height: 20px; }
 
+.login-button {
+    color: var(--color-success); /* Color verde de éxito */
+}
+.login-button:hover {
+    background-color: rgba(105, 240, 174, 0.1); /* Fondo verde claro al pasar el ratón */
+}
+
 
 /* Columna Derecha: Contenido Principal */
 .account-content {
