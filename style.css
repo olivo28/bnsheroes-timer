@@ -1304,7 +1304,9 @@ input:checked+.slider:before {
 
 .settings-section {
     margin-bottom: 25px;
-    text-align: left;
+    text-align: center;
+    font-size: 0.9em;
+
 }
 
 .settings-section > label {
@@ -1357,8 +1359,9 @@ select.settings-input option {
 .checkbox-group {
     display: flex;
     gap: 20px;
-    /* justify-content: center; <-- Lo quitamos para que se alinee a la izquierda por defecto */
     flex-wrap: wrap;
+    justify-content: space-around;
+
 }
 
 .checkbox-label {
