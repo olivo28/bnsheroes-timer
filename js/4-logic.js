@@ -5,9 +5,28 @@
 import App from './2-state.js';
 import Utils from './1-utils.js';
 
+/**
+ * Determina dinámicamente la URL del backend basándose en el hostname del navegador.
+ * @returns {string} La URL correcta del backend.
+ */
+function getBackendUrl() {
+  // 1. Obtenemos el hostname desde donde se está ejecutando el frontend.
+  //    Ejemplos: 'localhost', '127.0.0.1', 'pcnetfs.moe'
+  const hostname = window.location.hostname;
+
+  // 2. Comprobamos si estamos en un entorno de desarrollo local.
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Si es local, usamos la URL de desarrollo.
+    return 'http://localhost:3001';
+  } else {
+    // Si no es local, asumimos que estamos en producción.
+    return 'https://pcnetfs.moe/api-bns-heroes-timers';
+  }
+}
+
 const Logic = {
     // Definimos la URL del backend aquí. Cámbiala por tu dominio de producción cuando despliegues.
-    BACKEND_URL: 'http://localhost:3001',
+    BACKEND_URL: getBackendUrl(),
 
     // --- AUTENTICACIÓN Y PREFERENCIAS DE USUARIO ---
 
