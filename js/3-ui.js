@@ -795,65 +795,73 @@ const UI = {
         App.dom.modalOverlay.classList.remove('visible');
     },
 
-    async openAccountModal() {
-                if (App.state.isMobile) {
-            document.body.classList.add('no-scroll');
-        }
-        // Llenar datos de traducción cada vez que se abre
-        App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
-            const key = el.dataset.langKey;
-            const text = Utils.getText(key);
-            if (text !== key) el.innerHTML = text;
-        });
+    // Reemplaza tu función openAccountModal con esta versión corregida
+async openAccountModal() {
+    // Llenar datos de traducción cada vez que se abre
+    App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.dataset.langKey;
+        const text = Utils.getText(key);
+        if (text !== key) el.innerHTML = text;
+    });
 
-        const myAccountSection = document.getElementById('section-my-account');
-        const logoutButton = document.getElementById('logout-btn-modal');
-        const footer = logoutButton.parentElement;
+    const myAccountSection = document.getElementById('section-my-account');
+    const logoutButton = document.getElementById('logout-btn-modal');
+    const footer = logoutButton.parentElement;
 
-        if (App.state.isLoggedIn && App.state.userInfo) {
-            // --- LÓGICA PARA USUARIO LOGUEADO ---
-            const { global_name, avatarUrl } = App.state.userInfo;
-            myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
-            myAccountSection.querySelector('.user-profile-name').textContent = global_name;
+    // --- INICIO DE LA CORRECCIÓN ---
+    // 1. Siempre nos aseguramos de que el botón de logout original sea visible
+    logoutButton.style.display = 'flex';
 
-            // Cargar preferencias de push en la UI
-            const prefs = App.state.config.notificationPrefs || {};
-            document.getElementById('push-daily-reset-toggle').checked = prefs.dailyReset ?? true;
-            document.getElementById('push-showdown-ticket-toggle').checked = prefs.showdownTicket ?? true;
-            document.getElementById('push-weekly-reset-toggle').checked = prefs.weeklyResetReminder?.enabled ?? true;
-            document.getElementById('push-weekly-days-input').value = prefs.weeklyResetReminder?.daysBefore ?? 2;
-            document.getElementById('push-event-dailies-toggle').checked = prefs.eventDailiesReminder?.enabled ?? true;
-            document.getElementById('push-event-hours-input').value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
+    // 2. Buscamos y eliminamos cualquier botón de login que haya quedado de antes
+    const existingLoginButton = document.getElementById('login-btn-modal');
+    if (existingLoginButton) {
+        existingLoginButton.remove();
+    }
+    // --- FIN DE LA CORRECCIÓN ---
 
-            // El botón de Suscribir/Desuscribir ahora está en la lista de suscripciones,
-            // así que ya no necesitamos manejarlo aquí. La lista se renderiza abajo.
+    if (App.state.isLoggedIn && App.state.userInfo) {
+        // --- LÓGICA PARA USUARIO LOGUEADO ---
+        const { global_name, avatarUrl } = App.state.userInfo;
+        myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
+        myAccountSection.querySelector('.user-profile-name').textContent = global_name;
 
-            this.renderActiveSubscriptions(); // Esta función ahora manejará el botón de "Añadir este dispositivo"
-            this.switchAccountModalSection('my-account');
-
-        } else {
-            myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
-            myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
-
-            // Ocultar el botón de Logout estático
-            logoutButton.style.display = 'none';
-
-            // Crear y añadir un botón de Login dinámicamente
-            const loginButtonHTML = `
-                <button id="login-btn-modal" class="logout-button login-button">
-                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                    </svg>
-                    <span data-lang-key="common.login">${Utils.getText('common.login')}</span>
-                </button>
-            `;
-            footer.insertAdjacentHTML('beforeend', loginButtonHTML);
-            document.getElementById('login-btn-modal').addEventListener('click', () => Logic.redirectToDiscordLogin());
-        }
-
+        // Cargar preferencias de push en la UI
+        const prefs = App.state.config.notificationPrefs || {};
+        document.getElementById('push-daily-reset-toggle').checked = prefs.dailyReset ?? true;
+        document.getElementById('push-showdown-ticket-toggle').checked = prefs.showdownTicket ?? true;
+        document.getElementById('push-weekly-reset-toggle').checked = prefs.weeklyResetReminder?.enabled ?? true;
+        document.getElementById('push-weekly-days-input').value = prefs.weeklyResetReminder?.daysBefore ?? 2;
+        document.getElementById('push-event-dailies-toggle').checked = prefs.eventDailiesReminder?.enabled ?? true;
+        document.getElementById('push-event-hours-input').value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
+        
+        this.renderActiveSubscriptions();
         this.switchAccountModalSection('my-account');
-        App.dom.accountModalOverlay.classList.add('visible');
-    },
+
+    } else {
+        // --- LÓGICA PARA INVITADO ---
+        myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
+        myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
+
+        // Ocultar el botón de Logout estático
+        logoutButton.style.display = 'none';
+
+        // Crear y añadir un botón de Login dinámicamente
+        const loginButtonHTML = `
+            <button id="login-btn-modal" class="logout-button login-button">
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+                <span data-lang-key="common.login">${Utils.getText('common.login')}</span>
+            </button>
+        `;
+        // Usamos .innerHTML aquí para reemplazar cualquier contenido residual
+        footer.insertAdjacentHTML('beforeend', loginButtonHTML);
+        document.getElementById('login-btn-modal').addEventListener('click', () => Logic.redirectToDiscordLogin());
+    }
+
+    this.switchAccountModalSection('my-account');
+    App.dom.accountModalOverlay.classList.add('visible');
+},
 
     /**
      * Cambia la sección visible dentro del modal de cuenta.
