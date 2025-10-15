@@ -19,6 +19,9 @@ const App = {
         allHeroesData: [],
         allEventsData: {},
         weeklyResetsData: null,
+        allBossesData: [],
+        allStreamsData: [],
+        allBannersData: {},
 
         // Estado de la UI
         alertsShownToday: {},

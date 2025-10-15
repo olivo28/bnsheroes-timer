@@ -126,7 +126,8 @@ const UI = {
 
             const displayTime = Utils.formatDateToTimezoneString(timer.targetDate, config.displayTimezone, config.use24HourFormat);
             const timeSpan = timer.type !== 'ticket' ? `<span class="timer-target-time">(${displayTime})</span>` : '';
-            const nameItself = `<p class="${nameClass}">${timer.name} ${timeSpan}</p>`;
+            const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
+            const nameItself = `<p class="${nameClass}">${timer.name} ${eventLabel} ${timeSpan}</p>`;
 
             const nameContent = timer.type === 'ticket'
                 ? `<div class="timer-name-container"><p class="${nameClass}">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`
@@ -156,13 +157,10 @@ const UI = {
                 const bellIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>`;
                 const noBellIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.17 3.17l17.66 17.66" /></svg>`;
                 const bossIcon = `<div class="spawn-item-icon"><img src="${timer.imageUrl}" alt="${timer.name}"></div>`;
-                let eventTip = '';
-                if (timer.id === "stalker_jiangshi" && Logic.isEventActive("Field Boss Challenge")) {
-                    eventTip = `<span class="event-tip">${Utils.getText('events.tip')}</span>`;
-                }
+                const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
                 const isAlertEnabled = timer.isNotificationOn;
 
-                return `<div class="spawn-item ${!isAlertEnabled ? 'disabled' : ''}">${bossIcon}<div class="spawn-item-info"><p class="spawn-item-name spawn-item-name-boss">${timer.name}</p><p class="spawn-item-time">${displayTime} (${tzString}) ${eventTip}</p></div><span class="countdown-timer" style="color: ${color};">${time}</span><div class="alert-toggle ${isAlertEnabled ? 'enabled' : 'disabled'}" data-boss-id="${timer.id}" data-time="${timer.time}">${isAlertEnabled ? bellIcon : noBellIcon}</div></div>`;
+                 return `<div class="spawn-item ${!isAlertEnabled ? 'disabled' : ''}">${bossIcon}<div class="spawn-item-info"><p class="spawn-item-name spawn-item-name-boss">${timer.name} ${eventLabel}</p><p class="spawn-item-time">${displayTime} (${tzString})</p></div><span class="countdown-timer" style="color: ${color};">${time}</span><div class="alert-toggle ${isAlertEnabled ? 'enabled' : 'disabled'}" data-boss-id="${timer.id}" data-time="${timer.time}">${isAlertEnabled ? bellIcon : noBellIcon}</div></div>`;
             }
             if (timer.type === 'ticket') {
                 const icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>`;
@@ -225,23 +223,39 @@ const UI = {
 
     renderBannersPanel: function () {
         const config = App.state.config;
-        if (!config.banners) return '';
+        const allBanners = App.state.allBannersData;
+        
+        // --- INICIO DE LA CORRECCIÓN ---
+
+        // Verificamos que los datos necesarios existan.
+        if (!allBanners || !config.banners) {
+            App.dom.bannersContainer.innerHTML = '';
+            return;
+        }
+
+        const bannerConfig = config.banners; // { activeBanner: "ID", nextBanner: "ID" }
         const now = new Date();
 
-        const activeBanner = config.banners.find(b => {
-            if (!b.startDate || !b.endDate) return false;
-            const start = Logic.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime);
-            const end = Logic.getAbsoluteDateWithCustomDate(b.endDate, config.dailyResetTime);
-            return now >= start && now <= end;
-        });
+        // 1. Obtenemos el objeto del banner activo a partir de su ID.
+        //    Añadimos el ID al objeto para consistencia.
+        const activeBannerId = bannerConfig.activeBanner;
+        const activeBanner = activeBannerId && allBanners[activeBannerId] 
+            ? { id: activeBannerId, ...allBanners[activeBannerId] }
+            : null;
 
-        const futureBanners = config.banners.filter(b => b.startDate && Logic.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime) > now).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-        const nextBanner = futureBanners[0];
+        // 2. Obtenemos el objeto del siguiente banner a partir de su ID.
+        const nextBannerId = bannerConfig.nextBanner;
+        const nextBanner = nextBannerId && allBanners[nextBannerId]
+            ? { id: nextBannerId, ...allBanners[nextBannerId] }
+            : null;
+
+        // --- FIN DE LA CORRECCIÓN ---
 
         const createBannerHTML = (banner, type) => {
             const title = Utils.getText(type === 'active' ? 'banners.activeTitle' : 'banners.nextTitle');
             let countdownHTML = '';
 
+            // La lógica del countdown sigue funcionando con las fechas de cada objeto de banner.
             if (banner && ((type === 'active' && banner.endDate) || (type === 'next' && banner.startDate))) {
                 const targetDate = Logic.getAbsoluteDateWithCustomDate(type === 'active' ? banner.endDate : banner.startDate, config.dailyResetTime);
                 const secondsLeft = Math.floor((targetDate - now) / 1000);
@@ -254,6 +268,7 @@ const UI = {
 
             let content;
             if (!banner || !banner.heroes) {
+                // Si el banner es null o no tiene héroes, muestra "No Anunciado".
                 content = `<div class="banner-box"><div class="empty-banner">${Utils.getText('common.notAnnounced')}</div></div>`;
             } else {
                 const heroNames = banner.heroes.split(',').map(name => name.trim());
@@ -291,15 +306,21 @@ const UI = {
      * Renderiza el widget flotante del próximo stream.
      */
     updateStreamsFeature: function () {
-        const config = App.state.config;
-        if (!config.streams || config.streams.length === 0) {
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Cambiamos la fuente de los datos
+        const streams = App.state.allStreamsData;
+        if (!streams || streams.length === 0) {
+        // --- FIN DE LA CORRECCIÓN ---
             App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
             return;
         }
 
         const now = Logic.getCorrectedNow();
 
-        const upcomingStreams = config.streams
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Usamos la nueva variable 'streams'
+        const upcomingStreams = streams
+        // --- FIN DE LA CORRECCIÓN ---
             .map(stream => ({ ...stream, date: new Date(stream.streamTimeUTC) }))
             .filter(stream => {
                 const durationMs = (stream.durationHours || 2) * 3600 * 1000;
@@ -413,7 +434,15 @@ const UI = {
             const name = itemDef.name[lang] || itemDef.name.en || itemId;
             const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
             const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
-            let probabilityHTML = (probability !== null && !isNaN(probability)) ? `<span class="reward-probability">${probability.toFixed(1)}%</span>` : '';
+            
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Comprobamos si 'probability' es un número antes de intentar mostrarlo.
+            let probabilityHTML = '';
+            if (typeof probability === 'number' && !isNaN(probability)) {
+                probabilityHTML = `<span class="reward-probability">${probability.toFixed(1)}%</span>`;
+            }
+            // --- FIN DE LA CORRECCIÓN ---
+
             return `<div class="reward-item-wrapper" title="${name} x${quantity}">
                         ${probabilityHTML}
                         <div class="reward-grid-item ${sizeClass}${rankClass}">
@@ -432,13 +461,22 @@ const UI = {
                 const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
                 const rarityClass = getRarityClass(r.rank);
                 let probClass = 'prob-common';
-                if (r.probability !== null) {
+                
+                // --- INICIO DE LA CORRECCIÓN ---
+                let probText = '';
+                // Comprobamos si 'r.probability' es un número válido.
+                if (typeof r.probability === 'number' && !isNaN(r.probability)) {
+                    // Si lo es, calculamos la clase de color y el texto.
                     if (r.probability <= 1) probClass = 'prob-legendary';
                     else if (r.probability <= 5) probClass = 'prob-epic';
                     else if (r.probability <= 20) probClass = 'prob-rare';
                     else if (r.probability <= 50) probClass = 'prob-uncommon';
+
+                    probText = `${r.probability.toFixed(1)}%`;
                 }
-                const probText = r.probability !== null ? `${r.probability.toFixed(1)}%` : '';
+                // Si no es un número válido, probText se quedará como una cadena vacía.
+                // --- FIN DE LA CORRECCIÓN ---
+                
                 listHTML += `<li class="details-reward-list-item">
                                 <span class="reward-name-part ${rarityClass}">${name}</span>
                                 <span class="reward-quantity-part">x${r.quantity}</span>

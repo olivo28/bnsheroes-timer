@@ -554,29 +554,40 @@ const Logic = {
     },
 
     getBossTimers(now) {
-        const config = App.state.config;
-        if (!config.bosses) return [];
-        const lang = config.language || 'en';
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Ya no usamos config.bosses, usamos los datos cargados en el estado.
+        const bosses = App.state.allBossesData;
+        if (!bosses) return [];
+        // --- FIN DE LA CORRECCIÓN ---
+        
+        const lang = App.state.config.language || 'en';
 
-        return config.bosses.flatMap(boss =>
-            (boss.spawnTimes || []).map(time => {
-                const targetDate = this.getAbsoluteDateFromReferenceTimezone(time);
-                const isNotificationOn = config.notificationPrefs?.bosses?.[`${boss.id}_${time}`] ?? true;
-                return {
-                    type: 'boss',
-                    id: boss.id,
-                    name: boss.name[lang] || boss.name.en,
-                    imageUrl: boss.imageUrl,
-                    location: boss.location,
-                    time,
-                    targetDate,
-                    isAlertEnabled: config.showBossTimers, // La alerta local depende de si el timer es visible
-                    isNotificationOn: isNotificationOn,
-                    secondsLeft: Math.floor((targetDate - now) / 1000)
-                };
-            })
-        ).filter(t => t.secondsLeft > -300).sort((a, b) => (b.isNotificationOn - a.isNotificationOn) || (a.secondsLeft - b.secondsLeft));
-
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Usamos la nueva variable 'bosses' y añadimos el filtro por 'isActive'
+        return bosses
+            .filter(boss => boss.isActive) // <-- LÓGICA 'isActive'
+            .flatMap(boss =>
+                (boss.spawnTimes || []).map(time => {
+                    const targetDate = this.getAbsoluteDateFromReferenceTimezone(time);
+                    const isNotificationOn = App.state.config.notificationPrefs?.bosses?.[`${boss.id}_${time}`] ?? true;
+                    return {
+                        type: 'boss',
+                        id: boss.id,
+                        name: boss.name[lang] || boss.name.en,
+                        imageUrl: boss.imageUrl,
+                        location: boss.location,
+                        isEvent: boss.isEvent, // <-- Pasamos el flag 'isEvent'
+                        time,
+                        targetDate,
+                        isAlertEnabled: App.state.config.showBossTimers,
+                        isNotificationOn: isNotificationOn,
+                        secondsLeft: Math.floor((targetDate - now) / 1000)
+                    };
+                })
+            )
+            .filter(t => t.secondsLeft > -300)
+            .sort((a, b) => (b.isNotificationOn - a.isNotificationOn) || (a.secondsLeft - b.secondsLeft));
+        // --- FIN DE LA CORRECCIÓN ---
     },
 
     getWeeklyResetTimers(now) {

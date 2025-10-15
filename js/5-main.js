@@ -66,13 +66,16 @@ import UI from './3-ui.js';
             const loadStartTime = Date.now();
 
             // Cargamos TODOS los datos necesarios en paralelo
-            const [publicConfig, gameConfig, i18nData, heroesData, eventsData, weeklyData] = await Promise.all([
+            const [publicConfig, gameConfig, i18nData, heroesData, eventsData, weeklyData, bossesData, streamsData, bannersData] = await Promise.all([
                 fetch(`${Logic.BACKEND_URL}/api/public-config`).then(res => res.json()),
                 fetch(`${Logic.BACKEND_URL}/api/data/game-config`).then(res => res.json()),
                 fetch(`${Logic.BACKEND_URL}/api/data/i18n/${locale}`).then(res => res.json()),
                 fetch(`${Logic.BACKEND_URL}/api/data/heroes`).then(res => res.json()),
                 fetch(`${Logic.BACKEND_URL}/api/data/events`).then(res => res.json()),
-                fetch(`${Logic.BACKEND_URL}/api/data/weekly`).then(res => res.json())
+                fetch(`${Logic.BACKEND_URL}/api/data/weekly`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/bosses`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/streams`).then(res => res.json()),
+                fetch(`${Logic.BACKEND_URL}/api/data/banners`).then(res => res.json())
             ]);
 
             // Guardamos los datos en el estado global
@@ -80,6 +83,9 @@ import UI from './3-ui.js';
             App.state.allHeroesData = heroesData;
             App.state.allEventsData = eventsData.gameData;
             App.state.weeklyResetsData = weeklyData.gameData;
+            App.state.allBossesData = bossesData.bosses;
+            App.state.allStreamsData = streamsData.streams;
+            App.state.allBannersData = bannersData.banners;
 
             // --- Lógica para mensajes de carga aleatorios (ahora que tenemos i18nData) ---
             const getRandomLoadingMessage = () => {

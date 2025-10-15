@@ -748,6 +748,12 @@ input:checked+.slider:before {
     vertical-align: middle;
 }
 
+.event-tip.small-tip {
+    font-size: 0.6em;
+    padding: 1px 5px;
+    vertical-align: text-top; /* Alinea mejor con el texto */
+}
+
 
 /* --- 3.7. Botones e Iconos Interactivos --- */
 .info-button,
