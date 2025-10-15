@@ -411,6 +411,7 @@ const UI = {
         App.dom.streamsModalContent.innerHTML = contentHTML;
     },
 
+    // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
     openEventDetailsPanel: function (eventId) {
         this.closeWeeklyDetailsPanel();
         const lang = App.state.config.language;
@@ -421,41 +422,37 @@ const UI = {
             return;
         }
 
+        // --- CÁLCULO DE FECHA Y HORA ---
         const eventConfig = App.state.config.events.find(e => e.id === eventId);
         let periodString = '';
         if (eventConfig) {
             const { DateTime } = luxon;
             const { startDate, endDate } = eventConfig;
-            // --- INICIO DE LA CORRECCIÓN ---
-            const lang = App.state.config.language;
+
             const resetTime = App.state.config.dailyResetTime;
-            const displayTz = App.state.config.displayTimezone; // <-- La zona horaria del usuario
+            const displayTz = App.state.config.displayTimezone;
             const use24h = App.state.config.use24HourFormat;
 
-            // Formateamos las fechas de inicio y fin (esto estaba bien)
             const startDt = DateTime.fromISO(startDate).setLocale(lang);
             const endDt = DateTime.fromISO(endDate).setLocale(lang);
             const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
 
-            // Creamos un objeto de fecha con la hora del reset, pero en la zona horaria del JUEGO.
             const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
-            
-            // Ahora, convertimos esa hora a la zona horaria del USUARIO.
+
             const sign = displayTz.startsWith('-') ? '+' : '-';
             const hours = parseInt(displayTz.substring(1, 3));
             const userLuxonTz = `Etc/GMT${sign}${hours}`;
             const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
 
-            // Formateamos la hora convertida según la preferencia 12h/24h del usuario.
             const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
             const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
-            
-            // Creamos la etiqueta de la zona horaria del usuario.
+
             const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
 
             periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
         }
 
+        // --- FUNCIONES AUXILIARES DE RENDERIZADO ---
         const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
 
         const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
@@ -464,22 +461,19 @@ const UI = {
             const name = itemDef.name[lang] || itemDef.name.en || itemId;
             const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
             const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
-            
-            // --- INICIO DE LA CORRECCIÓN ---
-            // Comprobamos si 'probability' es un número antes de intentar mostrarlo.
+
             let probabilityHTML = '';
             if (typeof probability === 'number' && !isNaN(probability)) {
                 probabilityHTML = `<span class="reward-probability">${probability.toFixed(1)}%</span>`;
             }
-            // --- FIN DE LA CORRECCIÓN ---
 
             return `<div class="reward-item-wrapper" title="${name} x${quantity}">
-                        ${probabilityHTML}
-                        <div class="reward-grid-item ${sizeClass}${rankClass}">
-                            <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
-                            <span class="reward-quantity">${quantity}</span>
-                        </div>
-                    </div>`;
+                    ${probabilityHTML}
+                    <div class="reward-grid-item ${sizeClass}${rankClass}">
+                        <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                        <span class="reward-quantity">${quantity}</span>
+                    </div>
+                </div>`;
         };
 
         const generateRewardTextList = (rewards) => {
@@ -491,59 +485,101 @@ const UI = {
                 const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
                 const rarityClass = getRarityClass(r.rank);
                 let probClass = 'prob-common';
-                
-                // --- INICIO DE LA CORRECCIÓN ---
                 let probText = '';
-                // Comprobamos si 'r.probability' es un número válido.
+
                 if (typeof r.probability === 'number' && !isNaN(r.probability)) {
-                    // Si lo es, calculamos la clase de color y el texto.
                     if (r.probability <= 1) probClass = 'prob-legendary';
                     else if (r.probability <= 5) probClass = 'prob-epic';
                     else if (r.probability <= 20) probClass = 'prob-rare';
                     else if (r.probability <= 50) probClass = 'prob-uncommon';
-
                     probText = `${r.probability.toFixed(1)}%`;
                 }
-                // Si no es un número válido, probText se quedará como una cadena vacía.
-                // --- FIN DE LA CORRECCIÓN ---
-                
+
                 listHTML += `<li class="details-reward-list-item">
-                                <span class="reward-name-part ${rarityClass}">${name}</span>
-                                <span class="reward-quantity-part">x${r.quantity}</span>
-                                <span class="reward-prob-part ${probClass}">${probText}</span>
-                             </li>`;
+                            <span class="reward-name-part ${rarityClass}">${name}</span>
+                            <span class="reward-quantity-part">x${r.quantity}</span>
+                            <span class="reward-prob-part ${probClass}">${probText}</span>
+                         </li>`;
             });
             return listHTML + '</ul>';
         };
 
+        // --- CONSTRUCCIÓN DEL HTML ---
         let contentHTML = `
-            <div class="details-header">
-                <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
-                <h2>${eventData.name[lang]}</h2>
-                <p>${periodString}</p>
-            </div>
-            <div class="details-content">
-                <p class="details-summary">${eventData.summary[lang]}</p>
-        `;
+        <div class="details-header">
+            <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
+            <h2>${eventData.name[lang]}</h2>
+            <p>${periodString}</p>
+        </div>
+        <div class="details-content">
+            <p class="details-summary">${eventData.summary[lang]}</p>
+    `;
+
+        if (eventData.details) {
+            contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`;
+        }
 
         if (eventData.daily_claim_limit) {
             contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`;
         }
 
+        // --- LÓGICA DE SECCIONES ---
+
+        // SECCIÓN: Misiones
         if (eventData.missions) {
             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
             eventData.missions.forEach(m => {
                 let rightColumnHTML = '';
-                if (m.points) {
+                if (m.rewards) {
+                    rightColumnHTML = m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('');
+                } else if (m.points) {
                     rightColumnHTML = `+${m.points} ${Utils.getText('common.pointsSuffix')}`;
                 } else if (m.goal) {
                     rightColumnHTML = `${Utils.getText('common.goalPrefix')} x${m.goal}`;
                 }
-                contentHTML += `<tr><td>${m.description[lang]}</td><td style="color: var(--color-warning); font-weight: bold;">${rightColumnHTML}</td></tr>`;
+                contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
             });
             contentHTML += `</tbody></table></div>`;
         }
 
+        // SECCIÓN: Tienda de Intercambio
+        if (eventData.rewards?.exchange_shop) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
+            const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
+            const currencyItemDef = currencyItemId ? App.state.allEventsData.itemDefinitions[currencyItemId] : null;
+
+            eventData.rewards.exchange_shop.forEach(item => {
+                const itemToBuyDef = App.state.allEventsData.itemDefinitions[item.itemId];
+                if (!itemToBuyDef) return;
+                const itemName = itemToBuyDef.name[lang] || itemToBuyDef.name.en;
+                const itemIconHtml = getItemGridDisplay(item.itemId, item.quantity, item.rank);
+                let costHtml = `<span class="cost-value">${item.cost}</span>`;
+                if (currencyItemDef) {
+                    costHtml += `<img src="assets/items/${currencyItemDef.icon}.png" class="currency-icon" alt="${currencyItemDef.name[lang]}">`;
+                }
+
+                let limitText = '';
+                if (item.limit && item.limit.key) {
+                    const translationKey = `events.limits.${item.limit.key}`;
+                    const translatedLimit = Utils.getText(translationKey, { value: item.limit.value });
+                    limitText = `<span class="item-limit">${translatedLimit}</span>`;
+                }
+
+                contentHTML += `<tr>
+                              <td class="item-to-buy">
+                                ${itemIconHtml}
+                                <div class="item-info">
+                                    <span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>
+                                    ${limitText}
+                                </div>
+                              </td>
+                              <td class="item-cost">${costHtml}</td>
+                            </tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
+        }
+
+        // SECCIÓN: Misiones y Recompensas (Grid)
         if (eventData.missions_and_rewards) {
             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
             eventData.missions_and_rewards.forEach(m => {
@@ -553,15 +589,16 @@ const UI = {
             contentHTML += `</div></div>`;
         }
 
+        // SECCIÓN: Ranking de Jefe
         if (eventData.boss_details?.ranking_rewards) {
             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
             const participation = eventData.boss_details.ranking_rewards.base_on_participation;
             if (participation) {
                 const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
                 contentHTML += `<div class="participation-reward">
-                                    <div class="reward-grid">${rewardsGrid}</div>
-                                    <div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div>
-                                </div>`;
+                                <div class="reward-grid">${rewardsGrid}</div>
+                                <div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div>
+                            </div>`;
             }
             const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
             if (ranking) {
@@ -569,15 +606,16 @@ const UI = {
                 ranking.forEach(r => {
                     const iconGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
                     contentHTML += `<div class="details-reward-column">
-                                      <span class="details-reward-label">${r.tier_name[lang]}</span>
-                                      <div class="reward-grid">${iconGrid}</div>
-                                    </div>`;
+                                  <span class="details-reward-label">${r.tier_name[lang]}</span>
+                                  <div class="reward-grid">${iconGrid}</div>
+                                </div>`;
                 });
                 contentHTML += `</div>`;
             }
             contentHTML += `</div>`;
         }
 
+        // SECCIÓN: Rueda del Destino
         if (eventData.rewards?.wheel_of_fate) {
             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
             const rewards = eventData.rewards.wheel_of_fate;
@@ -587,19 +625,21 @@ const UI = {
             contentHTML += `</div>`;
         }
 
+        // SECCIÓN: Recompensas Acumulativas
         if (eventData.rewards?.cumulative_spins) {
             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3>`;
             contentHTML += `<div class="details-reward-grid-container">`;
             eventData.rewards.cumulative_spins.forEach(r => {
                 const iconGrid = getItemGridDisplay(r.itemId, r.quantity, r.rank);
                 contentHTML += `<div class="details-reward-column">
-                                  <span class="details-reward-label">${r.condition[lang]}</span>
-                                  ${iconGrid}
-                                </div>`;
+                              <span class="details-reward-label">${r.condition[lang]}</span>
+                              ${iconGrid}
+                            </div>`;
             });
             contentHTML += `</div></div>`;
         }
 
+        // SECCIÓN: Pool de Recompensas
         if (eventData.rewards?.reward_pool) {
             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
             const rewards = eventData.rewards.reward_pool;
@@ -609,6 +649,7 @@ const UI = {
             contentHTML += `</div>`;
         }
 
+        // --- Cierre y Renderizado Final ---
         contentHTML += `</div>`;
         App.dom.eventDetailsPanel.innerHTML = contentHTML;
         App.dom.eventDetailsPanel.classList.add('visible');

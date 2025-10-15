@@ -2345,6 +2345,40 @@ select.settings-input option {
     color: var(--color-warning);
     font-weight: bold;
 }
+.exchange-shop-table .item-to-buy {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.exchange-shop-table .item-to-buy .reward-item-wrapper {
+    margin-top: 0;
+    flex-shrink: 0;
+}
+.exchange-shop-table .item-info {
+    display: flex;
+    flex-direction: column;
+}
+.exchange-shop-table .item-name {
+    font-weight: bold;
+}
+.exchange-shop-table .item-limit {
+    font-size: 0.8em;
+    color: var(--text-muted-color);
+    margin-top: 4px;
+}
+.exchange-shop-table .item-cost {
+    text-align: right;
+    font-weight: bold;
+    color: var(--color-warning);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.exchange-shop-table .currency-icon {
+    width: 24px;
+    height: 24px;
+}
 
 .details-table tr:last-child td {
     border-bottom: none;

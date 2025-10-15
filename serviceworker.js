@@ -2,35 +2,37 @@
 
 'use strict';
 
-const CACHE_NAME_STATIC = 'bns-timer-static-v1';
-const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v1';
+const CACHE_NAME_STATIC = 'bns-timer-static-v3'; // Incrementa la versión de nuevo
+const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3';
 const API_URL_PREFIX = 'https://pcnetfs.moe/api-bns-heroes-timers/api/';
 
-// Lista de archivos estáticos a cachear durante la instalación.
+// --- INICIO DE LA CORRECCIÓN UNIVERSAL ---
+// 'self.location.hostname' nos dice el dominio donde corre el SW.
+const isLocalhost = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+
+// Si es localhost, la ruta base es la raíz. Si no, es la de GitHub Pages.
+const BASE_PATH = isLocalhost ? '' : '/bnsheroes-timer';
+// --- FIN DE LA CORRECCIÓN UNIVERSAL ---
+
 const STATIC_FILES_TO_CACHE = [
-    // La ruta base de GitHub Pages es importante.
-    // Si tu repo es olivo28.github.io/bnsheroes-timer, la raíz es '/bnsheroes-timer/'
-    '/bnsheroes-timer/',
-    '/bnsheroes-timer/index.html',
-    '/bnsheroes-timer/style.css',
-    '/bnsheroes-timer/manifest.json',
-    '/bnsheroes-timer/favicon.png',
-    '/bnsheroes-timer/js/1-utils.js',
-    '/bnsheroes-timer/js/2-state.js',
-    '/bnsheroes-timer/js/3-ui.js',
-    '/bnsheroes-timer/js/4-logic.js',
-    '/bnsheroes-timer/js/5-main.js'
+    `${BASE_PATH}/`,
+    `${BASE_PATH}/index.html`,
+    `${BASE_PATH}/style.css`,
+    `${BASE_PATH}/manifest.json`,
+    `${BASE_PATH}/favicon.png`,
+    `${BASE_PATH}/js/1-utils.js`,
+    `${BASE_PATH}/js/2-state.js`,
+    `${BASE_PATH}/js/3-ui.js`,
+    `${BASE_PATH}/js/4-logic.js`,
+    `${BASE_PATH}/js/5-main.js`
 ];
 
 // --- FASE DE INSTALACIÓN ---
-// Se ejecuta cuando el Service Worker se instala por primera vez.
 self.addEventListener('install', event => {
-    console.log('SW: Instalando...');
+    console.log(`SW: Instalando en ${isLocalhost ? 'localhost' : 'producción'}...`);
     event.waitUntil(
         caches.open(CACHE_NAME_STATIC).then(cache => {
             console.log('SW: Precargando caché estática.');
-            // Usamos addAll para cachear todos los archivos estáticos.
-            // Si alguno falla, la instalación entera falla.
             return cache.addAll(STATIC_FILES_TO_CACHE);
         })
     );
@@ -38,11 +40,9 @@ self.addEventListener('install', event => {
 });
 
 // --- FASE DE ACTIVACIÓN ---
-// Se ejecuta después de la instalación y cuando una nueva versión del SW reemplaza a una antigua.
 self.addEventListener('activate', event => {
     console.log('SW: Activado y listo.');
     event.waitUntil(
-        // Limpiamos las cachés antiguas para evitar conflictos.
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
@@ -52,51 +52,52 @@ self.addEventListener('activate', event => {
                     }
                 })
             );
-        }).then(() => self.clients.claim()) // Toma control inmediato de todas las pestañas abiertas.
+        }).then(() => self.clients.claim())
     );
 });
 
 // --- FASE DE FETCH ---
-// Intercepta todas las peticiones de red de la página.
 self.addEventListener('fetch', event => {
     const { request } = event;
-    const url = new URL(request.url);
 
-    // --- Estrategia para la API (Stale-While-Revalidate) ---
+    // 1. Estrategia para la API: Network First, with Cache Fallback
     if (request.url.startsWith(API_URL_PREFIX)) {
-        // ... (esta parte se queda igual) ...
-        return; 
-    }
-
-    // --- INICIO DE LA CORRECCIÓN ---
-    // --- Estrategia para Assets e Imágenes (Cache First) ---
-    // Si la petición es para un archivo de imagen, fuente, o de las carpetas de assets/style
-    if (
-        url.pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|ico)$/) ||
-        url.pathname.includes('/assets/') ||
-        url.pathname.includes('/style/')
-    ) {
         event.respondWith(
-            caches.open(CACHE_NAME_DYNAMIC).then(cache => {
-                return cache.match(request).then(response => {
-                    // Si lo encontramos en caché, lo devolvemos.
-                    // Si no, lo pedimos a la red, lo guardamos en la caché dinámica y lo devolveemos.
-                    return response || fetch(request).then(fetchResponse => {
-                        cache.put(request, fetchResponse.clone());
-                        return fetchResponse;
+            fetch(request, { mode: 'cors' })
+                .then(networkResponse => {
+                    const cacheCopy = networkResponse.clone();
+                    caches.open(CACHE_NAME_DYNAMIC).then(cache => {
+                        cache.put(request, cacheCopy);
                     });
-                });
-            })
+                    return networkResponse;
+                })
+                .catch(() => caches.match(request))
         );
         return;
     }
-    // --- FIN DE LA CORRECCIÓN ---
-    
-    // --- Estrategia para los archivos estáticos principales (Cache First) ---
-    // (Esta parte se queda igual)
+
+    // 2. Estrategia para todo lo demás (Archivos de la App y Assets): Cache First
     event.respondWith(
         caches.match(request).then(cachedResponse => {
-            return cachedResponse || fetch(request);
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+            return fetch(request).then(networkResponse => {
+                // Solo cacheamos respuestas válidas y del mismo origen
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                     // Para github pages, el tipo es 'cors' para recursos de otro subdominio
+                    if (networkResponse.type === 'cors' && !isLocalhost) {
+                        // Es una petición válida en producción, la cacheamos
+                    } else {
+                        return networkResponse;
+                    }
+                }
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME_DYNAMIC).then(cache => {
+                    cache.put(request, responseToCache);
+                });
+                return networkResponse;
+            });
         })
     );
 });
@@ -107,21 +108,16 @@ self.addEventListener('push', event => {
     
     let data = { title: 'Notificación', body: 'Tienes una nueva alerta.' };
     try {
-        if (event.data) {
-            data = event.data.json();
-        }
+        if (event.data) { data = event.data.json(); }
     } catch (e) {
-        console.error('SW: No se pudo procesar el payload push como JSON.');
-        if (event.data) {
-           data.body = event.data.text();
-        }
+        if (event.data) { data.body = event.data.text(); }
     }
 
     const title = data.title || 'Alerta de BnS Heroes';
     const options = {
         body: data.body || '¡Algo importante está a punto de suceder!',
-        icon: '/bnsheroes-timer/favicon.png', // Usa la ruta completa para el icono
-        badge: '/bnsheroes-timer/favicon.png'
+        icon: `${BASE_PATH}/favicon.png`,
+        badge: `${BASE_PATH}/favicon.png`
     };
 
     event.waitUntil(
