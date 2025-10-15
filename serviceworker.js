@@ -57,40 +57,51 @@ self.addEventListener('activate', event => {
 // --- FASE DE FETCH ---
 self.addEventListener('fetch', event => {
     const { request } = event;
+    const url = new URL(request.url);
 
-    // 1. Estrategia para la API: Network First, Cache Fallback
-    // Siempre intenta ir a la red para obtener los datos más frescos.
-    // Si la red falla, sirve la última versión guardada en caché.
+    // Estrategia 1: API (Network First, Cache Fallback)
     if (request.url.startsWith(API_URL_PREFIX)) {
         event.respondWith(
-            fetch(request, { mode: 'cors' }).then(networkResponse => {
-                // Si la red funciona, actualizamos la caché dinámica.
-                const cacheCopy = networkResponse.clone();
-                caches.open(CACHE_NAME_DYNAMIC).then(cache => {
-                    cache.put(request, cacheCopy);
-                });
-                return networkResponse;
-            }).catch(() => {
-                // Si la red falla, intentamos servir desde cualquier caché.
-                console.warn(`SW: Red fallida para ${request.url}. Intentando servir desde caché.`);
-                return caches.match(request);
-            })
+            fetch(request, { mode: 'cors' })
+                .then(networkResponse => {
+                    const cacheCopy = networkResponse.clone();
+                    caches.open(CACHE_NAME_DYNAMIC).then(cache => {
+                        cache.put(request, cacheCopy);
+                    });
+                    return networkResponse;
+                }).catch(() => caches.match(request))
         );
-        return; // Detenemos aquí para las peticiones de API.
+        return;
     }
 
-    // 2. Estrategia para TODO LO DEMÁS (HTML, CSS, JS, Imágenes, Fuentes, etc.): Cache First
-    // Para cualquier otra petición, primero buscamos en la caché.
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Estrategia 2: Documento HTML principal (Network First, Cache Fallback)
+    // Esto asegura que siempre obtengas el HTML más reciente.
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request)
+                .then(networkResponse => {
+                    // Si la red funciona, actualizamos la caché estática con el nuevo index.html
+                    const cacheCopy = networkResponse.clone();
+                    caches.open(CACHE_NAME_STATIC).then(cache => {
+                        cache.put(request, cacheCopy);
+                    });
+                    return networkResponse;
+                })
+                .catch(() => {
+                    // Si la red falla, servimos el index.html desde la caché (para modo offline).
+                    return caches.match(`${BASE_PATH}/index.html`);
+                })
+        );
+        return;
+    }
+    // --- FIN DE LA CORRECCIÓN ---
+
+    // Estrategia 3: Assets y otros archivos (Cache First)
+    // Para CSS, JS, imágenes, etc., la caché es la prioridad.
     event.respondWith(
         caches.match(request).then(cachedResponse => {
-            // Si lo encontramos en caché (estática o dinámica), lo devolvemos inmediatamente.
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-
-            // Si no está en caché, lo pedimos a la red...
-            return fetch(request).then(networkResponse => {
-                // ...y lo guardamos en la caché dinámica para la próxima vez.
+            return cachedResponse || fetch(request).then(networkResponse => {
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME_DYNAMIC).then(cache => {
                     cache.put(request, responseToCache);
