@@ -1,9 +1,7 @@
-// serviceworker.js
-
 'use strict';
 
-const CACHE_NAME_STATIC = 'bns-timer-static-v3'; // Incrementa la versión de nuevo
-const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3';
+const CACHE_NAME_STATIC = 'bns-timer-static-v3.2';
+const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3.2';
 const API_URL_PREFIX = 'https://pcnetfs.moe/api-bns-heroes-timers/api/';
 
 // --- INICIO DE LA CORRECCIÓN UNIVERSAL ---
@@ -60,38 +58,39 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     const { request } = event;
 
-    // 1. Estrategia para la API: Network First, with Cache Fallback
+    // 1. Estrategia para la API: Network First, Cache Fallback
+    // Siempre intenta ir a la red para obtener los datos más frescos.
+    // Si la red falla, sirve la última versión guardada en caché.
     if (request.url.startsWith(API_URL_PREFIX)) {
         event.respondWith(
-            fetch(request, { mode: 'cors' })
-                .then(networkResponse => {
-                    const cacheCopy = networkResponse.clone();
-                    caches.open(CACHE_NAME_DYNAMIC).then(cache => {
-                        cache.put(request, cacheCopy);
-                    });
-                    return networkResponse;
-                })
-                .catch(() => caches.match(request))
+            fetch(request, { mode: 'cors' }).then(networkResponse => {
+                // Si la red funciona, actualizamos la caché dinámica.
+                const cacheCopy = networkResponse.clone();
+                caches.open(CACHE_NAME_DYNAMIC).then(cache => {
+                    cache.put(request, cacheCopy);
+                });
+                return networkResponse;
+            }).catch(() => {
+                // Si la red falla, intentamos servir desde cualquier caché.
+                console.warn(`SW: Red fallida para ${request.url}. Intentando servir desde caché.`);
+                return caches.match(request);
+            })
         );
-        return;
+        return; // Detenemos aquí para las peticiones de API.
     }
 
-    // 2. Estrategia para todo lo demás (Archivos de la App y Assets): Cache First
+    // 2. Estrategia para TODO LO DEMÁS (HTML, CSS, JS, Imágenes, Fuentes, etc.): Cache First
+    // Para cualquier otra petición, primero buscamos en la caché.
     event.respondWith(
         caches.match(request).then(cachedResponse => {
+            // Si lo encontramos en caché (estática o dinámica), lo devolvemos inmediatamente.
             if (cachedResponse) {
                 return cachedResponse;
             }
+
+            // Si no está en caché, lo pedimos a la red...
             return fetch(request).then(networkResponse => {
-                // Solo cacheamos respuestas válidas y del mismo origen
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                     // Para github pages, el tipo es 'cors' para recursos de otro subdominio
-                    if (networkResponse.type === 'cors' && !isLocalhost) {
-                        // Es una petición válida en producción, la cacheamos
-                    } else {
-                        return networkResponse;
-                    }
-                }
+                // ...y lo guardamos en la caché dinámica para la próxima vez.
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME_DYNAMIC).then(cache => {
                     cache.put(request, responseToCache);
