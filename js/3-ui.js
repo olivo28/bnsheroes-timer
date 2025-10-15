@@ -384,6 +384,8 @@ const UI = {
             return;
         }
 
+        // --- INICIO DE LA CORRECCIÓN ---
+        const lang = App.state.config.language;
         const contentHTML = streams.map(stream => {
             const secondsLeft = Math.floor((stream.date.getTime() - now.getTime()) / 1000);
             let countdownHTML;
@@ -391,21 +393,32 @@ const UI = {
             if (secondsLeft <= 0) {
                 countdownHTML = `<p class="stream-is-live">${Utils.getText('streams.isLive')}</p>`;
             } else {
-                countdownHTML = `<p class="stream-countdown">${Utils.formatTime(secondsLeft)}</p>`;
+                // El texto del countdown ya estaba en tus traducciones
+                const timeString = Utils.formatTimeWithDays(secondsLeft, true);
+                countdownHTML = `<p class="stream-countdown">${Utils.getText('streams.startsIn', { d: timeString })}</p>`;
             }
 
+            // Obtenemos el título en el idioma correcto
+            const streamTitle = stream.title[lang] || stream.title.en;
+            // Construimos la ruta completa de la imagen
+            const imageUrl = `style/${stream.imageUrl}`;
+
             return `
-                <div class="modal-stream-item">
-                    <a href="https://twitch.tv/${stream.twitchChannel}" 
-                       target="_blank" rel="noopener noreferrer" 
-                       class="stream-image-link">
-                       <img src="${stream.imageUrl}" alt="${stream.name}" class="stream-thumbnail">
-                    </a>
-                    <p class="streamer-name">${stream.name}</p>
-                    ${countdownHTML}
+            <div class="modal-stream-item">
+                <a href="https://twitch.tv/${stream.twitchChannel}" 
+                   target="_blank" rel="noopener noreferrer" 
+                   class="stream-image-link">
+                   <img src="${imageUrl}" alt="${streamTitle}" class="stream-thumbnail">
+                </a>
+                <div class="stream-info">
+                    <p class="stream-title">${streamTitle}</p>
+                    <p class="streamer-name">by ${stream.name}</p>
                 </div>
-            `;
+                ${countdownHTML}
+            </div>
+        `;
         }).join('');
+        // --- FIN DE LA CORRECCIÓN ---
 
         App.dom.streamsModalContent.innerHTML = contentHTML;
     },
