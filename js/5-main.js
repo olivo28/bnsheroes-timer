@@ -38,7 +38,7 @@ import UI from './3-ui.js';
         swiperContainer.appendChild(pagination);
         mainWrapper.innerHTML = '';
         mainWrapper.appendChild(swiperContainer);
-        
+
         App.state.swiper = new Swiper('.mobile-swiper-container', {
             autoHeight: true,
             loop: false,
@@ -53,139 +53,139 @@ import UI from './3-ui.js';
      */
     // js/5-main.js
 
-async function startApp(locale) {
-    // --- 1. PREPARACIÓN DE LA PANTALLA DE CARGA ---
-    document.getElementById('language-modal-overlay').classList.add('hidden');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const loadingMessageEl = document.getElementById('loading-message');
-    const appWrapper = document.querySelector('.app-wrapper');
+    async function startApp(locale) {
+        // --- 1. PREPARACIÓN DE LA PANTALLA DE CARGA ---
+        document.getElementById('language-modal-overlay').classList.add('hidden');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessageEl = document.getElementById('loading-message');
+        const appWrapper = document.querySelector('.app-wrapper');
 
-    Utils.setCookie('userLanguage', locale, 365);
+        Utils.setCookie('userLanguage', locale, 365);
 
-    // --- 2. LÓGICA DE CARGA Y PROCESAMIENTO DE DATOS ---
-    try {
-        const loadStartTime = Date.now();
+        // --- 2. LÓGICA DE CARGA Y PROCESAMIENTO DE DATOS ---
+        try {
+            const loadStartTime = Date.now();
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        /**
-         * Función auxiliar para hacer fetch y manejar errores HTTP.
-         * Si la respuesta no es OK (ej. 404, 503), lanza un error.
-         */
-        const fetchData = async (url) => {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Error de red al cargar ${url}: ${response.status} ${response.statusText}`);
+            // --- INICIO DE LA CORRECCIÓN ---
+            /**
+             * Función auxiliar para hacer fetch y manejar errores HTTP.
+             * Si la respuesta no es OK (ej. 404, 503), lanza un error.
+             */
+            const fetchData = async (url) => {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Error de red al cargar ${url}: ${response.status} ${response.statusText}`);
+                }
+                return response.json();
+            };
+
+            // Cargamos TODOS los datos necesarios en paralelo usando la función auxiliar
+            const [
+                publicConfig, gameConfig, i18nData, heroesData,
+                eventsData, weeklyData, bossesData, streamsData, bannersData
+            ] = await Promise.all([
+                fetchData(`${Logic.BACKEND_URL}/api/public-config`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/game-config`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/i18n/${locale}`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/heroes`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/events`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/weekly`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/bosses`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/streams`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/banners`)
+            ]);
+            // --- FIN DE LA CORRECCIÓN ---
+
+            // --- A partir de aquí, el resto de la función es la original ---
+
+            // Guardamos los datos en el estado global
+            App.state.i18n = i18nData;
+            App.state.allHeroesData = heroesData;
+            App.state.allEventsData = eventsData.gameData;
+            App.state.weeklyResetsData = weeklyData.gameData;
+            App.state.allBossesData = bossesData.bosses;
+            App.state.allStreamsData = streamsData.streams;
+            App.state.allBannersData = bannersData.banners;
+
+            // Lógica para mensajes de carga aleatorios
+            const getRandomLoadingMessage = () => {
+                const messages = i18nData.loadingMessages || ['Loading...'];
+                return messages[Math.floor(Math.random() * messages.length)];
+            };
+            loadingMessageEl.textContent = getRandomLoadingMessage();
+            const messageInterval = setInterval(() => {
+                loadingMessageEl.style.opacity = 0;
+                setTimeout(() => {
+                    loadingMessageEl.textContent = getRandomLoadingMessage();
+                    loadingMessageEl.style.opacity = 1;
+                }, 300);
+            }, 2000);
+
+            // Lógica de configuración de usuario
+            let userPrefs = {};
+            const isLoggedIn = !!Logic.getSessionToken();
+            App.state.isLoggedIn = isLoggedIn;
+
+            if (isLoggedIn) {
+                const userData = await Logic.fetchUserPreferences();
+                if (userData) {
+                    userPrefs = userData.preferences || {};
+                    App.state.userInfo = userData.user || null;
+                }
+            } else {
+                const cookiePrefs = Utils.getCookie('timersDashboardConfig');
+                if (cookiePrefs) try { userPrefs = JSON.parse(cookiePrefs); } catch (e) { }
             }
-            return response.json();
-        };
 
-        // Cargamos TODOS los datos necesarios en paralelo usando la función auxiliar
-        const [
-            publicConfig, gameConfig, i18nData, heroesData,
-            eventsData, weeklyData, bossesData, streamsData, bannersData
-        ] = await Promise.all([
-            fetchData(`${Logic.BACKEND_URL}/api/public-config`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/game-config`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/i18n/${locale}`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/heroes`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/events`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/weekly`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/bosses`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/streams`),
-            fetchData(`${Logic.BACKEND_URL}/api/data/banners`)
-        ]);
-        // --- FIN DE LA CORRECCIÓN ---
-        
-        // --- A partir de aquí, el resto de la función es la original ---
-        
-        // Guardamos los datos en el estado global
-        App.state.i18n = i18nData;
-        App.state.allHeroesData = heroesData;
-        App.state.allEventsData = eventsData.gameData;
-        App.state.weeklyResetsData = weeklyData.gameData;
-        App.state.allBossesData = bossesData.bosses;
-        App.state.allStreamsData = streamsData.streams;
-        App.state.allBannersData = bannersData.banners;
+            const localOffsetHours = new Date().getTimezoneOffset() / -60;
+            const sign = localOffsetHours >= 0 ? '+' : '-';
+            const hours = String(Math.abs(localOffsetHours)).padStart(2, '0');
+            const formattedLocalTimezone = `${sign}${hours}:00`;
 
-        // Lógica para mensajes de carga aleatorios
-        const getRandomLoadingMessage = () => {
-            const messages = i18nData.loadingMessages || ['Loading...'];
-            return messages[Math.floor(Math.random() * messages.length)];
-        };
-        loadingMessageEl.textContent = getRandomLoadingMessage();
-        const messageInterval = setInterval(() => {
-            loadingMessageEl.style.opacity = 0;
+            const defaultUserPrefs = {
+                language: locale,
+                displayTimezone: formattedLocalTimezone,
+                use24HourFormat: false,
+                preAlertMinutes: [15, 5, 1],
+                notificationTypes: { sound: true, desktop: true },
+                showBossTimers: true, showEvents: true, showWeekly: true,
+                notificationPrefs: { dailyReset: true, showdownTicket: true, streams: true, events: true, bosses: {} }
+            };
+
+            const mergedConfig = { ...defaultUserPrefs, ...gameConfig, ...userPrefs, publicConfig };
+            if (!mergedConfig.displayTimezone) {
+                mergedConfig.displayTimezone = formattedLocalTimezone;
+            }
+            App.state.config = mergedConfig;
+
+            // Lógica de guardado de zona horaria para nuevos usuarios
+            if (isLoggedIn) {
+                const pendingTimezone = localStorage.getItem('pending_timezone_for_new_user');
+                if (pendingTimezone && !userPrefs.displayTimezone) {
+                    App.state.config.displayTimezone = pendingTimezone;
+                    Logic.saveUserPreferences({ displayTimezone: pendingTimezone });
+                    localStorage.removeItem('pending_timezone_for_new_user');
+                }
+            }
+
+            // --- 3. TRANSICIÓN FINAL ---
+            const elapsedTime = Date.now() - loadStartTime;
+            const minLoadTime = 1500; // Reducido para depuración más rápida
+            const remainingTime = Math.max(0, minLoadTime - elapsedTime);
+
             setTimeout(() => {
-                loadingMessageEl.textContent = getRandomLoadingMessage();
-                loadingMessageEl.style.opacity = 1;
-            }, 300);
-        }, 2000);
+                clearInterval(messageInterval);
+                loadingOverlay.classList.add('hidden');
+                appWrapper.classList.remove('hidden');
+                initializeUI();
+            }, remainingTime);
 
-        // Lógica de configuración de usuario
-        let userPrefs = {};
-        const isLoggedIn = !!Logic.getSessionToken();
-        App.state.isLoggedIn = isLoggedIn;
-
-        if (isLoggedIn) {
-            const userData = await Logic.fetchUserPreferences();
-            if (userData) {
-                userPrefs = userData.preferences || {};
-                App.state.userInfo = userData.user || null;
-            }
-        } else {
-            const cookiePrefs = Utils.getCookie('timersDashboardConfig');
-            if (cookiePrefs) try { userPrefs = JSON.parse(cookiePrefs); } catch (e) {}
+        } catch (error) {
+            // Ahora, si cualquier fetchData falla, este catch se activará
+            console.error("Error fatal durante la inicialización:", error);
+            loadingMessageEl.textContent = 'Error: Could not load application data.';
         }
-
-        const localOffsetHours = new Date().getTimezoneOffset() / -60;
-        const sign = localOffsetHours >= 0 ? '+' : '-';
-        const hours = String(Math.abs(localOffsetHours)).padStart(2, '0');
-        const formattedLocalTimezone = `${sign}${hours}:00`;
-
-        const defaultUserPrefs = {
-            language: locale,
-            displayTimezone: formattedLocalTimezone,
-            use24HourFormat: false,
-            preAlertMinutes: [15, 5, 1],
-            notificationTypes: { sound: true, desktop: true },
-            showBossTimers: true, showEvents: true, showWeekly: true,
-            notificationPrefs: { dailyReset: true, showdownTicket: true, streams: true, events: true, bosses: {} }
-        };
-
-        const mergedConfig = { ...defaultUserPrefs, ...gameConfig, ...userPrefs, publicConfig };
-        if (!mergedConfig.displayTimezone) {
-            mergedConfig.displayTimezone = formattedLocalTimezone;
-        }
-        App.state.config = mergedConfig;
-        
-        // Lógica de guardado de zona horaria para nuevos usuarios
-        if (isLoggedIn) {
-            const pendingTimezone = localStorage.getItem('pending_timezone_for_new_user');
-            if (pendingTimezone && !userPrefs.displayTimezone) {
-                App.state.config.displayTimezone = pendingTimezone;
-                Logic.saveUserPreferences({ displayTimezone: pendingTimezone });
-                localStorage.removeItem('pending_timezone_for_new_user');
-            }
-        }
-
-        // --- 3. TRANSICIÓN FINAL ---
-        const elapsedTime = Date.now() - loadStartTime;
-        const minLoadTime = 1500; // Reducido para depuración más rápida
-        const remainingTime = Math.max(0, minLoadTime - elapsedTime);
-
-        setTimeout(() => {
-            clearInterval(messageInterval);
-            loadingOverlay.classList.add('hidden');
-            appWrapper.classList.remove('hidden');
-            initializeUI();
-        }, remainingTime);
-
-    } catch (error) {
-        // Ahora, si cualquier fetchData falla, este catch se activará
-        console.error("Error fatal durante la inicialización:", error);
-        loadingMessageEl.textContent = 'Error: Could not load application data.';
     }
-}
 
     /**
      * Inicializa los componentes de la UI y el bucle principal.
@@ -233,8 +233,8 @@ async function startApp(locale) {
                 if (!App.state.config.notificationPrefs.bosses) App.state.config.notificationPrefs.bosses = {};
                 const isCurrentlyDisabled = alertToggle.classList.contains('disabled');
                 App.state.config.notificationPrefs.bosses[key] = isCurrentlyDisabled;
-                const payload = { 
-                    prefs: App.state.config.notificationPrefs 
+                const payload = {
+                    prefs: App.state.config.notificationPrefs
                 };
                 Logic.saveUserPreferences(payload);
                 UI.updateAll();
@@ -359,7 +359,7 @@ async function startApp(locale) {
                     UI.handleAddNewSubscription();
                     return;
                 }
-                
+
                 // Clic en el botón de BORRAR dispositivo
                 const deleteButton = e.target.closest('.delete-subscription-btn');
                 if (deleteButton) {
@@ -406,14 +406,14 @@ async function startApp(locale) {
                 }
             });
         }
-        
+
         // El botón de logout ahora está en el modal, así que le añadimos su listener
         if (App.dom.logoutBtnModal) {
             App.dom.logoutBtnModal.addEventListener('click', () => Logic.logout());
         }
-        
+
         //document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
-        
+
         App.dom.modalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSettingsModal(); });
         App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeInfoModal(); });
         App.dom.syncModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSyncModal(); });
@@ -480,11 +480,11 @@ async function startApp(locale) {
 
             // Actualizamos el resto de la UI (relojes, timers, etc.)
             UI.updateAll();
-            
+
         });
 
-        
-        
+
+
         document.getElementById('save-sync-btn').addEventListener('click', () => {
             const h = parseInt(document.getElementById('sync-hours').value) || 0;
             const m = parseInt(document.getElementById('sync-minutes').value) || 0;
@@ -501,19 +501,45 @@ async function startApp(locale) {
             UI.updateAll();
         });
 
+        const streamsModalFooter = document.querySelector('.streams-modal-footer');
+        if (streamsModalFooter) {
+            streamsModalFooter.addEventListener('change', (e) => {
+                // Nos aseguramos de que el cambio venga de un checkbox
+                if (e.target.type === 'checkbox') {
+                    // Obtenemos los nuevos valores
+                    const preStreamAlert = document.getElementById('pre-stream-alert-toggle').checked;
+                    const postStreamAlert = document.getElementById('post-stream-alert-toggle').checked;
+
+                    // Actualizamos el objeto de configuración en el estado
+                    if (!App.state.config.notificationPrefs) {
+                        App.state.config.notificationPrefs = {};
+                    }
+                    App.state.config.notificationPrefs.streams = {
+                        pre: preStreamAlert,
+                        post: postStreamAlert
+                    };
+
+                    // Guardamos las preferencias en el backend o en cookies
+                    Logic.saveUserPreferences({ notificationPrefs: App.state.config.notificationPrefs });
+                }
+            });
+        }
+
         App.dom.timeFormatSwitch.addEventListener('change', () => {
             App.state.config.use24HourFormat = App.dom.timeFormatSwitch.checked;
             Logic.saveUserPreferences({ use24HourFormat: App.state.config.use24HourFormat });
             UI.updateAll();
         });
-        
-App.dom.testNotificationBtn.addEventListener('click', async () => {
+
+
+
+        App.dom.testNotificationBtn.addEventListener('click', async () => {
             const config = App.state.config;
             const lang = config.language;
-            
+
             // 1. Notificación de prueba genérica (la que ya tenías)
             Logic.showFullAlert(Utils.getText('settings.testButton'), 'This is a test notification.', 'favicon.png');
-            
+
             // Pausa de 2 segundos para no solapar las notificaciones
             await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -528,7 +554,7 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
             } else { // Fallback si no hay eventos de misión diaria
                 Logic.showFullAlert('Test: Daily Mission Event', 'This is a test for a daily mission event reminder.', 'favicon.png');
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             // 3. Prueba de recordatorio de Fin de Evento
@@ -540,7 +566,7 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
                     'favicon.png'
                 );
             } else { // Fallback si no hay eventos regulares
-                 Logic.showFullAlert('Test: Event Ending Soon', 'This is a test for an event ending soon reminder.', 'favicon.png');
+                Logic.showFullAlert('Test: Event Ending Soon', 'This is a test for an event ending soon reminder.', 'favicon.png');
             }
 
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -566,8 +592,8 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
                 'favicon.png'
             );
         });
-        
-        
+
+
         function handleHeroClick(e) {
             const heroWrapper = e.target.closest('.banner-hero-img-container');
             if (!heroWrapper || !heroWrapper.dataset.heroName) return;
@@ -590,7 +616,7 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
             UI.openHeroModal(heroData, contextHeroes, currentIndex);
         }
         App.dom.bannersContainer.addEventListener('click', handleHeroClick);
-        
+
         document.getElementById('hero-modal-close-btn').addEventListener('click', UI.closeHeroModal);
         document.getElementById('hero-modal-prev-btn').addEventListener('click', () => UI.navigateHeroModal('prev'));
         document.getElementById('hero-modal-next-btn').addEventListener('click', () => UI.navigateHeroModal('next'));
@@ -617,7 +643,7 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
                 }
                 // Añade aquí más comprobaciones para otros modales si es necesario
             }
-            
+
             // Lógica para las flechas (SOLO si el modal de héroe está visible)
             if (isHeroModalVisible) {
                 if (e.key === 'ArrowRight') {
@@ -628,66 +654,66 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
                 }
             }
         });
-        
+
         App.dom.twitchFab.addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.add('visible'));
         document.getElementById('close-streams-modal').addEventListener('click', () => document.getElementById('streams-modal-overlay').classList.remove('visible'));
-        
+
         window.addEventListener('focus', () => UI.updateLanguage());
     }
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. REGISTRAR EL SERVICE WORKER
-    if ('serviceWorker' in navigator) {
-        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-        const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
-        navigator.serviceWorker.register(serviceWorkerPath)
-            .then(reg => console.log('SW registrado:', reg.scope))
-            .catch(err => console.error('Error al registrar SW:', err));
-    }
-
-    // 2. PROCESAR TOKEN DE LOGIN SI EXISTE EN LA URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-        // Si encontramos un token, lo guardamos en el almacenamiento local.
-        localStorage.setItem('session_token', token);
-        // Limpiamos la URL para que el token no quede visible.
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
-        // Forzamos una recarga de la página. En la nueva carga, la app
-        // detectará el token en localStorage y se iniciará en modo "logueado".
-        window.location.reload();
-        return; // Detenemos la ejecución aquí para que la recarga ocurra.
-    }
-
-    // 3. DECIDIR SI MOSTRAR MODAL DE IDIOMA O INICIAR LA APP
-    const savedLang = Utils.getCookie('userLanguage');
-
-    if (savedLang && savedLang !== 'null') {
-        // Si ya tenemos un idioma, iniciamos la app directamente.
-        startApp(savedLang);
-    } else {
-        // Si no hay idioma, ocultamos la pantalla de carga principal...
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.classList.add('hidden');
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. REGISTRAR EL SERVICE WORKER
+        if ('serviceWorker' in navigator) {
+            const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+            const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
+            navigator.serviceWorker.register(serviceWorkerPath)
+                .then(reg => console.log('SW registrado:', reg.scope))
+                .catch(err => console.error('Error al registrar SW:', err));
         }
-        // ...y mostramos el modal de selección de idioma.
-        const langModal = document.getElementById('language-modal-overlay');
-        if (langModal) {
-            langModal.classList.remove('hidden');
-            langModal.addEventListener('click', e => {
-                const langBtn = e.target.closest('.language-choice-btn');
-                if (langBtn) {
-                    // Cuando el usuario elige, llamamos a startApp.
-                    const chosenLang = langBtn.dataset.lang;
-                    startApp(chosenLang);
-                }
-            });
+
+        // 2. PROCESAR TOKEN DE LOGIN SI EXISTE EN LA URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        if (token) {
+            // Si encontramos un token, lo guardamos en el almacenamiento local.
+            localStorage.setItem('session_token', token);
+            // Limpiamos la URL para que el token no quede visible.
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+            // Forzamos una recarga de la página. En la nueva carga, la app
+            // detectará el token en localStorage y se iniciará en modo "logueado".
+            window.location.reload();
+            return; // Detenemos la ejecución aquí para que la recarga ocurra.
+        }
+
+        // 3. DECIDIR SI MOSTRAR MODAL DE IDIOMA O INICIAR LA APP
+        const savedLang = Utils.getCookie('userLanguage');
+
+        if (savedLang && savedLang !== 'null') {
+            // Si ya tenemos un idioma, iniciamos la app directamente.
+            startApp(savedLang);
         } else {
-            // Fallback por si el modal no existiera: iniciar en inglés.
-            startApp('en');
+            // Si no hay idioma, ocultamos la pantalla de carga principal...
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
+            // ...y mostramos el modal de selección de idioma.
+            const langModal = document.getElementById('language-modal-overlay');
+            if (langModal) {
+                langModal.classList.remove('hidden');
+                langModal.addEventListener('click', e => {
+                    const langBtn = e.target.closest('.language-choice-btn');
+                    if (langBtn) {
+                        // Cuando el usuario elige, llamamos a startApp.
+                        const chosenLang = langBtn.dataset.lang;
+                        startApp(chosenLang);
+                    }
+                });
+            } else {
+                // Fallback por si el modal no existiera: iniciar en inglés.
+                startApp('en');
+            }
         }
-    }
-});
+    });
 
 })();

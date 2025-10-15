@@ -57,9 +57,18 @@ self.addEventListener('activate', event => {
 // --- FASE DE FETCH ---
 self.addEventListener('fetch', event => {
     const { request } = event;
-    const url = new URL(request.url);
 
-    // Estrategia 1: API (Network First, Cache Fallback)
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Si la petición no es GET, la ignoramos completamente y dejamos que el navegador la maneje.
+    if (request.method !== 'GET') {
+        return;
+    }
+    // --- FIN DE LA CORRECCIÓN ---
+
+    // El resto de la lógica de fetch se queda igual.
+    // Solo se ejecutará para peticiones GET.
+
+    // 1. Estrategia para la API (Network First, Cache Fallback)
     if (request.url.startsWith(API_URL_PREFIX)) {
         event.respondWith(
             fetch(request, { mode: 'cors' })
@@ -74,31 +83,23 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // --- INICIO DE LA CORRECCIÓN ---
-    // Estrategia 2: Documento HTML principal (Network First, Cache Fallback)
-    // Esto asegura que siempre obtengas el HTML más reciente.
+    // 2. Estrategia para Documento HTML principal (Network First, Cache Fallback)
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
                 .then(networkResponse => {
-                    // Si la red funciona, actualizamos la caché estática con el nuevo index.html
                     const cacheCopy = networkResponse.clone();
                     caches.open(CACHE_NAME_STATIC).then(cache => {
                         cache.put(request, cacheCopy);
                     });
                     return networkResponse;
                 })
-                .catch(() => {
-                    // Si la red falla, servimos el index.html desde la caché (para modo offline).
-                    return caches.match(`${BASE_PATH}/index.html`);
-                })
+                .catch(() => caches.match(`${BASE_PATH}/index.html`))
         );
         return;
     }
-    // --- FIN DE LA CORRECCIÓN ---
 
-    // Estrategia 3: Assets y otros archivos (Cache First)
-    // Para CSS, JS, imágenes, etc., la caché es la prioridad.
+    // 3. Estrategia para Assets y otros archivos (Cache First)
     event.respondWith(
         caches.match(request).then(cachedResponse => {
             return cachedResponse || fetch(request).then(networkResponse => {

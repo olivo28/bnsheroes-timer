@@ -426,6 +426,13 @@ renderStreamsModal: function (streams, now) {
     }).join('');
 
     modalContent.innerHTML = contentHTML;
+
+    const streamPrefs = App.state.config.notificationPrefs?.streams || { pre: false, post: false };
+    const preStreamToggle = document.getElementById('pre-stream-alert-toggle');
+    const postStreamToggle = document.getElementById('post-stream-alert-toggle');
+
+    if (preStreamToggle) preStreamToggle.checked = streamPrefs.pre;
+    if (postStreamToggle) postStreamToggle.checked = streamPrefs.post;
 },
 
     // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
