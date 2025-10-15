@@ -7,7 +7,7 @@
   "theme_color": "#bb86fc",
   "icons": [
     {
-      "src": "/style/bnsheroes.webp",
+      "src": "style/bnsheroes.webp",
       "sizes": "512x512",
       "type": "image/webp"
     }

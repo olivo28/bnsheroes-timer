@@ -325,26 +325,25 @@ const UI = {
     updateStreamsFeature: function () {
         // --- INICIO DE LA CORRECCIÓN ---
         // Cambiamos la fuente de los datos
-        const streams = App.state.allStreamsData;
-        if (!streams || streams.length === 0) {
-        // --- FIN DE LA CORRECCIÓN ---
-            App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
-            return;
-        }
+         const streams = App.state.allStreamsData;
+    if (!streams || streams.length === 0) {
+    // --- FIN DE LA CORRECCIÓN ---
+        App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
+        return;
+    }
 
         const now = Logic.getCorrectedNow();
 
         // --- INICIO DE LA CORRECCIÓN ---
         // Usamos la nueva variable 'streams'
         const upcomingStreams = streams
-        // --- FIN DE LA CORRECCIÓN ---
-            .map(stream => ({ ...stream, date: new Date(stream.streamTimeUTC) }))
-            .filter(stream => {
-                const durationMs = (stream.durationHours || 2) * 3600 * 1000;
-                const endTime = stream.date.getTime() + durationMs;
-                return endTime > now.getTime() - (2 * 3600 * 1000); // Muestra streams hasta 2h después de que terminen
-            })
-            .sort((a, b) => a.date - b.date);
+        .map(stream => ({ ...stream, date: new Date(stream.streamTimeUTC) }))
+        .filter(stream => {
+            const durationMs = (stream.durationHours || 2) * 3600 * 1000;
+            const endTime = stream.date.getTime() + durationMs;
+            return endTime > now.getTime() - (2 * 3600 * 1000);
+        })
+        .sort((a, b) => a.date - b.date);
 
         App.dom.twitchFab.classList.remove('alert-active', 'live-active');
 
