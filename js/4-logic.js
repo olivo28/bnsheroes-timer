@@ -613,8 +613,17 @@ const Logic = {
     },
     
     findHeroByName(name) {
-        if (!App.state.allHeroesData) return null;
-        return App.state.allHeroesData.find(hero => hero.game_name.toLowerCase() === name.toLowerCase());
+        if (!App.state.allHeroesData || !name) {
+            return null;
+        }
+        
+        // Convertimos el nombre buscado a minúsculas una sola vez.
+        const searchName = name.toLowerCase();
+
+        return App.state.allHeroesData.find(hero => 
+            // Comprobamos que el héroe y su game_name existan antes de comparar.
+            hero && typeof hero.game_name === 'string' && hero.game_name.toLowerCase() === searchName
+        );
     },
 
     isEventActive(eventName) {

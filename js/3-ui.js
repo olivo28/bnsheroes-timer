@@ -747,7 +747,7 @@ const UI = {
                     boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
                         contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
                         tagGroup.heroList.forEach(hero => {
-                            const heroData = Logic.findHeroByName(hero.name);
+                            const heroData = Logic.findHeroByName(hero);
                             if (heroData) {
                                 const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
                                 contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;

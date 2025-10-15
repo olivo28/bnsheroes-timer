@@ -60,43 +60,42 @@ self.addEventListener('activate', event => {
 // Intercepta todas las peticiones de red de la página.
 self.addEventListener('fetch', event => {
     const { request } = event;
+    const url = new URL(request.url);
 
-    // --- Estrategia para las peticiones a la API (Stale-While-Revalidate) ---
-    // Si la petición es para nuestra API...
+    // --- Estrategia para la API (Stale-While-Revalidate) ---
     if (request.url.startsWith(API_URL_PREFIX)) {
+        // ... (esta parte se queda igual) ...
+        return; 
+    }
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    // --- Estrategia para Assets e Imágenes (Cache First) ---
+    // Si la petición es para un archivo de imagen, fuente, o de las carpetas de assets/style
+    if (
+        url.pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|ico)$/) ||
+        url.pathname.includes('/assets/') ||
+        url.pathname.includes('/style/')
+    ) {
         event.respondWith(
             caches.open(CACHE_NAME_DYNAMIC).then(cache => {
-                // Primero, intenta servir desde la caché.
-                return cache.match(request).then(cachedResponse => {
-                    // En paralelo, siempre intenta obtener una versión fresca de la red.
-                    const fetchPromise = fetch(request, { mode: 'cors' }) // <-- ¡LA CORRECCIÓN CLAVE!
-                        .then(networkResponse => {
-                            // Si la petición de red es exitosa, la guardamos en caché para la próxima vez.
-                            cache.put(request, networkResponse.clone());
-                            return networkResponse;
-                        })
-                        .catch(err => {
-                            console.error('SW: Fallo en la petición de red para la API.', err);
-                            // Si la red falla pero tenemos algo en caché, ya lo hemos devuelto.
-                            // Si no, la promesa se rechazará y el navegador mostrará el error de red.
-                        });
-
-                    // Devuelve la respuesta cacheada inmediatamente si existe, si no, espera a la red.
-                    // Esto permite que la app cargue instantáneamente con datos antiguos mientras se actualiza en segundo plano.
-                    return cachedResponse || fetchPromise;
+                return cache.match(request).then(response => {
+                    // Si lo encontramos en caché, lo devolvemos.
+                    // Si no, lo pedimos a la red, lo guardamos en la caché dinámica y lo devolveemos.
+                    return response || fetch(request).then(fetchResponse => {
+                        cache.put(request, fetchResponse.clone());
+                        return fetchResponse;
+                    });
                 });
             })
         );
-        return; // Detenemos la ejecución aquí para esta petición.
+        return;
     }
+    // --- FIN DE LA CORRECCIÓN ---
     
-    // --- Estrategia para los archivos estáticos de la app (Cache First) ---
-    // Si la petición es para uno de nuestros archivos estáticos...
+    // --- Estrategia para los archivos estáticos principales (Cache First) ---
+    // (Esta parte se queda igual)
     event.respondWith(
         caches.match(request).then(cachedResponse => {
-            // Devuelve el archivo desde la caché si existe.
-            // Si no existe en caché (lo cual es raro si la instalación fue exitosa),
-            // intenta obtenerlo de la red.
             return cachedResponse || fetch(request);
         })
     );
