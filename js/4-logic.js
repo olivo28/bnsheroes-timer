@@ -449,17 +449,18 @@ const Logic = {
         }
 
         // --- NUEVA LÓGICA: Recordatorio de Nuevo Banner (3 días) ---
-        if (banners) {
+        if (banners && banners.nextBanner && App.state.allBannersData) {
             const threeDaysInSeconds = 3 * 24 * 60 * 60;
-            const futureBanners = banners
-                .filter(b => b.startDate && this.getAbsoluteDateWithCustomDate(b.startDate, config.dailyResetTime) > now)
-                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            const nextBannerId = banners.nextBanner;
+            const allBanners = App.state.allBannersData;
+
+            // Buscamos los datos completos del siguiente banner
+            const nextBannerData = allBanners[nextBannerId];
             
-            if (futureBanners.length > 0) {
-                const nextBanner = futureBanners[0];
-                const startDate = this.getAbsoluteDateWithCustomDate(nextBanner.startDate, config.dailyResetTime);
-                const secondsLeft = (startDate - now) / 1000;
-                const alertKey = `banner-starting-${nextBanner.startDate}`;
+            if (nextBannerData && nextBannerData.startDate) {
+                const startDate = this.getAbsoluteDateWithCustomDate(nextBannerData.startDate, config.dailyResetTime);
+                const secondsLeft = (startDate.getTime() - now.getTime()) / 1000;
+                const alertKey = `banner-starting-${nextBannerData.startDate}`;
 
                 if (secondsLeft <= threeDaysInSeconds && secondsLeft > (threeDaysInSeconds - 5) && !App.state.alertsShownToday[alertKey]) {
                     this.showFullAlert(
@@ -471,6 +472,7 @@ const Logic = {
                 }
             }
         }
+        // --- FIN DE LA CORRECCIÓN ---
     },
 
     // --- LÓGICA DE TIEMPO Y TIMERS ---

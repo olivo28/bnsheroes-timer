@@ -90,17 +90,34 @@ const UI = {
         App.dom.timersContainer.innerHTML = '';
 
         if (config.showBossTimers) {
+            // 1. Obtenemos la lista de jefes (estará vacía si todos tienen isActive: false)
             bossTimers = Logic.getBossTimers(now);
-            const nextActiveBoss = bossTimers.find(s => s.secondsLeft >= 0);
-            if (nextActiveBoss) primaryTimers.push(nextActiveBoss);
 
-            App.dom.stickyTicketContainer.innerHTML = this.renderSecondaryTimers([showdownTicketTimer]);
+            // 2. Buscamos si hay un próximo jefe activo en la lista resultante
+            const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
+
+            if (nextActiveBoss) {
+                // 3a. SI HAY un próximo jefe, él ocupa el lugar en el panel principal.
+                primaryTimers.push(nextActiveBoss);
+                // Y el ticket de Showdown se mueve al panel secundario.
+                App.dom.stickyTicketContainer.innerHTML = this.renderSecondaryTimers([showdownTicketTimer]);
+            } else {
+                // 3b. SI NO HAY ningún jefe (porque la lista está vacía o ya pasaron todos),
+                // el ticket de Showdown se queda en el panel principal.
+                primaryTimers.push(showdownTicketTimer);
+            }
+            
+            // La lista completa de jefes (que puede estar vacía) siempre se renderiza en su contenedor.
             App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(bossTimers);
+
         } else {
+            // Si la opción de jefes está completamente desactivada, el ticket va al panel principal.
             primaryTimers.push(showdownTicketTimer);
         }
 
         this.renderPrimaryPanel(primaryTimers);
+        
+        // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
 
         Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, config.events, config.banners);
         this.updateStreamsFeature();
@@ -409,21 +426,34 @@ const UI = {
         if (eventConfig) {
             const { DateTime } = luxon;
             const { startDate, endDate } = eventConfig;
-            const time = App.state.config.dailyResetTime;
-            const refTz = App.state.config.referenceTimezone;
+            // --- INICIO DE LA CORRECCIÓN ---
+            const lang = App.state.config.language;
+            const resetTime = App.state.config.dailyResetTime;
+            const displayTz = App.state.config.displayTimezone; // <-- La zona horaria del usuario
+            const use24h = App.state.config.use24HourFormat;
 
+            // Formateamos las fechas de inicio y fin (esto estaba bien)
             const startDt = DateTime.fromISO(startDate).setLocale(lang);
             const endDt = DateTime.fromISO(endDate).setLocale(lang);
-
             const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
 
-            const timeObj = DateTime.fromISO(`2000-01-01T${time}`);
-            const formattedTime = timeObj.toFormat('h:mm a');
+            // Creamos un objeto de fecha con la hora del reset, pero en la zona horaria del JUEGO.
+            const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
+            
+            // Ahora, convertimos esa hora a la zona horaria del USUARIO.
+            const sign = displayTz.startsWith('-') ? '+' : '-';
+            const hours = parseInt(displayTz.substring(1, 3));
+            const userLuxonTz = `Etc/GMT${sign}${hours}`;
+            const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
 
-            const refTzOffset = DateTime.now().setZone(refTz).toFormat('ZZ');
-            const refTzAbbr = `(UTC${refTzOffset.replace(':00', '')})`;
+            // Formateamos la hora convertida según la preferencia 12h/24h del usuario.
+            const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
+            const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
+            
+            // Creamos la etiqueta de la zona horaria del usuario.
+            const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
 
-            periodString = `${datePart}, ${formattedTime} ${refTzAbbr}`;
+            periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
         }
 
         const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
