@@ -636,37 +636,55 @@ App.dom.testNotificationBtn.addEventListener('click', async () => {
     }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (lógica de SW y token sin cambios) ...
+    // 1. REGISTRAR EL SERVICE WORKER
+    if ('serviceWorker' in navigator) {
+        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
+        navigator.serviceWorker.register(serviceWorkerPath)
+            .then(reg => console.log('SW registrado:', reg.scope))
+            .catch(err => console.error('Error al registrar SW:', err));
+    }
 
-    // --- LÓGICA DE SELECCIÓN DE IDIOMA ---
+    // 2. PROCESAR TOKEN DE LOGIN SI EXISTE EN LA URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+        // Si encontramos un token, lo guardamos en el almacenamiento local.
+        localStorage.setItem('session_token', token);
+        // Limpiamos la URL para que el token no quede visible.
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        // Forzamos una recarga de la página. En la nueva carga, la app
+        // detectará el token en localStorage y se iniciará en modo "logueado".
+        window.location.reload();
+        return; // Detenemos la ejecución aquí para que la recarga ocurra.
+    }
+
+    // 3. DECIDIR SI MOSTRAR MODAL DE IDIOMA O INICIAR LA APP
     const savedLang = Utils.getCookie('userLanguage');
 
-    if (savedLang && savedLang !== 'null') { // <-- Añadimos una comprobación extra
-        // Si ya tenemos un idioma guardado (y no es la cadena "null"),
-        // la pantalla de carga se quedará visible y startApp se encargará de ella.
+    if (savedLang && savedLang !== 'null') {
+        // Si ya tenemos un idioma, iniciamos la app directamente.
         startApp(savedLang);
     } else {
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Si NO hay idioma, ocultamos la pantalla de carga principal
-        // para dar paso al modal de idioma.
+        // Si no hay idioma, ocultamos la pantalla de carga principal...
         const loadingOverlay = document.getElementById('loading-overlay');
         if (loadingOverlay) {
             loadingOverlay.classList.add('hidden');
         }
-        // --- FIN DE LA CORRECCIÓN ---
-
+        // ...y mostramos el modal de selección de idioma.
         const langModal = document.getElementById('language-modal-overlay');
         if (langModal) {
             langModal.classList.remove('hidden');
             langModal.addEventListener('click', e => {
                 const langBtn = e.target.closest('.language-choice-btn');
                 if (langBtn) {
+                    // Cuando el usuario elige, llamamos a startApp.
                     const chosenLang = langBtn.dataset.lang;
                     startApp(chosenLang);
                 }
             });
         } else {
-            // Fallback
+            // Fallback por si el modal no existiera: iniciar en inglés.
             startApp('en');
         }
     }
