@@ -376,34 +376,40 @@ const UI = {
         }
     },
 
-    renderStreamsModal: function (streams, now) {
-        if (!App.dom.streamsModalContent) return;
+renderStreamsModal: function (streams, now) {
+    const modalContent = document.getElementById('streams-modal-content');
+    if (!modalContent) return;
 
-        if (streams.length === 0) {
-            App.dom.streamsModalContent.innerHTML = `<p class="no-streams-message">${Utils.getText('modals.streams.noStreams')}</p>`;
-            return;
+    if (streams.length === 0) {
+        modalContent.innerHTML = `<p class="no-streams-message">${Utils.getText('modals.streams.noStreams')}</p>`;
+        return;
+    }
+
+    const lang = App.state.config.language;
+
+    const contentHTML = streams.map(stream => {
+        const secondsLeft = Math.floor((stream.date.getTime() - now.getTime()) / 1000);
+        let countdownHTML;
+
+        if (secondsLeft <= 0) {
+            countdownHTML = `<p class="stream-is-live">${Utils.getText('streams.isLive')}</p>`;
+        } else {
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Usamos formatTime para obtener HH:MM:SS
+            const timeString = Utils.formatTime(secondsLeft); 
+            // Mostramos el contador directamente. El texto "Starts in" no es necesario
+            // si ya tenemos un contador de tiempo claro.
+            countdownHTML = `<p class="stream-countdown">${timeString}</p>`;
+            // --- FIN DE LA CORRECCIÓN ---
         }
+        
+        const streamTitle = (stream.title && stream.title[lang]) ? stream.title[lang] : (stream.title?.en || stream.name);
+        
+        const imageUrl = stream.imageUrl.includes('/') 
+            ? stream.imageUrl 
+            : `style/${stream.imageUrl}`;
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        const lang = App.state.config.language;
-        const contentHTML = streams.map(stream => {
-            const secondsLeft = Math.floor((stream.date.getTime() - now.getTime()) / 1000);
-            let countdownHTML;
-
-            if (secondsLeft <= 0) {
-                countdownHTML = `<p class="stream-is-live">${Utils.getText('streams.isLive')}</p>`;
-            } else {
-                // El texto del countdown ya estaba en tus traducciones
-                const timeString = Utils.formatTimeWithDays(secondsLeft, true);
-                countdownHTML = `<p class="stream-countdown">${Utils.getText('streams.startsIn', { d: timeString })}</p>`;
-            }
-
-            // Obtenemos el título en el idioma correcto
-            const streamTitle = stream.title[lang] || stream.title.en;
-            // Construimos la ruta completa de la imagen
-            const imageUrl = `style/${stream.imageUrl}`;
-
-            return `
+        return `
             <div class="modal-stream-item">
                 <a href="https://twitch.tv/${stream.twitchChannel}" 
                    target="_blank" rel="noopener noreferrer" 
@@ -417,11 +423,10 @@ const UI = {
                 ${countdownHTML}
             </div>
         `;
-        }).join('');
-        // --- FIN DE LA CORRECCIÓN ---
+    }).join('');
 
-        App.dom.streamsModalContent.innerHTML = contentHTML;
-    },
+    modalContent.innerHTML = contentHTML;
+},
 
     // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
     openEventDetailsPanel: function (eventId) {

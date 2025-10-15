@@ -222,22 +222,33 @@ const Utils = {
      * Formatea segundos a una cadena con días, horas y minutos (ej: "2d 5h 30m").
      */
     formatTimeWithDays(s, showMinutes = false) {
-        if (s <= 0) return '0m';
-        if (s < 60 && !showMinutes) return '1m';
+    if (s <= 0) return '0m';
+
+    const days = Math.floor(s / 86400);
+    const hours = Math.floor((s % 86400) / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = Math.floor(s % 60); // Añadimos segundos para el caso final
+
+    let parts = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
     
-        const days = Math.floor(s / 86400);
-        const hours = Math.floor((s % 86400) / 3600);
-        const minutes = Math.floor((s % 3600) / 60);
+    // Mostramos minutos si se pide, o si no hay días ni horas
+    if (showMinutes && (minutes > 0 || (days === 0 && hours === 0))) {
+        parts.push(`${minutes}m`);
+    }
+
+    // Si después de todo, el array está vacío (ej. quedan 30 segundos),
+    // devolvemos '1m' como mínimo.
+    if (parts.length === 0) {
+        // Si se pide mostrar minutos, y hay menos de 1 minuto, mostramos "1m"
+        if (showMinutes) return '1m'; 
+        // Si no, podríamos mostrar segundos, pero para este caso "1m" es más simple
+        return '1m';
+    }
     
-        let parts = [];
-        if (days > 0) parts.push(`${days}d`);
-        if (hours > 0) parts.push(`${hours}h`);
-        if (minutes > 0 && (showMinutes || days === 0)) {
-            parts.push(`${minutes}m`);
-        }
-        
-        return parts.join(' ');
-    },
+    return parts.join(' ');
+},
 
     /**
      * Determina el color del contador basado en el tiempo restante.
