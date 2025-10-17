@@ -1,7 +1,7 @@
 'use strict';
 
-const CACHE_NAME_STATIC = 'bns-timer-static-v3.2';
-const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3.2';
+const CACHE_NAME_STATIC = 'bns-timer-static-v3.3';
+const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3.3';
 const API_URL_PREFIX = 'https://pcnetfs.moe/api-bns-heroes-timers/api/';
 
 // --- INICIO DE LA CORRECCIÓN UNIVERSAL ---
@@ -15,6 +15,8 @@ const BASE_PATH = isLocalhost ? '' : '/bnsheroes-timer';
 const STATIC_FILES_TO_CACHE = [
     `${BASE_PATH}/`,
     `${BASE_PATH}/index.html`,
+    `${BASE_PATH}/roadmap.html`,
+    `${BASE_PATH}/roadmap.css`,
     `${BASE_PATH}/style.css`,
     `${BASE_PATH}/manifest.json`,
     `${BASE_PATH}/favicon.png`,
