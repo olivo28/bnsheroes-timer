@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap - BnS Heroes HUB/Timer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="roadmap.css">
+</head>
+<body>
+    <main id="roadmap-container">
+        <!-- El contenido final se inyectará aquí -->
+    </main>
+
+    <script>
+        function switchLanguage(lang) {
+            const roadmapContainer = document.getElementById('roadmap-container');
+            const content = {};
+
+            if (lang === 'en') {
+                content.header = `
+                    <div class="roadmap-header">
+                        <h1>Project Roadmap</h1>
+                        <p>Status and future of BnS Heroes HUB/Timer</p>
+                        <div class="language-switcher">
+                            <button onclick="switchLanguage('en')" class="active">English</button>
+                            <button onclick="switchLanguage('es')">Español</button>
+                        </div>
+                    </div>
+                    <hr>
+                `;
+                content.legend = `
+                    <div class="roadmap-legend">
+                        <div class="legend-item"><span class="status-planned"></span> Planned</div>
+                        <div class="legend-item"><span class="status-progress"></span> In Progress</div>
+                        <div class="legend-item"><span class="status-completed"></span> Completed</div>
+                        <div class="legend-item">💡 Idea</div>
+                    </div>
+                `;
+                content.sections = `
+                    <details class="roadmap-section">
+                        <summary><h2>1. Full Discord Integration</h2></summary>
+                        <div class="section-content">
+                            <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
+                            <p>The objective is to make all the tool's information accessible directly from Discord and allow the app to send automated notifications to community servers.</p>
+                            <h4>1.1. Dedicated Discord Bot (@BNS-Timer-Bot)</h4>
+                            <ul>
+                                <li><span class="status-planned"></span><strong>Core Functionality:</strong> Implement a bot that can query real-time data from the same API used by the web app.</li>
+                                <li>💡 <strong>Hero Lookup:</strong> Add a <code>/hero &lt;name&gt;</code> command to search the hero database.</li>
+                            </ul>
+                        </div>
+                    </details>
+                    <details class="roadmap-section">
+                        <summary><h2>2. Intelligent LFG System</h2></summary>
+                        <div class="section-content">
+                             <p class="section-meta"><strong>Priority:</strong> Medium-High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
+                             <p>Instead of a manual LFG creator, this system will feature a bot that intelligently monitors an LFG channel, formats user messages, and notifies interested players.</p>
+                        </div>
+                    </details>
+                    <details class="roadmap-section">
+                        <summary><h2>3. Admin Panel</h2></summary>
+                        <div class="section-content">
+                             <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
+                             <p>A secure web interface for managing all dynamic application content, eliminating the need for manual code or JSON file updates.</p>
+                        </div>
+                    </details>
+                    <details class="roadmap-section">
+                        <summary><h2>4. Historical Archive & Hero Compendium</h2></summary>
+                        <div class="section-content">
+                            <p class="section-meta"><strong>Priority:</strong> Low | <strong>Status:</strong> <span class="status-idea"></span> Idea</p>
+                            <p>Allow users to browse past content and explore a full library of heroes.</p>
+                        </div>
+                    </details>
+                `;
+            } else { // 'es'
+                content.header = `
+                    <div class="roadmap-header">
+                        <h1>Roadmap del Proyecto</h1>
+                        <p>Estado y futuro de BnS Heroes HUB/Timer</p>
+                        <div class="language-switcher">
+                            <button onclick="switchLanguage('en')">English</button>
+                            <button onclick="switchLanguage('es')" class="active">Español</button>
+                        </div>
+                    </div>
+                    <hr>
+                `;
+                 content.legend = `
+                    <div class="roadmap-legend">
+                        <div class="legend-item"><span class="status-planned"></span> Pendiente</div>
+                        <div class="legend-item"><span class="status-progress"></span> En Progreso</div>
+                        <div class="legend-item"><span class="status-completed"></span> Completado</div>
+                        <div class="legend-item">💡 Idea</div>
+                    </div>
+                `;
+                content.sections = `
+                    <details class="roadmap-section">
+                        <summary><h2>1. Integración Completa con Discord</h2></summary>
+                        <div class="section-content">
+                            <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
+                            <p>El objetivo es hacer que toda la información de la herramienta sea accesible directamente desde Discord y permitir que la aplicación envíe notificaciones automatizadas a los servidores de la comunidad.</p>
+                        </div>
+                    </details>
+                    <details class="roadmap-section">
+                        <summary><h2>2. Sistema Inteligente de Búsqueda de Grupo (LFG)</h2></summary>
+                        <div class="section-content">
+                            <p class="section-meta"><strong>Prioridad:</strong> Media-Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
+                            <p>En lugar de un creador manual, un bot monitorizará un canal LFG, formateará los mensajes y notificará a los jugadores interesados.</p>
+                        </div>
+                    </details>
+                    <details class="roadmap-section">
+                        <summary><h2>3. Panel de Administración</h2></summary>
+                        <div class="section-content">
+                            <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
+                            <p>Una interfaz web segura para gestionar todo el contenido dinámico de la aplicación, eliminando la necesidad de actualizar código manualmente.</p>
+                        </div>
+                    </details>
+                     <details class="roadmap-section">
+                        <summary><h2>4. Archivo Histórico y Compendio de Héroes</h2></summary>
+                        <div class="section-content">
+                            <p class="section-meta"><strong>Prioridad:</strong> Baja | <strong>Estado:</strong> <span class="status-idea"></span> Idea</p>
+                            <p>Permitir a los usuarios navegar por contenido pasado y explorar una biblioteca completa de héroes.</p>
+                        </div>
+                    </details>
+                `;
+            }
+            
+            roadmapContainer.innerHTML = `<div class="roadmap-wrapper">${content.header}${content.legend}<div class="roadmap-accordion">${content.sections}</div></div>`;
+            initAccordion();
+        }
+
+        function initAccordion() {
+            const detailsElements = document.querySelectorAll('.roadmap-accordion details');
+            detailsElements.forEach(details => {
+                details.addEventListener('toggle', (event) => {
+                    if (event.target.open) {
+                        detailsElements.forEach(otherDetails => {
+                            if (otherDetails !== event.target) {
+                                otherDetails.removeAttribute('open');
+                            }
+                        });
+                    }
+                });
+            });
+            if (detailsElements.length > 0) {
+                detailsElements[0].open = true;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            switchLanguage('es');
+        });
+    </script>
+</body>
+</html>

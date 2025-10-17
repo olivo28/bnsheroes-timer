@@ -1,0 +1,105 @@
+/*
+ * Hoja de estilos para la página de Roadmap - Versión Final
+ * assets/css/roadmap.css
+ */
+
+#roadmap-container {
+    padding: 3rem 1rem;
+}
+
+.roadmap-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Encabezado */
+.roadmap-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.roadmap-header h1 {
+    margin: 0; color: #fff; font-size: 2.2em; font-weight: bold;
+}
+.roadmap-header p {
+    color: #a0a0a0; font-size: 1.1em; margin-top: 0.5rem; margin-bottom: 1.5rem;
+}
+
+/* --- CORREGIDO: Estilo de botones de idioma --- */
+.language-switcher button {
+    padding: 8px 16px;
+    border: 1px solid #555;
+    background-color: #2a2a2a; /* Fondo para que parezca un botón */
+    color: #a0a0a0;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    margin: 0 2px; /* Pequeño espacio entre botones */
+    border-radius: 5px;
+}
+.language-switcher button:hover {
+    background-color: #3a3a3a;
+    color: #fff;
+}
+.language-switcher button.active {
+    background-color: #444;
+    color: #fff;
+    border-color: #666;
+}
+
+/* Línea separadora */
+hr {
+    border: none; height: 1px; background-color: #333; margin-bottom: 2rem;
+}
+
+/* --- CORREGIDO: Estilo de la Leyenda --- */
+.roadmap-legend {
+    display: flex;
+    flex-wrap: wrap; /* Para que se ajuste en pantallas pequeñas */
+    justify-content: center; /* Alineado a la izquierda */
+    gap: 15px 25px; /* Espacio vertical y horizontal */
+    margin-bottom: 1.5rem;
+    padding-left: 5px;
+    font-size: 0.9em;
+    color: #a0a0a0;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; }
+
+/* Contenedor del Acordeón */
+.roadmap-accordion {
+    display: flex; flex-direction: column; gap: 10px;
+}
+
+/* Barra clickeable */
+.roadmap-section summary {
+    background-color: #2a2a2a; border: 1px solid #444; border-radius: 8px;
+    padding: 20px 25px;
+    font-size: 1.4em; font-weight: 600; color: #e0e0e0;
+    cursor: pointer; list-style: none; display: flex; align-items: center;
+    transition: border-color 0.2s ease-in-out;
+}
+.roadmap-section summary:hover { border-color: #00bfff; }
+.roadmap-section summary::-webkit-details-marker { display: none; }
+.roadmap-section summary h2 { font-size: inherit; font-weight: inherit; margin: 0; }
+.roadmap-section summary::before {
+    content: '►'; margin-right: 15px; font-size: 0.8em; color: #00bfff;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Sección abierta */
+.roadmap-section[open] > summary { border-color: #00bfff; }
+.roadmap-section[open] > summary::before { transform: rotate(90deg); }
+
+/* Contenido expandido */
+.section-content {
+    padding: 25px 25px 15px 55px; color: #c0c0c0; line-height: 1.7;
+}
+
+/* --- CORREGIDO: Iconos de estado para la leyenda completa --- */
+[class^="status-"] {
+    display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+    margin-right: 4px;
+}
+.status-planned { background-color: #8e44ad; }   /* Morado */
+.status-progress { background-color: #3498db; }  /* Azul */
+.status-completed { background-color: #2ecc71; } /* Verde */
+.status-idea { /* No necesita fondo, usa el emoji */ }

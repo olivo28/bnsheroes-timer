@@ -112,6 +112,17 @@ body {
     padding: 20px;
 }
 
+body {
+    min-height: 100vh; /* vh = viewport height */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hacemos que el contenedor principal crezca para ocupar el espacio sobrante */
+.main-wrapper {
+    flex-grow: 1;
+}
+
 #mobile-header {
     display: none;
 }
@@ -3130,6 +3141,44 @@ select.settings-input option {
 /* --- Estilos para ocultar la app principal al inicio --- */
 .app-wrapper.hidden {
     display: none;
+}
+
+/* --- 3.13. roadmap button  --- */
+.main-footer {
+    width: 100%;
+    padding: 2rem 1rem; /* Espacio arriba/abajo y a los lados */
+    margin-top: 2rem;   /* Margen para separarlo del contenido de la página */
+}
+
+/* Un contenedor interno para centrar el contenido del footer */
+.footer-content {
+    /* Usa un max-width similar al de tu .main-wrapper para mantener la alineación visual */
+    max-width: 1200px; 
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-content hr {
+    border: none;
+    height: 1px;
+    background-color: #333; /* Color sutil para la línea, como en la imagen */
+    margin-bottom: 1.5rem;
+}
+
+.footer-nav a {
+    color: #a0a0a0; /* Color gris claro para el texto secundario */
+    text-decoration: none;
+    font-size: 0.9em;
+    margin: 0 10px; /* Espacio entre los enlaces y el punto */
+    transition: color 0.3s;
+}
+
+.footer-nav a:hover {
+    color: #fff; /* Se ilumina al pasar el ratón */
+}
+
+.footer-nav span {
+    color: #555; /* Color más oscuro para el punto separador */
 }
 
 /* --- FIN DE COMPONENTES --- */
