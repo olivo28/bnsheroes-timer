@@ -2503,7 +2503,7 @@ select.settings-input option {
     border: 1px solid var(--border-color);
 }
 .reward-grid-item.double-width {
-    width: 136px;
+    width: 64px;
 }
 .reward-grid-item .reward-icon {
     width: 100%;
