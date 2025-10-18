@@ -681,7 +681,48 @@ const Logic = {
 
         targetDate = targetDate.plus({ days: daysToAdd });
         return targetDate.toJSDate();
+    },
+
+    getHeroOfTheWeekTimer: function (now) {
+    const heroWeekData = App.state.allHeroWeekData;
+    if (!heroWeekData || heroWeekData.length === 0) {
+        return null;
     }
+
+    const nowTime = now.getTime();
+
+    // Buscamos el primer evento que esté actualmente activo
+    const activeEvent = heroWeekData.find(event => {
+        const startDate = new Date(event.startDateUTC);
+        const endDate = new Date(event.endDateUTC);
+        return nowTime >= startDate.getTime() && nowTime < endDate.getTime();
+    });
+
+    if (!activeEvent) {
+        return null;
+    }
+    
+    const endDate = new Date(activeEvent.endDateUTC);
+    const secondsLeft = Math.floor((endDate.getTime() - nowTime) / 1000);
+
+    // Si el evento ya terminó, no lo mostramos
+    if (secondsLeft < 0) {
+        return null;
+    }
+
+    const heroData = this.findHeroByName(activeEvent.heroName);
+
+    return {
+        id: activeEvent.id,
+        name: Utils.getText('weekly.heroOfTheWeek'), // "Hero of the Week"
+        category: activeEvent.heroName,
+        type: 'heroOfTheWeek', // Un tipo especial para distinguirlo
+        secondsLeft: secondsLeft,
+        targetDate: endDate,
+        imageUrl: heroData ? `assets/heroes_icon/${heroData.short_image}` : 'assets/wimp_default.jpg'
+    };
+},
+
 };
 
 export default Logic;

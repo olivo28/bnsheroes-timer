@@ -22,6 +22,8 @@ const App = {
         allBossesData: [],
         allStreamsData: [],
         allBannersData: {},
+        allHeroWeekData: null, // <-- Asegúrate de que esta línea esté
+        allItemsData: null, // <-- AÑADE ESTA LÍNEA
 
         // Estado de la UI
         alertsShownToday: {},
@@ -32,7 +34,14 @@ const App = {
         heroModalContext: {
             heroes: [],
             currentIndex: -1
-        }
+        },
+
+        lastRenderedBossIds: '',
+        lastRenderedBannerIds: '',
+        lastRenderedEventIds: '',
+        lastRenderedWeeklyIds: '',
+        lastShowSecondaryPanel: null,
+        lastRenderedPrimaryTimers: '', 
     },
 
     // Referencias a elementos del DOM

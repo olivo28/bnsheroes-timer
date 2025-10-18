@@ -93,11 +93,14 @@
     --rarity2-bg-color: rgb(42 62 177);
     --rarity3-bg-color: rgb(76, 193, 247);
     --color-exalted-gold: #ffd700;
+    --color-primary-rgb: 187, 134, 252;
+
 
     /* Fondos para Modales por Rareza */
     --rarity1-modal-bg: rgba(210, 21, 244, 0.15);
     --rarity2-modal-bg: rgba(42, 62, 177, 0.15);
     --rarity3-modal-bg: rgba(76, 193, 247, 0.15);
+    
 }
 
 /* --- 1.3. Estilos Base del Body --- */
@@ -709,7 +712,7 @@ input:checked+.slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9em;
+    font-size: 0.85em;
     transition: background-color 0.2s;
     cursor: pointer;
     padding: 8px 10px;
@@ -2349,6 +2352,15 @@ select.settings-input option {
     color: var(--text-muted-color);
 }
 
+.details-extra {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    line-height: 1.6;
+    margin-top: 10px;
+    padding-left: 15px;
+    border-left: 3px solid var(--border-color);
+}
+
 .details-table {
     width: 100%;
     border-collapse: collapse;
@@ -2377,6 +2389,7 @@ select.settings-input option {
     color: var(--color-warning);
     font-weight: bold;
 }
+
 .exchange-shop-table .item-to-buy {
     display: flex;
     align-items: center;
@@ -2444,7 +2457,7 @@ select.settings-input option {
     font-weight: bold;
 }
 
-/* --- NUEVO: Cuadrícula para Recompensas de Rango y Acumulativas --- */
+/* --- Cuadrícula para Recompensas de Rango y Acumulativas --- */
 .details-reward-grid-container {
     display: flex;
     flex-wrap: wrap;
@@ -2586,6 +2599,82 @@ select.settings-input option {
 .rarity-text-rare { color: #4169e1; }
 .rarity-text-uncommon { color: #2e8b57; }
 .rarity-text-common { color: var(--text-muted-color); }
+
+/* --- NUEVO: Estilos para Pestañas y Misiones Diarias --- */
+.tabs-nav {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 15px;
+    flex-wrap: wrap; /* Permite que las pestañas pasen a la siguiente línea en móvil */
+}
+
+.tab-link {
+    background: none;
+    border: none;
+    color: var(--text-muted-color);
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    position: relative;
+    top: 2px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tab-link:hover {
+    color: var(--text-color);
+}
+
+.tab-link.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.daily-missions-table th,
+.missions-table th {
+    font-size: 0.8em;
+    text-transform: uppercase;
+}
+
+.daily-missions-table .count-col {
+    text-align: center;
+    width: 60px;
+}
+
+.missions-table .points-col {
+    text-align: right;
+    width: 80px;
+    font-weight: bold;
+    color: var(--color-warning);
+}
+
+.mission-reward-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.mission-reward-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
 
 /* --- 3.9.1. Panel de Detalles Semanal (Weekly) --- */
 
@@ -2735,7 +2824,7 @@ select.settings-input option {
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 5px rgba(0,0,0,0.8);
 }
 .weekly-reward-grid-item.double-width {
-    width: 136px;
+    width: 64px;
 }
 
 .weekly-reward-grid-item.rank-legendary { background-color: rgba(255, 140, 0, 0.3); border-color: #ff8c00; }
@@ -2890,6 +2979,79 @@ select.settings-input option {
     color: var(--text-muted-color);
     margin: 0;
     font-size: 0.9em;
+}
+
+/* --- 3.9.2. Panel de Detalles Héroe de la Semana --- */
+.hotw-profile {
+    display: flex;
+    flex-direction: column; /* Apilamos los elementos verticalmente */
+    align-items: center; /* Centramos todo horizontalmente */
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 20px 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: center; /* Centramos el texto también */
+}
+.hotw-hero-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.5em; /* Un poco más grande para destacar */
+    font-weight: 700; /* Aseguramos que sea negrita */
+    transition: color 0.3s ease; /* Transición suave si el color cambia */
+}
+
+/* Estilos mejorados para la lista de misiones */
+.hotw-mission-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.hotw-mission-item {
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 12px 15px;
+    border-radius: 6px;
+    border-left: 3px solid var(--color-primary); /* Borde de acento */
+    transition: background-color 0.2s ease;
+}
+.hotw-mission-item:hover {
+    background-color: rgba(var(--color-primary-rgb), 0.1); /* Iluminación al pasar el ratón */
+}
+.hotw-mission-item strong {
+    display: block;
+    color: var(--text-color);
+    margin-bottom: 5px;
+    font-size: 1em;
+}
+.hotw-mission-item p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    line-height: 1.5;
+}
+
+.hotw-hero-image-container {
+    width: 100%;
+    max-width: 300px; /* Un tamaño máximo para la imagen */
+    height: auto;
+    overflow: hidden; /* Asegura que nada se desborde */
+}
+
+.hotw-hero-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Escala la imagen para que quepa sin cortarse */
+}
+
+.hotw-hero-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.4em;
+    color: var(--text-color);
+}
+
+.hotw-hero-info p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--text-muted-color);
 }
 
 /* --- 3.10. Botón Flotante (FAB) de Twitch --- */

@@ -82,7 +82,8 @@ import UI from './3-ui.js';
             // Cargamos TODOS los datos necesarios en paralelo usando la función auxiliar
             const [
                 publicConfig, gameConfig, i18nData, heroesData,
-                eventsData, weeklyData, bossesData, streamsData, bannersData
+                eventsData, weeklyData, bossesData, streamsData, bannersData, itemsData,
+                heroweekData
             ] = await Promise.all([
                 fetchData(`${Logic.BACKEND_URL}/api/public-config`),
                 fetchData(`${Logic.BACKEND_URL}/api/data/game-config`),
@@ -92,7 +93,9 @@ import UI from './3-ui.js';
                 fetchData(`${Logic.BACKEND_URL}/api/data/weekly`),
                 fetchData(`${Logic.BACKEND_URL}/api/data/bosses`),
                 fetchData(`${Logic.BACKEND_URL}/api/data/streams`),
-                fetchData(`${Logic.BACKEND_URL}/api/data/banners`)
+                fetchData(`${Logic.BACKEND_URL}/api/data/banners`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/items`),
+                fetchData(`${Logic.BACKEND_URL}/api/data/heroweek`),
             ]);
             // --- FIN DE LA CORRECCIÓN ---
 
@@ -106,6 +109,8 @@ import UI from './3-ui.js';
             App.state.allBossesData = bossesData.bosses;
             App.state.allStreamsData = streamsData.streams;
             App.state.allBannersData = bannersData.banners;
+            App.state.allItemsData = itemsData;
+            App.state.allHeroWeekData = heroweekData;
 
             // Lógica para mensajes de carga aleatorios
             const getRandomLoadingMessage = () => {
@@ -255,15 +260,29 @@ import UI from './3-ui.js';
             }
         });
         App.dom.weeklyContainer.addEventListener('click', e => {
-            const weeklyItem = e.target.closest('.weekly-item');
-            if (weeklyItem?.dataset.weeklyId) {
-                if (App.state.currentOpenWeeklyId === weeklyItem.dataset.weeklyId) {
-                    UI.closeWeeklyDetailsPanel();
-                } else {
-                    UI.openWeeklyDetailsPanel(weeklyItem.dataset.weeklyId);
-                }
-            }
-        });
+    const weeklyItem = e.target.closest('.weekly-item');
+    if (!weeklyItem) return;
+
+    // Obtenemos el ID del item clickeado, ya sea semanal o del héroe
+    const weeklyId = weeklyItem.dataset.weeklyId;
+    const hotwId = weeklyItem.dataset.hotwId;
+    const clickedId = weeklyId || hotwId;
+
+    // --- LÓGICA DE CIERRE ---
+    // Si el panel que intentamos abrir ya está abierto, lo cerramos y no hacemos nada más.
+    if (App.state.currentOpenWeeklyId === clickedId) {
+        UI.closeWeeklyDetailsPanel();
+        return; // Detenemos la ejecución
+    }
+
+    // --- LÓGICA DE APERTURA ---
+    // Si no había un panel abierto o se hizo clic en uno diferente, abrimos el correspondiente.
+    if (weeklyId) {
+        UI.openWeeklyDetailsPanel(weeklyId);
+    } else if (hotwId) {
+        UI.openHeroOfTheWeekDetailsPanel(hotwId);
+    }
+});
 
         function handleDetailsPanelClick(e) {
             // --- 1. Lógica para el botón de cerrar ---

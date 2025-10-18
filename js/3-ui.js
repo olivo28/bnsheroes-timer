@@ -12,30 +12,90 @@ const UI = {
      * Función principal que orquesta todas las actualizaciones de la UI en cada ciclo.
      */
     updateAll: function () {
-        if (!App.state.config || Object.keys(App.state.config).length === 0) {
-            return; // No hacer nada si la configuración aún no ha cargado
+    if (!App.state.config || Object.keys(App.state.config).length === 0) {
+        return;
+    }
+
+    const now = Logic.getCorrectedNow();
+    const config = App.state.config;
+
+    // --- 1. ACTUALIZACIONES QUE OCURREN SIEMPRE (CADA CICLO) ---
+    App.dom.timeFormatSwitch.checked = config.use24HourFormat;
+    const langCode = config.language === 'es-419' ? 'es' : config.language;
+    const currentDateString = Utils.formatDateToLocaleDateString(now, config.displayTimezone, langCode);
+    const currentTimeString = Utils.formatDateToTimezoneString(now, config.displayTimezone, config.use24HourFormat, true);
+    const tzString = `UTC${config.displayTimezone.replace(':00', '')}`;
+    App.dom.currentTime.innerHTML = `<div class="datetime-stack"><span>${currentDateString}</span><span>${currentTimeString}</span></div><span class="timezone-abbr">${tzString}</span>`;
+
+    Logic.checkAndPerformDailyReset(now);
+    const dailyResetTimer = Logic.getDailyResetTimer(now);
+    const lastReset = new Date(dailyResetTimer.targetDate.getTime() - (24 * 60 * 60 * 1000));
+    const showdownTicketTimer = Logic.getShowdownTicketTimer(now, lastReset);
+    const bossTimers = config.showBossTimers ? Logic.getBossTimers(now) : [];
+
+    // --- 2. RENDERIZADO CONDICIONAL DE PANELES ---
+
+    // a) Panel de Banners
+    const currentBannerIds = `${config.banners.activeBanner},${config.banners.nextBanner}`;
+    if (App.state.lastRenderedBannerIds !== currentBannerIds) {
+        console.log("UI: Re-renderizando panel de Banners.");
+        this.renderBannersPanel();
+        App.state.lastRenderedBannerIds = currentBannerIds;
+    }
+
+    // b) Panel de Eventos
+    const currentEventIds = config.showEvents ? config.events.map(e => e.id).join(',') : '';
+    if (App.state.lastRenderedEventIds !== currentEventIds) {
+        console.log("UI: Re-renderizando panel de Eventos.");
+        if (config.showEvents) {
+            App.dom.eventsContainer.innerHTML = this.renderEventsPanel();
+            App.dom.eventsContainer.style.display = 'block';
+        } else {
+            App.dom.eventsContainer.innerHTML = '';
+            App.dom.eventsContainer.style.display = 'none';
+            this.closeEventDetailsPanel();
         }
+        App.state.lastRenderedEventIds = currentEventIds;
+    }
 
-        const now = Logic.getCorrectedNow();
-        const config = App.state.config;
+    // c) Panel Semanal (incluye Héroe de la Semana)
+    const weeklyTimers = Logic.getWeeklyResetTimers(now);
+    const heroOfTheWeekTimer = Logic.getHeroOfTheWeekTimer(now);
+    if (heroOfTheWeekTimer) weeklyTimers.push(heroOfTheWeekTimer);
+    const currentWeeklyIds = config.showWeekly ? weeklyTimers.map(t => t.id).join(',') : '';
+    if (App.state.lastRenderedWeeklyIds !== currentWeeklyIds) {
+        console.log("UI: Re-renderizando panel Semanal.");
+        if (config.showWeekly && weeklyTimers.length > 0) {
+            App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
+            App.dom.weeklyContainer.style.display = 'block';
+        } else {
+            App.dom.weeklyContainer.innerHTML = '';
+            App.dom.weeklyContainer.style.display = 'none';
+            this.closeWeeklyDetailsPanel();
+        }
+        App.state.lastRenderedWeeklyIds = currentWeeklyIds;
+    }
 
-        this.updateLanguage();
-        App.dom.timeFormatSwitch.checked = config.use24HourFormat;
+    // d) Panel de Jefes
+    const currentBossIds = bossTimers.map(b => b.id).join(',');
+    if (App.state.lastRenderedBossIds !== currentBossIds) {
+        console.log("UI: Re-renderizando panel de Jefes.");
+        const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
+        if (config.showBossTimers) {
+            App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(bossTimers);
+            App.dom.stickyTicketContainer.innerHTML = nextActiveBoss ? this.renderSecondaryTimers([showdownTicketTimer]) : '';
+        } else {
+            App.dom.timersContainer.innerHTML = '';
+            App.dom.stickyTicketContainer.innerHTML = '';
+        }
+        App.state.lastRenderedBossIds = currentBossIds;
+        App.state.lastRenderedPrimaryTimers = ''; 
+    }
 
-        const langCode = config.language === 'es-419' ? 'es' : config.language;
-        const currentDateString = Utils.formatDateToLocaleDateString(now, config.displayTimezone, langCode);
-        const currentTimeString = Utils.formatDateToTimezoneString(now, config.displayTimezone, config.use24HourFormat, true);
-
-        const tzString = `UTC${config.displayTimezone.replace(':00', '')}`;
-        App.dom.currentTime.innerHTML = `<div class="datetime-stack"><span>${currentDateString}</span><span>${currentTimeString}</span></div><span class="timezone-abbr">${tzString}</span>`;
-
-        Logic.checkAndPerformDailyReset(now);
-        const dailyResetTimer = Logic.getDailyResetTimer(now);
-        const lastReset = new Date(dailyResetTimer.targetDate.getTime() - (24 * 60 * 60 * 1000));
-        const showdownTicketTimer = Logic.getShowdownTicketTimer(now, lastReset);
-
-        const showSecondaryPanel = config.showBossTimers || config.showEvents || config.showWeekly;
-
+    // e) Layout Principal (ancho del contenedor)
+    const showSecondaryPanel = config.showBossTimers || config.showEvents || config.showWeekly;
+    if (App.state.lastShowSecondaryPanel !== showSecondaryPanel) {
+        console.log("UI: Actualizando layout principal.");
         if (!App.state.isMobile) {
             if (showSecondaryPanel) {
                 App.dom.mainWrapper.style.width = '860px';
@@ -60,103 +120,103 @@ const UI = {
             }
             if (App.state.swiper?.update) App.state.swiper.update();
         }
-        App.dom.bannersContainer.style.opacity = '1';
-        App.dom.bannersContainer.style.visibility = 'visible';
+        App.state.lastShowSecondaryPanel = showSecondaryPanel;
+    }
+    
+    // --- 3. ACTUALIZACIÓN DE CONTADORES (CADA CICLO, SIN RECONSTRUIR HTML) ---
+    
+    // a) Panel Primario (Este sí se reconstruye porque su lógica es más compleja)
+    const primaryTimers = [dailyResetTimer];
+    const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
+    if (config.showBossTimers && nextActiveBoss) {
+        primaryTimers.push(nextActiveBoss);
+    } else {
+        primaryTimers.push(showdownTicketTimer);
+    }
+    this.renderPrimaryPanel(primaryTimers);
 
-        this.renderBannersPanel();
-
-        if (config.showEvents) {
-            App.dom.eventsContainer.innerHTML = this.renderEventsPanel();
-            App.dom.eventsContainer.style.display = 'block';
-        } else {
-            App.dom.eventsContainer.innerHTML = '';
-            App.dom.eventsContainer.style.display = 'none';
-            this.closeEventDetailsPanel();
-        }
-
-        if (config.showWeekly) {
-            App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
-            App.dom.weeklyContainer.style.display = 'block';
-        } else {
-            App.dom.weeklyContainer.innerHTML = '';
-            App.dom.weeklyContainer.style.display = 'none';
-            this.closeWeeklyDetailsPanel();
-        }
-
-        const primaryTimers = [dailyResetTimer];
-        let bossTimers = [];
-
-        App.dom.stickyTicketContainer.innerHTML = '';
-        App.dom.timersContainer.innerHTML = '';
-
-        if (config.showBossTimers) {
-            // 1. Obtenemos la lista de jefes (estará vacía si todos tienen isActive: false)
-            bossTimers = Logic.getBossTimers(now);
-
-            // 2. Buscamos si hay un próximo jefe activo en la lista resultante
-            const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
-
-            if (nextActiveBoss) {
-                // 3a. SI HAY un próximo jefe, él ocupa el lugar en el panel principal.
-                primaryTimers.push(nextActiveBoss);
-                // Y el ticket de Showdown se mueve al panel secundario.
-                App.dom.stickyTicketContainer.innerHTML = this.renderSecondaryTimers([showdownTicketTimer]);
-            } else {
-                // 3b. SI NO HAY ningún jefe (porque la lista está vacía o ya pasaron todos),
-                // el ticket de Showdown se queda en el panel principal.
-                primaryTimers.push(showdownTicketTimer);
+    // b) Contadores de Jefes y Ticket Secundario
+    document.querySelectorAll('.countdown-timer').forEach(el => {
+        const bossId = el.closest('.spawn-item')?.querySelector('.alert-toggle')?.dataset.bossId;
+        if (bossId) {
+            const bossData = bossTimers.find(b => b.id === bossId);
+            if(bossData) {
+                el.textContent = Utils.formatTime(bossData.secondsLeft);
+                el.style.color = Utils.getCountdownColor(bossData.secondsLeft, 'boss');
             }
-            
-            // La lista completa de jefes (que puede estar vacía) siempre se renderiza en su contenedor.
-            App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(bossTimers);
-
-        } else {
-            // Si la opción de jefes está completamente desactivada, el ticket va al panel principal.
-            primaryTimers.push(showdownTicketTimer);
+        } else if (el.closest('.ticket-item')) { // Es el ticket de showdown
+             el.textContent = Utils.formatTime(showdownTicketTimer.secondsLeft);
+             el.style.color = Utils.getCountdownColor(showdownTicketTimer.secondsLeft, 'ticket');
         }
+    });
 
-        this.renderPrimaryPanel(primaryTimers);
-        
-        // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
+    // c) Contadores de Eventos, Semanales y Banners (estos ya se manejan bien porque sus funciones de renderizado son más simples y no contienen imágenes que parpadeen)
+    // No necesitan actualización de contador individual porque el texto completo se regenera si cambian los datos.
 
-        Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, config.events, config.banners);
-        this.updateStreamsFeature();
-    },
+    // --- 4. OTRAS FUNCIONES ---
+    this.updateLanguage(); // Para estado de notificaciones, etc.
+    Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, config.events, config.banners);
+    this.updateStreamsFeature();
+},
 
     renderPrimaryPanel: function (timers) {
-        const config = App.state.config;
-        const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`;
-        const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`;
+    const config = App.state.config;
+    const timerTypes = timers.map(t => t.type).join(',');
 
-        App.dom.primaryTimersContainer.innerHTML = timers.map((timer, index) => {
-            if (!timer || !timer.type) return '';
+    // --- LÓGICA DE OPTIMIZACIÓN ---
+    // Si la estructura de los temporizadores no ha cambiado, solo actualizamos el texto.
+    if (App.state.lastRenderedPrimaryTimers === timerTypes) {
+        timers.forEach((timer, index) => {
+            const itemClass = index === 0 ? '.main' : '.secondary';
+            const container = App.dom.primaryTimersContainer.querySelector(`.primary-timer-item${itemClass}`);
+            if (!container) return; // Si el elemento no existe, salimos
 
-            const itemClass = index === 0 ? 'main' : 'secondary';
-            const color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
-            const countdown = Utils.formatTime(timer.secondsLeft);
-            const description = timer.type === 'boss' ? Utils.getText('timers.bossSpawnIn', { loc: timer.location }) : timer.description;
-            const imageDivClass = timer.type === 'ticket' ? 'ticket-image' : 'timer-image';
+            // Actualizamos el contador
+            const countdownEl = container.querySelector('.timer-countdown');
+            if (countdownEl) {
+                countdownEl.textContent = Utils.formatTime(timer.secondsLeft);
+                countdownEl.style.color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
+            }
+        });
+        return; // Detenemos la ejecución para no reconstruir el HTML
+    }
 
-            let imageContent = timer.type === 'ticket' ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>` : (timer.imageUrl ? `<img src="${timer.imageUrl}" alt="${timer.name}">` : '');
+    // --- RENDERIZADO COMPLETO (Solo si la estructura cambia) ---
+    console.log("UI: Re-renderizando panel primario (estructura cambió).");
+    App.state.lastRenderedPrimaryTimers = timerTypes; // Guardamos la nueva estructura
 
-            const nameClass = `timer-name ${timer.type === 'boss' ? 'timer-name-boss' : timer.type === 'ticket' ? 'timer-name-ticket' : ''}`;
+    const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`;
+    const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`;
 
-            const displayTime = Utils.formatDateToTimezoneString(timer.targetDate, config.displayTimezone, config.use24HourFormat);
-            const timeSpan = timer.type !== 'ticket' ? `<span class="timer-target-time">(${displayTime})</span>` : '';
-            const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
-            const nameItself = `<p class="${nameClass}">${timer.name} ${eventLabel} ${timeSpan}</p>`;
+    App.dom.primaryTimersContainer.innerHTML = timers.map((timer, index) => {
+        if (!timer || !timer.type) return '';
 
-            const nameContent = timer.type === 'ticket'
-                ? `<div class="timer-name-container"><p class="${nameClass}">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`
-                : nameItself;
+        const itemClass = index === 0 ? 'main' : 'secondary';
+        const color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
+        const countdown = Utils.formatTime(timer.secondsLeft);
+        const description = timer.type === 'boss' ? Utils.getText('timers.bossSpawnIn', { loc: timer.location }) : timer.description;
+        const imageDivClass = timer.type === 'ticket' ? 'ticket-image' : 'timer-image';
 
-            const countdownContent = timer.type === 'ticket'
-                ? `<div class="timer-countdown-container"><p class="timer-countdown" style="color: ${color};">${countdown}</p><div class="sync-button">${syncIconSVG}</div></div>`
-                : `<p class="timer-countdown" style="color: ${color};">${countdown}</p>`;
+        let imageContent = timer.type === 'ticket' ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>` : (timer.imageUrl ? `<img src="${timer.imageUrl}" alt="${timer.name}">` : '');
 
-            return `<div class="primary-timer-item ${itemClass}"><div class="${imageDivClass}">${imageContent}</div>${nameContent}<p class="timer-desc">${description}</p>${countdownContent}</div>`;
-        }).join('');
-    },
+        const nameClass = `timer-name ${timer.type === 'boss' ? 'timer-name-boss' : timer.type === 'ticket' ? 'timer-name-ticket' : ''}`;
+
+        const displayTime = Utils.formatDateToTimezoneString(timer.targetDate, config.displayTimezone, config.use24HourFormat);
+        const timeSpan = timer.type !== 'ticket' ? `<span class="timer-target-time">(${displayTime})</span>` : '';
+        const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
+        const nameItself = `<p class="${nameClass}">${timer.name} ${eventLabel} ${timeSpan}</p>`;
+
+        const nameContent = timer.type === 'ticket'
+            ? `<div class="timer-name-container"><p class="${nameClass}">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`
+            : nameItself;
+
+        const countdownContent = timer.type === 'ticket'
+            ? `<div class="timer-countdown-container"><p class="timer-countdown" style="color: ${color};">${countdown}</p><div class="sync-button">${syncIconSVG}</div></div>`
+            : `<p class="timer-countdown" style="color: ${color};">${countdown}</p>`;
+
+        return `<div class="primary-timer-item ${itemClass}"><div class="${imageDivClass}">${imageContent}</div>${nameContent}<p class="timer-desc">${description}</p>${countdownContent}</div>`;
+    }).join('');
+},
 
     renderSecondaryTimers: function (timers) {
         if (!timers || timers.length === 0) return '';
@@ -219,24 +279,42 @@ const UI = {
     },
 
     renderWeeklyPanel: function () {
-        if (!App.state.weeklyResetsData) return '';
-        const weeklyTimers = Logic.getWeeklyResetTimers(Logic.getCorrectedNow());
-        if (weeklyTimers.length === 0) return '';
+    if (!App.state.weeklyResetsData) return '';
+    
+    // Obtenemos los temporizadores semanales normales Y el del Héroe de la Semana
+    const weeklyTimers = Logic.getWeeklyResetTimers(Logic.getCorrectedNow());
+    const heroOfTheWeekTimer = Logic.getHeroOfTheWeekTimer(Logic.getCorrectedNow());
 
-        let html = `<h3 class="panel-subtitle">${Utils.getText('weekly.title')}</h3>`;
-        weeklyTimers.forEach(timer => {
-            const timeString = Utils.formatTimeWithDays(timer.secondsLeft, true);
-            const countdownText = Utils.getText('weekly.resetsIn', { d: timeString });
-            html += `<div class="weekly-item" data-weekly-id="${timer.id}">
-                        <div class="weekly-item-info">
-                            <span class="weekly-name">${timer.name}</span>
-                            <span class="weekly-category">${timer.category}</span>
-                        </div>
-                        <span class="weekly-countdown">${countdownText}</span>
-                    </div>`;
-        });
-        return html;
-    },
+    // Si hay un Héroe de la Semana activo, lo añadimos a la lista
+    if (heroOfTheWeekTimer) {
+        weeklyTimers.push(heroOfTheWeekTimer);
+    }
+    
+    // Ordenamos para que el que termina antes aparezca primero
+    weeklyTimers.sort((a, b) => a.secondsLeft - b.secondsLeft);
+
+    if (weeklyTimers.length === 0) return '';
+
+    let html = `<h3 class="panel-subtitle">${Utils.getText('weekly.title')}</h3>`;
+    weeklyTimers.forEach(timer => {
+        const timeString = Utils.formatTimeWithDays(timer.secondsLeft, true);
+        const countdownText = Utils.getText('weekly.resetsIn', { d: timeString });
+        
+        // Usamos un atributo de datos diferente para distinguir los tipos de evento
+        const dataAttribute = timer.type === 'heroOfTheWeek' 
+            ? `data-hotw-id="${timer.id}"`
+            : `data-weekly-id="${timer.id}"`;
+
+        html += `<div class="weekly-item" ${dataAttribute}>
+                    <div class="weekly-item-info">
+                        <span class="weekly-name">${timer.name}</span>
+                        <span class="weekly-category">${timer.category}</span>
+                    </div>
+                    <span class="weekly-countdown">${countdownText}</span>
+                </div>`;
+    });
+    return html;
+},
 
     renderBannersPanel: function () {
         const config = App.state.config;
@@ -435,251 +513,418 @@ renderStreamsModal: function (streams, now) {
     if (postStreamToggle) postStreamToggle.checked = streamPrefs.post;
 },
 
-    // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
-    openEventDetailsPanel: function (eventId) {
-        this.closeWeeklyDetailsPanel();
-        const lang = App.state.config.language;
-        const eventData = App.state.allEventsData.events[eventId];
+/* heroe de la semana */
+    openHeroOfTheWeekDetailsPanel: function (hotwId) {
+    this.closeAllDetailsPanels();
+    const lang = App.state.config.language;
+    const eventData = App.state.allHeroWeekData.find(e => e.id === hotwId);
+    if (!eventData) {
+        console.error(`Hero of the Week data not found for ID: ${hotwId}`);
+        return;
+    }
 
-        if (!eventData) {
-            console.error(`Event data not found for ID: ${eventId}`);
-            return;
-        }
+    const heroData = Logic.findHeroByName(eventData.heroName);
+    const heroImage = heroData ? `assets/heroes_icon/${heroData.short_image}` : 'assets/wimp_default.jpg';
 
-        // --- CÁLCULO DE FECHA Y HORA ---
-        const eventConfig = App.state.config.events.find(e => e.id === eventId);
-        let periodString = '';
-        if (eventConfig) {
-            const { DateTime } = luxon;
-            const { startDate, endDate } = eventConfig;
+    // --- INICIO DE LA MEJORA ---
+    // Obtenemos el color del elemento del héroe. Si no tiene, usamos un color por defecto.
+    const heroColor = heroData && heroData.element 
+        ? `var(--color-${heroData.element}-role)` 
+        : 'var(--text-color)';
+    // --- FIN DE LA MEJORA ---
 
-            const resetTime = App.state.config.dailyResetTime;
-            const displayTz = App.state.config.displayTimezone;
-            const use24h = App.state.config.use24HourFormat;
-
-            const startDt = DateTime.fromISO(startDate).setLocale(lang);
-            const endDt = DateTime.fromISO(endDate).setLocale(lang);
-            const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
-
-            const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
-
-            const sign = displayTz.startsWith('-') ? '+' : '-';
-            const hours = parseInt(displayTz.substring(1, 3));
-            const userLuxonTz = `Etc/GMT${sign}${hours}`;
-            const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
-
-            const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
-            const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
-
-            const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
-
-            periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
-        }
-
-        // --- FUNCIONES AUXILIARES DE RENDERIZADO ---
-        const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
-
-        const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
-            const itemDef = App.state.allEventsData.itemDefinitions[itemId];
-            if (!itemDef || !itemDef.icon) return '';
-            const name = itemDef.name[lang] || itemDef.name.en || itemId;
-            const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
-            const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
-
-            let probabilityHTML = '';
-            if (typeof probability === 'number' && !isNaN(probability)) {
-                probabilityHTML = `<span class="reward-probability">${probability.toFixed(1)}%</span>`;
-            }
-
-            return `<div class="reward-item-wrapper" title="${name} x${quantity}">
-                    ${probabilityHTML}
-                    <div class="reward-grid-item ${sizeClass}${rankClass}">
-                        <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
-                        <span class="reward-quantity">${quantity}</span>
-                    </div>
+    const getItemGridDisplay = (itemId, quantity, rank = 'Common') => {
+        const itemDef = App.state.allItemsData[itemId];
+        if (!itemDef || !itemDef.icon) return `<div class="reward-grid-item rank-common" title="${itemId} x${quantity}"><span class="reward-quantity">${quantity}</span></div>`;
+        const name = itemDef.name[lang] || itemDef.name.en || itemId;
+        const rankClass = `rank-${rank.toLowerCase()}`;
+        const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
+        return `<div class="reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
+                    <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                    <span class="reward-quantity">${quantity}</span>
                 </div>`;
-        };
+    };
 
-        const generateRewardTextList = (rewards) => {
-            if (!rewards || rewards.length === 0) return '';
-            let listHTML = '<ul class="details-reward-list">';
-            rewards.forEach(r => {
-                const itemDef = App.state.allEventsData.itemDefinitions[r.itemId];
-                if (!itemDef) return;
-                const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
-                const rarityClass = getRarityClass(r.rank);
-                let probClass = 'prob-common';
-                let probText = '';
-
-                if (typeof r.probability === 'number' && !isNaN(r.probability)) {
-                    if (r.probability <= 1) probClass = 'prob-legendary';
-                    else if (r.probability <= 5) probClass = 'prob-epic';
-                    else if (r.probability <= 20) probClass = 'prob-rare';
-                    else if (r.probability <= 50) probClass = 'prob-uncommon';
-                    probText = `${r.probability.toFixed(1)}%`;
-                }
-
-                listHTML += `<li class="details-reward-list-item">
-                            <span class="reward-name-part ${rarityClass}">${name}</span>
-                            <span class="reward-quantity-part">x${r.quantity}</span>
-                            <span class="reward-prob-part ${probClass}">${probText}</span>
-                         </li>`;
-            });
-            return listHTML + '</ul>';
-        };
-
-        // --- CONSTRUCCIÓN DEL HTML ---
-        let contentHTML = `
+    let contentHTML = `
         <div class="details-header">
             <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
-            <h2>${eventData.name[lang]}</h2>
-            <p>${periodString}</p>
+            <h2>${eventData.title[lang]}</h2>
+            <p>${eventData.durationText[lang]}</p>
         </div>
         <div class="details-content">
-            <p class="details-summary">${eventData.summary[lang]}</p>
+            <div class="hotw-profile">
+                <div class="hotw-hero-image-container"><img src="${heroImage}" alt="${eventData.heroName}"></div>
+                <div class="hotw-hero-info">
+                    <h4 style="color: ${heroColor};">${eventData.heroName}</h4>
+                    <p>${Utils.getText('weekly.heroOfTheWeek')}</p>
+                </div>
+            </div>
+
+            <div class="details-section">
+                <h3>${Utils.getText('weekly.howToParticipate')}</h3>
+                <div class="weekly-recommendation-box"><p>${eventData.howToParticipate[lang]}</p></div>
+            </div>
+
+            <div class="details-section">
+                <h3>${Utils.getText('weekly.missions')}</h3>
+                <div class="hotw-mission-list">
+                    ${eventData.missions.map(mission => `
+                        <div class="hotw-mission-item">
+                            <strong>${mission.title[lang]}</strong>
+                            <p>${mission.description[lang]}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="details-section">
+                <h3>${Utils.getText('weekly.rewards')}</h3>
+                <p class="details-summary">${eventData.rewardDistribution[lang]} (${eventData.limits[lang]})</p>
+                <div class="details-reward-grid-container">
+                    ${eventData.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}
+                </div>
+            </div>
+        </div>
     `;
 
-        if (eventData.details) {
-            contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`;
+    App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
+    App.dom.weeklyDetailsPanel.classList.add('visible');
+    if (App.state.isMobile) document.body.classList.add('no-scroll');
+    App.state.currentOpenWeeklyId = hotwId;
+},
+
+    // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
+    // EN: js/3-ui.js
+
+    // REEMPLAZA esta función completa en js/3-ui.js
+openEventDetailsPanel: function (eventId) {
+    this.closeAllDetailsPanels();
+    const lang = App.state.config.language;
+    const eventData = App.state.allEventsData.events[eventId];
+
+    if (!eventData) {
+        console.error(`Event data not found for ID: ${eventId}`);
+        return;
+    }
+
+    // --- CÁLCULO DE FECHA Y HORA ---
+    const eventConfig = App.state.config.events.find(e => e.id === eventId);
+    let periodString = '';
+    if (eventConfig) {
+        const { DateTime } = luxon;
+        const { startDate, endDate } = eventConfig;
+
+        const resetTime = App.state.config.dailyResetTime;
+        const displayTz = App.state.config.displayTimezone;
+        const use24h = App.state.config.use24HourFormat;
+
+        const startDt = DateTime.fromISO(startDate).setLocale(lang);
+        const endDt = DateTime.fromISO(endDate).setLocale(lang);
+        const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
+
+        const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
+
+        const sign = displayTz.startsWith('-') ? '+' : '-';
+        const hours = parseInt(displayTz.substring(1, 3));
+        const userLuxonTz = `Etc/GMT${sign}${hours}`;
+        const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
+
+        const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
+        const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
+
+        const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
+
+        periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
+    }
+
+    // --- FUNCIONES AUXILIARES DE RENDERIZADO ---
+    const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
+
+    const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
+        const itemDef = App.state.allItemsData[itemId];
+        if (!itemDef || !itemDef.icon) return '';
+        const name = itemDef.name[lang] || itemDef.name.en || itemId;
+        const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
+        const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
+
+        let probabilityHTML = '';
+        if (typeof probability === 'number' && !isNaN(probability)) {
+            probabilityHTML = `<span class="reward-probability">${probability.toFixed(1)}%</span>`;
         }
 
-        if (eventData.daily_claim_limit) {
-            contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`;
-        }
+        return `<div class="reward-item-wrapper" title="${name} x${quantity}">
+                ${probabilityHTML}
+                <div class="reward-grid-item ${sizeClass}${rankClass}">
+                    <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                    <span class="reward-quantity">${quantity}</span>
+                </div>
+            </div>`;
+    };
 
-        // --- LÓGICA DE SECCIONES ---
+    const generateRewardTextList = (rewards) => {
+        if (!rewards || rewards.length === 0) return '';
+        let listHTML = '<ul class="details-reward-list">';
+        rewards.forEach(r => {
+            const itemDef = App.state.allItemsData[r.itemId];
+            if (!itemDef) return;
+            const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
+            const rarityClass = getRarityClass(r.rank);
+            let probClass = 'prob-common';
+            let probText = '';
 
-        // SECCIÓN: Misiones
-        if (eventData.missions) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
-            eventData.missions.forEach(m => {
-                let rightColumnHTML = '';
-                if (m.rewards) {
-                    rightColumnHTML = m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('');
-                } else if (m.points) {
-                    rightColumnHTML = `+${m.points} ${Utils.getText('common.pointsSuffix')}`;
-                } else if (m.goal) {
-                    rightColumnHTML = `${Utils.getText('common.goalPrefix')} x${m.goal}`;
-                }
-                contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
-        }
+            if (typeof r.probability === 'number' && !isNaN(r.probability)) {
+                if (r.probability <= 1) probClass = 'prob-legendary';
+                else if (r.probability <= 5) probClass = 'prob-epic';
+                else if (r.probability <= 20) probClass = 'prob-rare';
+                else if (r.probability <= 50) probClass = 'prob-uncommon';
+                probText = `${r.probability.toFixed(1)}%`;
+            }
 
-        // SECCIÓN: Tienda de Intercambio
-        if (eventData.rewards?.exchange_shop) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
-            const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
-            const currencyItemDef = currencyItemId ? App.state.allEventsData.itemDefinitions[currencyItemId] : null;
+            listHTML += `<li class="details-reward-list-item">
+                        <span class="reward-name-part ${rarityClass}">${name}</span>
+                        <span class="reward-quantity-part">x${r.quantity}</span>
+                        <span class="reward-prob-part ${probClass}">${probText}</span>
+                     </li>`;
+        });
+        return listHTML + '</ul>';
+    };
 
-            eventData.rewards.exchange_shop.forEach(item => {
-                const itemToBuyDef = App.state.allEventsData.itemDefinitions[item.itemId];
-                if (!itemToBuyDef) return;
-                const itemName = itemToBuyDef.name[lang] || itemToBuyDef.name.en;
-                const itemIconHtml = getItemGridDisplay(item.itemId, item.quantity, item.rank);
-                let costHtml = `<span class="cost-value">${item.cost}</span>`;
-                if (currencyItemDef) {
-                    costHtml += `<img src="assets/items/${currencyItemDef.icon}.png" class="currency-icon" alt="${currencyItemDef.name[lang]}">`;
-                }
+    // --- CONSTRUCCIÓN DEL HTML ---
+    let contentHTML = `
+    <div class="details-header">
+        <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
+        <h2>${eventData.name[lang]}</h2>
+        <p>${periodString}</p>
+    </div>
+    <div class="details-content">
+        <p class="details-summary">${eventData.summary[lang]}</p>
+    `;
 
-                let limitText = '';
-                if (item.limit && item.limit.key) {
-                    const translationKey = `events.limits.${item.limit.key}`;
-                    const translatedLimit = Utils.getText(translationKey, { value: item.limit.value });
-                    limitText = `<span class="item-limit">${translatedLimit}</span>`;
-                }
+    if (eventData.details) {
+        contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`;
+    }
+
+    if (eventData.daily_claim_limit) {
+        contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`;
+    }
+
+    // --- LÓGICA DE SECCIONES (NUEVAS Y ANTIGUAS) ---
+
+    // SECCIÓN: Misiones Diarias (con Pestañas)
+    if (eventData.daily_missions) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3>`;
+        contentHTML += `<div class="tabs-nav">`;
+        eventData.daily_missions.forEach((dayData, index) => {
+            const activeClass = index === 0 ? 'active' : '';
+            contentHTML += `<button class="tab-link ${activeClass}" data-tab="day-${dayData.day}">${Utils.getText('events.day')} ${dayData.day}</button>`;
+        });
+        contentHTML += `</div><div class="tabs-content">`;
+        eventData.daily_missions.forEach((dayData, index) => {
+            const activeClass = index === 0 ? 'active' : '';
+            contentHTML += `<div id="day-${dayData.day}" class="tab-content ${activeClass}">
+                            <table class="details-table daily-missions-table">
+                                <thead>
+                                    <tr>
+                                        <th>${Utils.getText('events.table.mission')}</th>
+                                        <th class="count-col">${Utils.getText('events.table.count')}</th>
+                                        <th>${Utils.getText('events.table.reward')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+            dayData.missions.forEach(mission => {
+                const reward = mission.rewards[0];
+                const rewardGridHTML = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '');
 
                 contentHTML += `<tr>
-                              <td class="item-to-buy">
-                                ${itemIconHtml}
-                                <div class="item-info">
-                                    <span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>
-                                    ${limitText}
-                                </div>
-                              </td>
-                              <td class="item-cost">${costHtml}</td>
-                            </tr>`;
+                                    <td>${mission.description[lang]}</td>
+                                    <td class="count-col">${mission.count}</td>
+                                    <td class="mission-reward-cell">
+                                        ${rewardGridHTML}
+                                    </td>
+                                </tr>`;
             });
             contentHTML += `</tbody></table></div>`;
-        }
+        });
+        contentHTML += `</div></div>`;
+    }
 
-        // SECCIÓN: Misiones y Recompensas (Grid)
-        if (eventData.missions_and_rewards) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
-            eventData.missions_and_rewards.forEach(m => {
-                const iconGrid = getItemGridDisplay(m.itemId, m.quantity, m.rank);
-                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${iconGrid}</div>`;
-            });
-            contentHTML += `</div></div>`;
-        }
-
-        // SECCIÓN: Ranking de Jefe
-        if (eventData.boss_details?.ranking_rewards) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
-            const participation = eventData.boss_details.ranking_rewards.base_on_participation;
-            if (participation) {
-                const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
-                contentHTML += `<div class="participation-reward">
-                                <div class="reward-grid">${rewardsGrid}</div>
-                                <div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div>
+    // SECCIÓN: Recompensas Acumulativas por Misiones
+    if (eventData.rewards?.cumulative_missions) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
+        eventData.rewards.cumulative_missions.forEach(reward => {
+            const iconGrid = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank);
+            contentHTML += `<div class="details-reward-column">
+                                <span class="details-reward-label">${reward.condition[lang]}</span>
+                                ${iconGrid}
                             </div>`;
-            }
-            const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
-            if (ranking) {
-                contentHTML += `<div class="details-reward-grid-container">`;
-                ranking.forEach(r => {
-                    const iconGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
-                    contentHTML += `<div class="details-reward-column">
-                                  <span class="details-reward-label">${r.tier_name[lang]}</span>
-                                  <div class="reward-grid">${iconGrid}</div>
-                                </div>`;
-                });
-                contentHTML += `</div>`;
-            }
-            contentHTML += `</div>`;
-        }
+        });
+        contentHTML += `</div></div>`;
+    }
+    
+    // SECCIÓN: Sistema de Puntos
+    if (eventData.point_system) {
+        const ps = eventData.point_system;
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.pointSystemTitle')}</h3>`;
+        let infoText = '';
+        if (ps.cost_per_claim) infoText += `<strong>${Utils.getText('events.pointSystem.costPerClaim')}:</strong> ${ps.cost_per_claim} Pts. `;
+        if (ps.daily_max_claims) infoText += `<strong>${Utils.getText('events.pointSystem.dailyClaimLimit')}:</strong> ${ps.daily_max_claims}. `;
+        if (ps.daily_max_points) infoText += `<strong>${Utils.getText('events.pointSystem.dailyPointLimit')}:</strong> ${ps.daily_max_points}.`;
+        if (infoText) contentHTML += `<div class="weekly-recommendation-box"><p>${infoText}</p></div>`;
 
-        // SECCIÓN: Rueda del Destino
-        if (eventData.rewards?.wheel_of_fate) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
-            const rewards = eventData.rewards.wheel_of_fate;
-            const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
-            contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
-            contentHTML += generateRewardTextList(rewards);
-            contentHTML += `</div>`;
-        }
+        contentHTML += `<h4>${Utils.getText('events.pointSystem.pointsPerAction')}</h4><table class="details-table missions-table"><tbody>`;
+        ps.missions.forEach(mission => {
+            contentHTML += `<tr><td>${mission.description[lang]}</td><td class="points-col">+${mission.points}</td></tr>`;
+        });
+        contentHTML += `</tbody></table></div>`;
+    }
 
-        // SECCIÓN: Recompensas Acumulativas
-        if (eventData.rewards?.cumulative_spins) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3>`;
+    // SECCIÓN: Misiones (Formato Antiguo - para retrocompatibilidad)
+    if (eventData.missions) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
+        eventData.missions.forEach(m => {
+            let rightColumnHTML = '';
+            if (m.rewards) {
+                rightColumnHTML = m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('');
+            } else if (m.points) {
+                rightColumnHTML = `+${m.points} ${Utils.getText('common.pointsSuffix')}`;
+            } else if (m.goal) {
+                rightColumnHTML = `${Utils.getText('common.goalPrefix')} x${m.goal}`;
+            }
+            contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
+        });
+        contentHTML += `</tbody></table></div>`;
+    }
+
+    // SECCIÓN: Tienda de Intercambio
+    if (eventData.rewards?.exchange_shop) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
+        const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
+        const currencyItemDef = currencyItemId ? App.state.allItemsData[currencyItemId] : null;
+
+        eventData.rewards.exchange_shop.forEach(item => {
+            const itemToBuyDef = App.state.allItemsData[item.itemId];
+            if (!itemToBuyDef) return;
+            const itemName = itemToBuyDef.name[lang] || itemToBuyDef.name.en;
+            const itemIconHtml = getItemGridDisplay(item.itemId, item.quantity, item.rank);
+            let costHtml = `<span class="cost-value">${item.cost}</span>`;
+            if (currencyItemDef) {
+                costHtml += `<img src="assets/items/${currencyItemDef.icon}.png" class="currency-icon" alt="${currencyItemDef.name[lang]}">`;
+            }
+            let limitText = '';
+            if (item.limit && item.limit.key) {
+                const translationKey = `events.limits.${item.limit.key}`;
+                const translatedLimit = Utils.getText(translationKey, { value: item.limit.value });
+                limitText = `<span class="item-limit">${translatedLimit}</span>`;
+            }
+            contentHTML += `<tr>
+                          <td class="item-to-buy">
+                            ${itemIconHtml}
+                            <div class="item-info">
+                                <span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>
+                                ${limitText}
+                            </div>
+                          </td>
+                          <td class="item-cost">${costHtml}</td>
+                        </tr>`;
+        });
+        contentHTML += `</tbody></table></div>`;
+    }
+
+    // SECCIÓN: Misiones y Recompensas (Grid)
+    if (eventData.missions_and_rewards) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
+        eventData.missions_and_rewards.forEach(m => {
+            const iconGrid = getItemGridDisplay(m.itemId, m.quantity, m.rank);
+            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${iconGrid}</div>`;
+        });
+        contentHTML += `</div></div>`;
+    }
+
+    // SECCIÓN: Ranking de Jefe
+    if (eventData.boss_details?.ranking_rewards) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
+        const participation = eventData.boss_details.ranking_rewards.base_on_participation;
+        if (participation) {
+            const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
+            contentHTML += `<div class="participation-reward">
+                            <div class="reward-grid">${rewardsGrid}</div>
+                            <div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div>
+                        </div>`;
+        }
+        const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
+        if (ranking) {
             contentHTML += `<div class="details-reward-grid-container">`;
-            eventData.rewards.cumulative_spins.forEach(r => {
-                const iconGrid = getItemGridDisplay(r.itemId, r.quantity, r.rank);
+            ranking.forEach(r => {
+                const iconGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
                 contentHTML += `<div class="details-reward-column">
-                              <span class="details-reward-label">${r.condition[lang]}</span>
-                              ${iconGrid}
+                              <span class="details-reward-label">${r.tier_name[lang]}</span>
+                              <div class="reward-grid">${iconGrid}</div>
                             </div>`;
             });
-            contentHTML += `</div></div>`;
-        }
-
-        // SECCIÓN: Pool de Recompensas
-        if (eventData.rewards?.reward_pool) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
-            const rewards = eventData.rewards.reward_pool;
-            const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
-            contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
-            contentHTML += generateRewardTextList(rewards);
             contentHTML += `</div>`;
         }
-
-        // --- Cierre y Renderizado Final ---
         contentHTML += `</div>`;
-        App.dom.eventDetailsPanel.innerHTML = contentHTML;
-        App.dom.eventDetailsPanel.classList.add('visible');
-        if (App.state.isMobile) document.body.classList.add('no-scroll');
-        App.state.currentOpenEventId = eventId;
-    },
+    }
+
+    // SECCIÓN: Rueda del Destino
+    if (eventData.rewards?.wheel_of_fate) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
+        const rewards = eventData.rewards.wheel_of_fate;
+        const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
+        contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
+        contentHTML += generateRewardTextList(rewards);
+        contentHTML += `</div>`;
+    }
+
+    // SECCIÓN: Recompensas Acumulativas (Spins)
+    if (eventData.rewards?.cumulative_spins) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3>`;
+        contentHTML += `<div class="details-reward-grid-container">`;
+        eventData.rewards.cumulative_spins.forEach(r => {
+            const iconGrid = getItemGridDisplay(r.itemId, r.quantity, r.rank);
+            contentHTML += `<div class="details-reward-column">
+                          <span class="details-reward-label">${r.condition[lang]}</span>
+                          ${iconGrid}
+                        </div>`;
+        });
+        contentHTML += `</div></div>`;
+    }
+
+    // SECCIÓN: Pool de Recompensas
+    if (eventData.rewards?.reward_pool) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
+        const rewards = eventData.rewards.reward_pool;
+        const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
+        contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
+        contentHTML += generateRewardTextList(rewards);
+        contentHTML += `</div>`;
+    }
+
+    // --- Cierre y Renderizado Final ---
+    contentHTML += `</div>`;
+    App.dom.eventDetailsPanel.innerHTML = contentHTML;
+    App.dom.eventDetailsPanel.classList.add('visible');
+    if (App.state.isMobile) document.body.classList.add('no-scroll');
+    App.state.currentOpenEventId = eventId;
+
+    // Lógica para hacer funcionar las pestañas de misiones diarias
+    const tabsNav = App.dom.eventDetailsPanel.querySelector('.tabs-nav');
+    if (tabsNav) {
+        tabsNav.addEventListener('click', e => {
+            if (e.target.classList.contains('tab-link')) {
+                const tabId = e.target.dataset.tab;
+                
+                // Quitar 'active' de todos los botones y contenidos
+                tabsNav.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
+                App.dom.eventDetailsPanel.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Añadir 'active' al botón y contenido correctos
+                e.target.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            }
+        });
+    }
+},
 
     closeEventDetailsPanel: function () {
         if (!App.dom.eventDetailsPanel) return;
@@ -688,203 +933,204 @@ renderStreamsModal: function (streams, now) {
         if (App.state.isMobile) document.body.classList.remove('no-scroll');
     },
 
-    openWeeklyDetailsPanel: function (weeklyId) {
-        this.closeEventDetailsPanel();
-        const lang = App.state.config.language;
-        const weeklyData = App.state.weeklyResetsData;
-        if (!weeklyData) return;
+    // REEMPLAZA esta función completa en js/3-ui.js
+// REEMPLAZA esta función completa en js/3-ui.js
+openWeeklyDetailsPanel: function (weeklyId) {
+    this.closeAllDetailsPanels();
 
-        const eventData = weeklyData.events.find(e => e.id === weeklyId);
-        if (!eventData) {
-            console.error(`Weekly event data not found for ID: ${weeklyId}`);
-            return;
-        }
+    const lang = App.state.config.language;
+    const weeklyData = App.state.weeklyResetsData;
+    if (!weeklyData) return;
 
-        const getWeeklyItemGridDisplay = (itemId, quantity, rank = 'Common') => {
-            const itemDef = weeklyData.itemDefinitions[itemId];
-            if (!itemDef || !itemDef.icon) return '';
-            const name = itemDef.name[lang] || itemDef.name.en || itemId;
-            const rankClass = `rank-${rank.toLowerCase()}`;
-            const sizeClass = itemDef.size === 'double' ? 'double-width' : '';
-            return `<div class="weekly-reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
-                        <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon" alt="${name}">
-                        <span class="weekly-reward-quantity">${quantity}</span>
+    const eventData = weeklyData.events.find(e => e.id === weeklyId);
+    if (!eventData) {
+        console.error(`Weekly event data not found for ID: ${weeklyId}`);
+        return;
+    }
+
+    const getWeeklyItemGridDisplay = (itemId, quantity, rank = 'Common') => {
+        const itemDef = App.state.allItemsData[itemId];
+        if (!itemDef || !itemDef.icon) return '';
+        const name = itemDef.name[lang] || itemDef.name.en || itemId;
+        const rankClass = `rank-${rank.toLowerCase()}`;
+        const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
+        return `<div class="weekly-reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
+                    <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon" alt="${name}">
+                    <span class="weekly-reward-quantity">${quantity}</span>
+                </div>`;
+    };
+
+    let contentHTML = `
+        <div class="details-header">
+            <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
+            <h2>${eventData.eventName[lang]}</h2>
+            <p>${eventData.description ? eventData.description[lang] : ''}</p>
+        </div>
+        <div class="details-content">
+    `;
+
+    if (eventData.seasonBuffs) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.seasonBuffsTitle')}</h3>`;
+        eventData.seasonBuffs.forEach((buff, index) => {
+            let buffDescription = buff.description ? (Array.isArray(buff.description) ? buff.description.map(d => d[lang]).join('<br>') : buff.description[lang]) : '';
+            contentHTML += `<div class="weekly-buff-item">
+                              <img src="assets/spells_icons/${buff.icon}.png">
+                              <div><strong>${buff.name[lang]}</strong><p>${buffDescription}</p></div>
+                            </div>`;
+            if (index < eventData.seasonBuffs.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
+        });
+        contentHTML += `</div>`;
+    }
+
+    if (eventData.chosenBuffs) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.chosenBuffsTitle')}</h3>`;
+
+        const arrowSVG = `<svg class="expand-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+        eventData.chosenBuffs.forEach((buff, index) => {
+            const hasEnhancements = buff.enhancements && buff.enhancements.length > 0;
+            const expandableClass = hasEnhancements ? ' expandable' : '';
+
+            contentHTML += `<div class="weekly-buff-item${expandableClass}">
+                      <img src="assets/spells_icons/${buff.icon}.png">
+                      <div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div>
+                      ${hasEnhancements ? arrowSVG : ''}
                     </div>`;
-        };
 
-        let contentHTML = `
-            <div class="details-header">
-                <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
-                <h2>${eventData.eventName[lang]}</h2>
-                <p>${eventData.description ? eventData.description[lang] : ''}</p>
-            </div>
-            <div class="details-content">
-        `;
-
-        if (eventData.seasonBuffs) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.seasonBuffsTitle')}</h3>`;
-            eventData.seasonBuffs.forEach((buff, index) => {
-                let buffDescription = buff.description ? (Array.isArray(buff.description) ? buff.description.map(d => d[lang]).join('<br>') : buff.description[lang]) : '';
-                contentHTML += `<div class="weekly-buff-item">
-                                  <img src="assets/spells_icons/${buff.icon}.png">
-                                  <div><strong>${buff.name[lang]}</strong><p>${buffDescription}</p></div>
-                                </div>`;
-                if (index < eventData.seasonBuffs.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
-            });
-            contentHTML += `</div>`;
-        }
-
-        if (eventData.chosenBuffs) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.chosenBuffsTitle')}</h3>`;
-
-            const arrowSVG = `<svg class="expand-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-
-            eventData.chosenBuffs.forEach((buff, index) => {
-                const hasEnhancements = buff.enhancements && buff.enhancements.length > 0;
-                const expandableClass = hasEnhancements ? ' expandable' : '';
-
-                // Renderiza el buff principal
-                contentHTML += `<div class="weekly-buff-item${expandableClass}">
-                          <img src="assets/spells_icons/${buff.icon}.png">
-                          <div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div>
-                          ${hasEnhancements ? arrowSVG : ''}
-                        </div>`;
-
-                // Si tiene mejoras, renderiza la lista oculta
-                if (hasEnhancements) {
-                    contentHTML += `<div class="weekly-enhancements-list">`;
-                        contentHTML += `<p class="enhancements-title">${Utils.getText('weekly.enhancementsTitle')}</p>`;
-                    buff.enhancements.forEach(enh => {
-                        contentHTML += `<div class="weekly-enhancement-item">
-                                  <strong>${enh.name[lang]}</strong>
-                                  <p>${enh.description[lang]}</p>
-                                </div>`;
-                    });
-                    contentHTML += `</div>`;
-                }
-
-                if (index < eventData.chosenBuffs.length - 1) {
-                    contentHTML += '<hr class="weekly-buff-separator">';
-                }
-            });
-
-            contentHTML += `</div>`;
-        }
-
-        if (eventData.stages) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.stagesTitle')}</h3>`;
-            if (eventData.stages[0].recommendedHeroes) {
-                contentHTML += `<div class="weekly-recommendation-box"><p>${eventData.stages[0].recommendedHeroes.description[lang]}</p></div>`;
-            }
-            eventData.stages.forEach((stage, index) => {
-                const elementalIcons = stage.elementalWeakness.map(el => `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="weekly-element-icon" alt="${el}">`).join('');
-                contentHTML += `<div class="weekly-stage-item">
-                                    <h4 class="weekly-stage-title">${stage.stageName[lang]}</h4>
-                                    <div class="weekly-stage-info-grid">
-                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.combatPower')}</span><div class="weekly-stage-info-value"><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${stage.recommendedPower}</div></div>
-                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${stage.timeLimit[lang]}</div></div>
-                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.weakness')}</span><div class="weekly-stage-info-value weekly-elemental-weakness">${elementalIcons}</div></div>
-                                    </div>
-                                    <div class="weekly-stage-rewards">`;
-                stage.completionRewards.forEach(rewardTier => {
-                    const rewardsGrid = rewardTier.rewards.map(r => getWeeklyItemGridDisplay(r.itemId, r.quantity, r.rank)).join('');
-                    contentHTML += `<div class="weekly-reward-tier"><p><strong class="rarity-text-rare">${Utils.getText('events.rewards.rankHeader')} ${rewardTier.stageLevel}:</strong></p><div class="weekly-reward-grid">${rewardsGrid}</div></div>`;
-                });
-                contentHTML += `</div></div>`;
-                if (index < eventData.stages.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
-            });
-            contentHTML += `</div>`;
-        }
-
-        if (eventData.currentBoss) {
-            const boss = eventData.currentBoss;
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.bossInfoTitle')}</h3>
-                <div class="weekly-boss-info-header">
-                    <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
-                    <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
-                </div>
-                <p class="details-summary">${boss.description[lang]}</p>
-            </div>`;
-
-            if (boss.recommendedHeroes?.description) {
-                contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
-                if (boss.recommendedHeroes.heroesByTag) {
-                    boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
-                        contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
-                        tagGroup.heroList.forEach(hero => {
-                            const heroData = Logic.findHeroByName(hero);
-                            if (heroData) {
-                                const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
-                                contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
-                            }
-                        });
-                        contentHTML += `</div></div>`;
-                    });
-                }
-                contentHTML += `</div>`;
-            }
-
-            if (boss.difficultyTiers) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.modifiersTitle')}</h3>`;
-                Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
-                    contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
-                    data.modifiers.forEach(mod => {
-                        contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
-                    });
-                    contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
-                    data.progression.forEach(prog => {
-                        contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
-                    });
-                    contentHTML += `</table></div>`;
+            if (hasEnhancements) {
+                contentHTML += `<div class="weekly-enhancements-list">`;
+                    contentHTML += `<p class="enhancements-title">${Utils.getText('weekly.enhancementsTitle')}</p>`;
+                buff.enhancements.forEach(enh => {
+                    contentHTML += `<div class="weekly-enhancement-item">
+                              <strong>${enh.name[lang]}</strong>
+                              <p>${enh.description[lang]}</p>
+                            </div>`;
                 });
                 contentHTML += `</div>`;
             }
 
-            if (boss.scoreRewards) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.scoreRewardsTitle')}</h3><div class="weekly-score-rewards-grid">`;
-                boss.scoreRewards.forEach(tier => {
-                    const rewardItem = tier.rewards[0];
-                    const itemDef = weeklyData.itemDefinitions[rewardItem.itemId];
-                    const rank = rewardItem.rank || 'Common';
-                    const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
-
-                    const iconHTML = itemDef?.icon
-                        ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}">
-                               <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon">
-                               <span class="weekly-reward-quantity">${rewardItem.quantity}</span>
-                           </div>`
-                        : '';
-
-                    contentHTML += `<div class="weekly-score-reward-column">
-                                      <span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>
-                                      ${iconHTML}
-                                    </div>`;
-                });
-                contentHTML += `</div></div>`;
+            if (index < eventData.chosenBuffs.length - 1) {
+                contentHTML += '<hr class="weekly-buff-separator">';
             }
-
-            if (boss.tips?.length > 0) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
-                boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
-                contentHTML += `</ul></div>`;
-            }
-
-            if (eventData.nextBoss) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.nextBoss')}</h3>
-                    <div class="weekly-buff-item">
-                        <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
-                        <div><strong>${eventData.nextBoss.name[lang]}</strong><p>${eventData.nextBoss.description[lang]}</p></div>
-                    </div>
-                 </div>`;
-            }
-        }
+        });
 
         contentHTML += `</div>`;
-        App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
-        App.dom.weeklyDetailsPanel.classList.add('visible');
-        if (App.state.isMobile) document.body.classList.add('no-scroll');
-        App.state.currentOpenWeeklyId = weeklyId;
-    },
+    }
+
+    if (eventData.stages) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.stagesTitle')}</h3>`;
+        if (eventData.stages[0].recommendedHeroes) {
+            contentHTML += `<div class="weekly-recommendation-box"><p>${eventData.stages[0].recommendedHeroes.description[lang]}</p></div>`;
+        }
+        eventData.stages.forEach((stage, index) => {
+            const elementalIcons = stage.elementalWeakness.map(el => `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="weekly-element-icon" alt="${el}">`).join('');
+            contentHTML += `<div class="weekly-stage-item">
+                                <h4 class="weekly-stage-title">${stage.stageName[lang]}</h4>
+                                <div class="weekly-stage-info-grid">
+                                    <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.combatPower')}</span><div class="weekly-stage-info-value"><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${stage.recommendedPower}</div></div>
+                                    <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${stage.timeLimit[lang]}</div></div>
+                                    <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.weakness')}</span><div class="weekly-stage-info-value weekly-elemental-weakness">${elementalIcons}</div></div>
+                                </div>
+                                <div class="weekly-stage-rewards">`;
+            stage.completionRewards.forEach(rewardTier => {
+                const rewardsGrid = rewardTier.rewards.map(r => getWeeklyItemGridDisplay(r.itemId, r.quantity, r.rank)).join('');
+                contentHTML += `<div class="weekly-reward-tier"><p><strong class="rarity-text-rare">${Utils.getText('events.rewards.rankHeader')} ${rewardTier.stageLevel}:</strong></p><div class="weekly-reward-grid">${rewardsGrid}</div></div>`;
+            });
+            contentHTML += `</div></div>`;
+            if (index < eventData.stages.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
+        });
+        contentHTML += `</div>`;
+    }
+
+    if (eventData.currentBoss) {
+        const boss = eventData.currentBoss;
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.bossInfoTitle')}</h3>
+            <div class="weekly-boss-info-header">
+                <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
+                <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
+            </div>
+            <p class="details-summary">${boss.description[lang]}</p>
+        </div>`;
+
+        if (boss.recommendedHeroes?.description) {
+            contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
+            if (boss.recommendedHeroes.heroesByTag) {
+                boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
+                    contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
+                    tagGroup.heroList.forEach(hero => {
+                        const heroData = Logic.findHeroByName(hero);
+                        if (heroData) {
+                            const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
+                            contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
+                        }
+                    });
+                    contentHTML += `</div></div>`;
+                });
+            }
+            contentHTML += `</div>`;
+        }
+
+        if (boss.difficultyTiers) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.modifiersTitle')}</h3>`;
+            Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
+                contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
+                data.modifiers.forEach(mod => {
+                    contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
+                });
+                contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
+                data.progression.forEach(prog => {
+                    contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
+                });
+                contentHTML += `</table></div>`;
+            });
+            contentHTML += `</div>`;
+        }
+
+        if (boss.scoreRewards) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.scoreRewardsTitle')}</h3><div class="weekly-score-rewards-grid">`;
+            boss.scoreRewards.forEach(tier => {
+                const rewardItem = tier.rewards[0];
+                const itemDef = App.state.allItemsData[rewardItem.itemId];
+                const rank = rewardItem.rank || 'Common';
+                const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
+
+                const iconHTML = itemDef?.icon
+                    ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}">
+                           <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon">
+                           <span class="weekly-reward-quantity">${rewardItem.quantity}</span>
+                       </div>`
+                    : '';
+
+                contentHTML += `<div class="weekly-score-reward-column">
+                                  <span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>
+                                  ${iconHTML}
+                                </div>`;
+            });
+            contentHTML += `</div></div>`;
+        }
+
+        if (boss.tips?.length > 0) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
+            boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
+            contentHTML += `</ul></div>`;
+        }
+
+        if (eventData.nextBoss) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.nextBoss')}</h3>
+                <div class="weekly-buff-item">
+                    <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
+                    <div><strong>${eventData.nextBoss.name[lang]}</strong><p>${eventData.nextBoss.description[lang]}</p></div>
+                </div>
+             </div>`;
+        }
+    }
+
+    contentHTML += `</div>`;
+    App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
+    App.dom.weeklyDetailsPanel.classList.add('visible');
+    if (App.state.isMobile) document.body.classList.add('no-scroll');
+    App.state.currentOpenWeeklyId = weeklyId;
+},
 
     /** Cierra el panel de detalles del evento semanal. */
     // ... continuación de js/3-ui.js
@@ -895,6 +1141,11 @@ renderStreamsModal: function (streams, now) {
         App.state.currentOpenWeeklyId = null;
         if (App.state.isMobile) document.body.classList.remove('no-scroll');
     },
+
+    closeAllDetailsPanels: function() {
+    this.closeEventDetailsPanel();
+    this.closeWeeklyDetailsPanel();
+},
 
     openSettingsModal: function() {
         const config = App.state.config;
@@ -1480,8 +1731,15 @@ async openAccountModal() {
             this.openEventDetailsPanel(App.state.currentOpenEventId);
         }
         if (App.state.currentOpenWeeklyId) {
+        // Comprobamos si el ID corresponde a un Héroe de la Semana
+        const isHeroOfTheWeek = App.state.allHeroWeekData.some(e => e.id === App.state.currentOpenWeeklyId);
+        
+        if (isHeroOfTheWeek) {
+            this.openHeroOfTheWeekDetailsPanel(App.state.currentOpenWeeklyId);
+        } else {
             this.openWeeklyDetailsPanel(App.state.currentOpenWeeklyId);
         }
+    }
     },
     
     populateSelects: function() {

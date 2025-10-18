@@ -1,7 +1,7 @@
 'use strict';
 
-const CACHE_NAME_STATIC = 'bns-timer-static-v3.3';
-const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3.3';
+const CACHE_NAME_STATIC = 'bns-timer-static-v3.5';
+const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3.5';
 const API_URL_PREFIX = 'https://pcnetfs.moe/api-bns-heroes-timers/api/';
 
 // --- INICIO DE LA CORRECCIÓN UNIVERSAL ---
@@ -59,60 +59,48 @@ self.addEventListener('activate', event => {
 // --- FASE DE FETCH ---
 self.addEventListener('fetch', event => {
     const { request } = event;
+    const url = new URL(request.url);
 
-    // --- INICIO DE LA CORRECCIÓN ---
-    // Si la petición no es GET, la ignoramos completamente y dejamos que el navegador la maneje.
+    // Ignoramos peticiones que no sean GET
     if (request.method !== 'GET') {
         return;
     }
-    // --- FIN DE LA CORRECCIÓN ---
 
-    // El resto de la lógica de fetch se queda igual.
-    // Solo se ejecutará para peticiones GET.
+    // --- ESTRATEGIAS DE CACHÉ ESPECÍFICAS ---
 
-    // 1. Estrategia para la API (Network First, Cache Fallback)
-    if (request.url.startsWith(API_URL_PREFIX)) {
+    // Estrategia 1: API (Network First, Cache Fallback)
+    if (url.href.startsWith(API_URL_PREFIX)) {
         event.respondWith(
             fetch(request, { mode: 'cors' })
                 .then(networkResponse => {
-                    const cacheCopy = networkResponse.clone();
-                    caches.open(CACHE_NAME_DYNAMIC).then(cache => {
-                        cache.put(request, cacheCopy);
-                    });
+                    if (networkResponse && networkResponse.ok) {
+                        const cacheCopy = networkResponse.clone();
+                        caches.open(CACHE_NAME_DYNAMIC).then(cache => {
+                            cache.put(request, cacheCopy);
+                        });
+                    }
                     return networkResponse;
                 }).catch(() => caches.match(request))
         );
         return;
     }
 
-    // 2. Estrategia para Documento HTML principal (Network First, Cache Fallback)
-    if (request.mode === 'navigate') {
+    // Estrategia 2: Archivos estáticos principales (Cache First, Network Fallback)
+    // Esto es más seguro que "Cache Only" por si algo falla.
+    if (STATIC_FILES_TO_CACHE.some(file => url.pathname.endsWith(file))) {
         event.respondWith(
-            fetch(request)
-                .then(networkResponse => {
-                    const cacheCopy = networkResponse.clone();
-                    caches.open(CACHE_NAME_STATIC).then(cache => {
-                        cache.put(request, cacheCopy);
-                    });
-                    return networkResponse;
+            caches.match(request)
+                .then(cachedResponse => {
+                    return cachedResponse || fetch(request);
                 })
-                .catch(() => caches.match(`${BASE_PATH}/index.html`))
         );
         return;
     }
 
-    // 3. Estrategia para Assets y otros archivos (Cache First)
-    event.respondWith(
-        caches.match(request).then(cachedResponse => {
-            return cachedResponse || fetch(request).then(networkResponse => {
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME_DYNAMIC).then(cache => {
-                    cache.put(request, responseToCache);
-                });
-                return networkResponse;
-            });
-        })
-    );
+    // Estrategia 3 (Catch-all): Para todo lo demás (imágenes de /assets/, etc.),
+    // simplemente realiza la petición a la red. NO se guarda en la caché del Service Worker.
+    // Esto deja que el navegador use su caché HTTP normal para estas imágenes.
+    event.respondWith(fetch(request));
 });
 
 // --- MANEJO DE NOTIFICACIONES PUSH ---
