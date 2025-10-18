@@ -9,7 +9,7 @@
 </head>
 <body>
     <main id="roadmap-container">
-        <!-- El contenido final se inyectará aquí -->
+        <!-- El contenido 100% completo se inyectará aquí -->
     </main>
 
     <script>
@@ -46,7 +46,13 @@
                             <h4>1.1. Dedicated Discord Bot (@BNS-Timer-Bot)</h4>
                             <ul>
                                 <li><span class="status-planned"></span><strong>Core Functionality:</strong> Implement a bot that can query real-time data from the same API used by the web app.</li>
+                                <li><span class="status-planned"></span><strong>Slash Commands:</strong> Create user-friendly commands for quick lookups.</li>
                                 <li>💡 <strong>Hero Lookup:</strong> Add a <code>/hero &lt;name&gt;</code> command to search the hero database.</li>
+                            </ul>
+                            <h4>1.2. Webhook Notifications (App → Discord)</h4>
+                            <ul>
+                                <li><span class="status-planned"></span><strong>Automated Boss Alerts:</strong> Develop a backend service that sends a formatted message to a configured webhook channel minutes before a world boss spawns.</li>
+                                <li><span class="status-planned"></span><strong>Admin Management:</strong> Add a section in the Admin Panel to manage webhook URLs for different servers.</li>
                             </ul>
                         </div>
                     </details>
@@ -55,6 +61,11 @@
                         <div class="section-content">
                              <p class="section-meta"><strong>Priority:</strong> Medium-High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
                              <p>Instead of a manual LFG creator, this system will feature a bot that intelligently monitors an LFG channel, formats user messages, and notifies interested players.</p>
+                             <h4>2.1. User LFG Alerts</h4>
+                             <ul>
+                                <li><span class="status-planned"></span><strong>Web UI:</strong> Create a new section where users can select which dungeons/bosses they want to be notified about.</li>
+                                <li><span class="status-planned"></span><strong>Discord Commands:</strong> Implement commands for users to manage their alerts directly from Discord.</li>
+                            </ul>
                         </div>
                     </details>
                     <details class="roadmap-section">
@@ -62,6 +73,11 @@
                         <div class="section-content">
                              <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
                              <p>A secure web interface for managing all dynamic application content, eliminating the need for manual code or JSON file updates.</p>
+                             <h4>Content Management (CRUD):</h4>
+                             <ul>
+                                 <li><strong>Bosses:</strong> Add, edit, and toggle the active status of world bosses.</li>
+                                 <li><strong>Events:</strong> A comprehensive module to create and manage events.</li>
+                             </ul>
                         </div>
                     </details>
                     <details class="roadmap-section">
@@ -69,6 +85,11 @@
                         <div class="section-content">
                             <p class="section-meta"><strong>Priority:</strong> Low | <strong>Status:</strong> <span class="status-idea"></span> Idea</p>
                             <p>Allow users to browse past content and explore a full library of heroes.</p>
+                             <h4>Event & Banner Archive:</h4>
+                             <ul>
+                                 <li>Create a "Past Events" view.</li>
+                                 <li>Modify the API to serve archived content.</li>
+                             </ul>
                         </div>
                     </details>
                 `;
@@ -98,6 +119,17 @@
                         <div class="section-content">
                             <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
                             <p>El objetivo es hacer que toda la información de la herramienta sea accesible directamente desde Discord y permitir que la aplicación envíe notificaciones automatizadas a los servidores de la comunidad.</p>
+                            <h4>1.1. Bot de Discord Dedicado (@BNS-Timer-Bot)</h4>
+                            <ul>
+                                <li><span class="status-planned"></span><strong>Funcionalidad Principal:</strong> Implementar un bot que pueda consultar datos en tiempo real.</li>
+                                <li><span class="status-planned"></span><strong>Comandos de Barra (/):</strong> Crear comandos fáciles de usar para consultas rápidas.</li>
+                                <li>💡 <strong>Búsqueda de Héroes:</strong> Añadir un comando <code>/hero &lt;nombre&gt;</code> para buscar en la base de datos.</li>
+                            </ul>
+                            <h4>1.2. Notificaciones con Webhooks (App → Discord)</h4>
+                            <ul>
+                                <li><span class="status-planned"></span><strong>Alertas de Jefes Automatizadas:</strong> Desarrollar un servicio de backend que envíe un mensaje formateado a un canal.</li>
+                                <li><span class="status-planned"></span><strong>Gestión de Administrador:</strong> Añadir una sección para gestionar las URLs de los webhooks.</li>
+                            </ul>
                         </div>
                     </details>
                     <details class="roadmap-section">
@@ -105,6 +137,11 @@
                         <div class="section-content">
                             <p class="section-meta"><strong>Prioridad:</strong> Media-Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
                             <p>En lugar de un creador manual, un bot monitorizará un canal LFG, formateará los mensajes y notificará a los jugadores interesados.</p>
+                             <h4>2.1. Alertas LFG de Usuario</h4>
+                             <ul>
+                                <li><span class="status-planned"></span><strong>UI Web:</strong> Crear una sección para que los usuarios seleccionen de qué quieren recibir notificaciones.</li>
+                                <li><span class="status-planned"></span><strong>Comandos de Discord:</strong> Implementar comandos para gestionar sus alertas desde Discord.</li>
+                            </ul>
                         </div>
                     </details>
                     <details class="roadmap-section">
@@ -112,6 +149,11 @@
                         <div class="section-content">
                             <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
                             <p>Una interfaz web segura para gestionar todo el contenido dinámico de la aplicación, eliminando la necesidad de actualizar código manualmente.</p>
+                             <h4>Gestión de Contenido (CRUD):</h4>
+                             <ul>
+                                 <li><strong>Jefes:</strong> Añadir, editar y cambiar el estado de los jefes mundiales.</li>
+                                 <li><strong>Eventos:</strong> Un módulo completo para crear y gestionar eventos.</li>
+                             </ul>
                         </div>
                     </details>
                      <details class="roadmap-section">
@@ -119,6 +161,11 @@
                         <div class="section-content">
                             <p class="section-meta"><strong>Prioridad:</strong> Baja | <strong>Estado:</strong> <span class="status-idea"></span> Idea</p>
                             <p>Permitir a los usuarios navegar por contenido pasado y explorar una biblioteca completa de héroes.</p>
+                            <h4>Archivo de Eventos y Banners:</h4>
+                            <ul>
+                                <li>Crear una vista de "Eventos Pasados".</li>
+                                <li>Modificar la API para que sirva contenido archivado.</li>
+                            </ul>
                         </div>
                     </details>
                 `;
