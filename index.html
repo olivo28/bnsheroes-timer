@@ -14,13 +14,15 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 
     <!-- Metadatos Esenciales y SEO -->
-    <meta name="description" content="Stay up-to-date in BnS Heroes with this real-time HUB. Track the daily reset, world boss schedules, active events, and hero banners. Set up alerts and never miss a thing!">
+    <meta name="description"
+        content="Stay up-to-date in BnS Heroes with this real-time HUB. Track the daily reset, world boss schedules, active events, and hero banners. Set up alerts and never miss a thing!">
     <meta name="author" content="olivo28">
     <meta name="theme-color" content="#bb86fc">
 
     <!-- Open Graph (para Redes Sociales) -->
     <meta property="og:title" content="BnS Heroes - HUB/Timer">
-    <meta property="og:description" content="Real-time tracking for the daily reset, world boss schedules, active events, and hero banners for BnS Heroes.">
+    <meta property="og:description"
+        content="Real-time tracking for the daily reset, world boss schedules, active events, and hero banners for BnS Heroes.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://olivo28.github.io/bnsheroes-timer/">
     <meta property="og:image" content="https://olivo28.github.io/bnsheroes-timer/style/bnsheroes.webp">
@@ -34,7 +36,8 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:url" content="https://olivo28.github.io/bnsheroes-timer/">
     <meta name="twitter:title" content="BnS Heroes - HUB/Timer">
-    <meta name="twitter:description" content="The ultimate HUB for BnS Heroes: boss timers, event tracking, banners, and customizable alerts.">
+    <meta name="twitter:description"
+        content="The ultimate HUB for BnS Heroes: boss timers, event tracking, banners, and customizable alerts.">
     <meta name="twitter:image" content="https://olivo28.github.io/bnsheroes-timer/style/bnsheroes.webp">
     <meta name="twitter:creator" content="@olivo28">
 
@@ -45,7 +48,7 @@
 </head>
 
 <body>
-     <header id="mobile-header">
+    <header id="mobile-header">
         <!-- El widget de usuario (#user-status) se moverá aquí con JavaScript -->
     </header>
 
@@ -62,10 +65,10 @@
     <div id="user-status">
         <!-- El contenido de este div (avatar, nombre, botón) se genera dinámicamente con JavaScript -->
     </div>
-    
+
     <!-- INICIO DE LA CORRECCIÓN: Contenedor principal de la app, inicialmente oculto -->
     <div class="app-wrapper hidden">
-    <!-- FIN DE LA CORRECCIÓN -->
+        <!-- FIN DE LA CORRECCIÓN -->
         <div class="app-container">
             <div class="content-wrapper">
                 <div class="main-wrapper">
@@ -87,11 +90,13 @@
                             <div class="top-bar-right">
                                 <!-- El widget de usuario ya no está aquí, solo el botón de configuración del panel -->
                                 <div id="settings-button">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings"
-                                        width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="icon icon-tabler icon-tabler-settings" width="28" height="28"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                        <path
+                                            d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
                                         <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                                     </svg>
                                 </div>
@@ -100,9 +105,17 @@
                         <div id="primary-timers-container"></div>
                         <div id="status-bar">
                             <span data-lang-key="notifications.alertsEnabled"></span>
+                            <nav class="footer-nav">
+                                <a href="roadmap.html" data-lang-key="footer.roadmap">Roadmap</a>
+                                <span>•</span>
+                                <a href="https://github.com/olivo28/bnsheroes-timer" target="_blank"
+                                    rel="noopener noreferrer">GitHub</a>
+                            </nav>
                             <div id="about-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                 </svg>
                             </div>
                         </div>
@@ -126,17 +139,19 @@
             <button id="close-settings-btn" class="modal-close-btn">&times;</button>
             <h2 data-lang-key="settings.title"></h2>
             <div class="settings-content">
-    
+
                 <div class="settings-section">
                     <label data-lang-key="settings.timersLabel"></label>
                     <div class="checkbox-group">
                         <label class="checkbox-label" for="boss-timers-toggle"><input type="checkbox"
                                 id="boss-timers-toggle"><span class="checkbox-custom"></span><span
                                 data-lang-key="settings.bossToggle"></span></label>
-                        <label class="checkbox-label" for="events-toggle"><input type="checkbox" id="events-toggle"><span
-                                class="checkbox-custom"></span><span data-lang-key="settings.eventsToggle"></span></label>
-                        <label class="checkbox-label" for="weekly-toggle"><input type="checkbox" id="weekly-toggle"><span
-                                class="checkbox-custom"></span><span data-lang-key="settings.weeklyToggle"></span></label>
+                        <label class="checkbox-label" for="events-toggle"><input type="checkbox"
+                                id="events-toggle"><span class="checkbox-custom"></span><span
+                                data-lang-key="settings.eventsToggle"></span></label>
+                        <label class="checkbox-label" for="weekly-toggle"><input type="checkbox"
+                                id="weekly-toggle"><span class="checkbox-custom"></span><span
+                                data-lang-key="settings.weeklyToggle"></span></label>
                     </div>
                 </div>
                 <div class="settings-section"><label for="pre-alert-input"
@@ -145,18 +160,20 @@
                 <div class="settings-section"><label data-lang-key="settings.notificationTypeLabel"></label>
                     <div class="checkbox-group">
                         <label class="checkbox-label" for="sound-toggle"><input type="checkbox" id="sound-toggle"><span
-                                class="checkbox-custom"></span><span data-lang-key="settings.soundToggle"></span></label>
-                        <label class="checkbox-label" for="desktop-toggle"><input type="checkbox" id="desktop-toggle"><span
-                                class="checkbox-custom"></span><span data-lang-key="settings.desktopToggle"></span></label>
+                                class="checkbox-custom"></span><span
+                                data-lang-key="settings.soundToggle"></span></label>
+                        <label class="checkbox-label" for="desktop-toggle"><input type="checkbox"
+                                id="desktop-toggle"><span class="checkbox-custom"></span><span
+                                data-lang-key="settings.desktopToggle"></span></label>
                     </div>
                 </div>
-    
+
                 <div class="settings-section">
                     <label data-lang-key="settings.reminders.title"></label>
                     <div class="settings-row-vertical">
                         <div class="settings-row">
-                            <label class="checkbox-label"><input type="checkbox" id="event-dailies-reminder-toggle"><span
-                                    class="checkbox-custom"></span><span
+                            <label class="checkbox-label"><input type="checkbox"
+                                    id="event-dailies-reminder-toggle"><span class="checkbox-custom"></span><span
                                     data-lang-key="settings.reminders.eventDailies"></span></label>
                             <select id="event-dailies-reminder-hours" class="settings-input small-input">
                                 <option value="12">12</option>
@@ -184,7 +201,7 @@
                         </div>
                     </div>
                 </div>
-    
+
                 <div class="settings-section"><label for="timezone-select"
                         data-lang-key="settings.timezoneLabel"></label><select id="timezone-select"
                         class="settings-input"></select></div>
@@ -192,11 +209,12 @@
                         data-lang-key="settings.languageLabel"></label><select id="language-select"
                         class="settings-input"></select></div>
                 <div id="settings-buttons">
-                    <button id="test-notification-btn" class="settings-btn" data-lang-key="settings.testButton"></button>
+                    <button id="test-notification-btn" class="settings-btn"
+                        data-lang-key="settings.testButton"></button>
                     <button id="save-settings-btn" class="settings-btn" data-lang-key="common.saveButton"></button>
                 </div>
             </div>
-    
+
         </div>
     </div>
 
@@ -219,7 +237,7 @@
                             <span data-lang-key="account.nav.pushNotifications"></span>
                         </a>
                     </nav>
-            
+
                     <!-- NAV SECUNDARIO -->
                     <nav class="sidebar-nav secondary-nav">
                         <div class="nav-divider"></div>
@@ -230,24 +248,25 @@
                             <span data-lang-key="account.nav.disclaimer"></span>
                         </a>
                     </nav>
-            
+
                     <!-- FOOTER -->
                     <div class="sidebar-footer">
                         <button id="logout-btn-modal" class="logout-button">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                 stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
                             </svg>
                             <span data-lang-key="common.logout"></span>
                         </button>
                     </div>
                 </div>
             </div>
-    
+
             <!-- Columna de Contenido Principal -->
             <div class="account-content">
                 <div class="account-content-scroller">
-    
+
                     <!-- Sección 1: Mi Cuenta (Visible por defecto) -->
                     <div class="content-section active" id="section-my-account">
                         <h2 data-lang-key="account.nav.myAccount"></h2>
@@ -260,52 +279,63 @@
                         </div>
                         <!-- Más detalles de la cuenta pueden ir aquí -->
                     </div>
-    
+
                     <!-- Sección 2: Notificaciones Push (Oculta por defecto) -->
-                                    <div class="content-section" id="section-push-notifications">
-                    <h2 data-lang-key="account.nav.pushNotifications"></h2>
-                    <p class="settings-description" data-lang-key="account.pushDescription"></p>
-                    
-                    <!-- Controles de Notificaciones Generales -->
-                    <div class="settings-section">
-                        <label data-lang-key="pushSettings.generalTitle"></label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label"><input type="checkbox" id="push-daily-reset-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.dailyReset"></span></label>
-                            <label class="checkbox-label"><input type="checkbox" id="push-showdown-ticket-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.showdownTicket"></span></label>
+                    <div class="content-section" id="section-push-notifications">
+                        <h2 data-lang-key="account.nav.pushNotifications"></h2>
+                        <p class="settings-description" data-lang-key="account.pushDescription"></p>
+
+                        <!-- Controles de Notificaciones Generales -->
+                        <div class="settings-section">
+                            <label data-lang-key="pushSettings.generalTitle"></label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" id="push-daily-reset-toggle"><span
+                                        class="checkbox-custom"></span><span
+                                        data-lang-key="pushSettings.dailyReset"></span></label>
+                                <label class="checkbox-label"><input type="checkbox"
+                                        id="push-showdown-ticket-toggle"><span class="checkbox-custom"></span><span
+                                        data-lang-key="pushSettings.showdownTicket"></span></label>
+                            </div>
+                        </div>
+
+                        <!-- Controles de Notificaciones de Eventos y Resets -->
+                        <div class="settings-section">
+                            <label data-lang-key="pushSettings.remindersTitle"></label>
+                            <div class="settings-row">
+                                <label class="checkbox-label"><input type="checkbox" id="push-weekly-reset-toggle"><span
+                                        class="checkbox-custom"></span><span
+                                        data-lang-key="pushSettings.weeklyReset"></span></label>
+                                <input type="number" id="push-weekly-days-input" class="settings-input small-input"
+                                    min="1" max="6">
+                                <span data-lang-key="pushSettings.daysBefore"></span>
+                            </div>
+                            <div class="settings-row">
+                                <label class="checkbox-label"><input type="checkbox"
+                                        id="push-event-dailies-toggle"><span class="checkbox-custom"></span><span
+                                        data-lang-key="pushSettings.eventDailies"></span></label>
+                                <input type="number" id="push-event-hours-input" class="settings-input small-input"
+                                    min="1" max="23">
+                                <span data-lang-key="pushSettings.hoursBefore"></span>
+                            </div>
+                        </div>
+
+                        <hr class="section-divider">
+                        <h3 data-lang-key="account.activeSubscriptions"></h3>
+                        <p class="settings-description" data-lang-key="pushSettings.bossesDesc"></p>
+                        <div id="active-subscriptions-list">
+                            <!-- La lista de suscripciones se genera aquí -->
+                        </div>
+
+                        <div class="save-section">
+                            <button id="save-push-settings-btn" class="settings-btn"
+                                data-lang-key="common.saveButton"></button>
                         </div>
                     </div>
-
-                    <!-- Controles de Notificaciones de Eventos y Resets -->
-                    <div class="settings-section">
-                        <label data-lang-key="pushSettings.remindersTitle"></label>
-                        <div class="settings-row">
-                            <label class="checkbox-label"><input type="checkbox" id="push-weekly-reset-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.weeklyReset"></span></label>
-                            <input type="number" id="push-weekly-days-input" class="settings-input small-input" min="1" max="6">
-                            <span data-lang-key="pushSettings.daysBefore"></span>
-                        </div>
-                        <div class="settings-row">
-                            <label class="checkbox-label"><input type="checkbox" id="push-event-dailies-toggle"><span class="checkbox-custom"></span><span data-lang-key="pushSettings.eventDailies"></span></label>
-                            <input type="number" id="push-event-hours-input" class="settings-input small-input" min="1" max="23">
-                            <span data-lang-key="pushSettings.hoursBefore"></span>
-                        </div>
-                    </div>
-
-                    <hr class="section-divider">
-                    <h3 data-lang-key="account.activeSubscriptions"></h3>
-                    <p class="settings-description" data-lang-key="pushSettings.bossesDesc"></p>
-                    <div id="active-subscriptions-list">
-                        <!-- La lista de suscripciones se genera aquí -->
-                    </div>
-
-                    <div class="save-section">
-                        <button id="save-push-settings-btn" class="settings-btn" data-lang-key="common.saveButton"></button>
-                    </div>
-                </div>
 
                     <div class="content-section" id="section-support-me">
                         <h2 data-lang-key="account.nav.supportMe"></h2>
                         <p class="support-text" data-lang-key="support.intro"></p>
-                    
+
                         <div class="support-methods">
                             <!-- PayPal Card -->
                             <div class="support-card">
@@ -319,7 +349,7 @@
                                 </h4>
                                 <p data-lang-key="support.paypal"></p>
                             </div>
-                    
+
                             <!-- Binance Card -->
                             <div class="support-card">
                                 <h4>
@@ -341,7 +371,7 @@
                                     </div>
                                 </div>
                             </div>
-                    
+
                             <!-- Ko-fi Card -->
                             <div class="support-card">
                                 <h4>
@@ -353,15 +383,15 @@
                                     Ko-fi
                                 </h4>
                                 <p data-lang-key="support.kofi"></p>
-                                <a href="https://ko-fi.com/olivo28" class="support-link" target="_blank" rel="noopener noreferrer"
-                                    data-lang-key="support.kofiLink"></a>
+                                <a href="https://ko-fi.com/olivo28" class="support-link" target="_blank"
+                                    rel="noopener noreferrer" data-lang-key="support.kofiLink"></a>
                             </div>
                         </div>
                     </div>
 
                     <div class="content-section" id="section-disclaimer">
                         <h2 data-lang-key="account.nav.disclaimer"></h2>
-                        
+
                         <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleLegal"></h4>
                         <p class="disclaimer-text" data-lang-key="disclaimer.p1"></p>
                         <p class="disclaimer-text" data-lang-key="disclaimer.p2"></p>
@@ -376,14 +406,15 @@
 
                         <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleConduct"></h4>
                         <p class="disclaimer-text" data-lang-key="disclaimer.p7"></p>
-                        
+
                         <h4 class="disclaimer-subtitle" data-lang-key="disclaimer.titleCopyright"></h4>
                         <p class="disclaimer-text" data-lang-key="disclaimer.p8"></p>
                     </div>
-    
+
                 </div>
                 <button id="close-account-modal-btn" class="close-fullscreen-modal-btn" title="Cerrar (Esc)">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -405,13 +436,15 @@
             <h3 id="confirmation-modal-title"></h3>
             <p id="confirmation-modal-body"></p>
             <div class="confirmation-buttons">
-                <button id="confirmation-cancel-btn" class="settings-btn secondary-btn" data-lang-key="common.cancelButton"></button>
-                <button id="confirmation-confirm-btn" class="settings-btn danger-btn" data-lang-key="common.confirmButton"></button>
+                <button id="confirmation-cancel-btn" class="settings-btn secondary-btn"
+                    data-lang-key="common.cancelButton"></button>
+                <button id="confirmation-confirm-btn" class="settings-btn danger-btn"
+                    data-lang-key="common.confirmButton"></button>
             </div>
         </div>
     </div>
 
-        <div id="alert-modal-overlay">
+    <div id="alert-modal-overlay">
         <div id="alert-modal">
             <h3 id="alert-modal-title"></h3>
             <p id="alert-modal-body"></p>
@@ -419,7 +452,7 @@
         </div>
     </div>
 
-        <div id="prompt-modal-overlay">
+    <div id="prompt-modal-overlay">
         <div id="prompt-modal">
             <h3 id="prompt-modal-title"></h3>
             <p id="prompt-modal-body"></p>
@@ -437,9 +470,12 @@
             <h2 data-lang-key="modals.syncTicket.title"></h2>
             <p data-lang-key="modals.syncTicket.description"></p>
             <div class="sync-inputs">
-                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.hours"></label><input type="number" id="sync-hours" class="settings-input" min="0" max="1" placeholder="H"></div>
-                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.minutes"></label><input type="number" id="sync-minutes" class="settings-input" min="0" max="59" placeholder="M"></div>
-                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.seconds"></label><input type="number" id="sync-seconds" class="settings-input" min="0" max="59" placeholder="S"></div>
+                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.hours"></label><input
+                        type="number" id="sync-hours" class="settings-input" min="0" max="1" placeholder="H"></div>
+                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.minutes"></label><input
+                        type="number" id="sync-minutes" class="settings-input" min="0" max="59" placeholder="M"></div>
+                <div class="sync-input-group"><label data-lang-key="modals.syncTicket.seconds"></label><input
+                        type="number" id="sync-seconds" class="settings-input" min="0" max="59" placeholder="S"></div>
             </div>
             <button id="save-sync-btn" class="settings-btn" data-lang-key="modals.syncTicket.button"></button>
         </div>
@@ -449,63 +485,63 @@
         <div id="about-modal">
             <h2 data-lang-key="about.title"></h2>
 
-                <div class="about-modal-content">
-                
-                    <div class="info-grid">
-                        <!-- Tarjeta de Información -->
-                        <div class="info-card">
-                            <h3 data-lang-key="timers.dailyResetName"></h3>
-                            <p data-lang-key="timersInfo.dailyResetDesc"></p>
-                        </div>
-                        <!-- Tarjeta de Información -->
-                        <div class="info-card">
-                            <h3 data-lang-key="timers.showdownName"></h3>
-                            <p data-lang-key="timersInfo.showdownDesc"></p>
-                        </div>
-                        <!-- Tarjeta de Información -->
-                        <div class="info-card">
-                            <h3 data-lang-key="timersInfo.bossesTitle"></h3>
-                            <p data-lang-key="timersInfo.bossesDesc"></p>
-                        </div>
-                        <!-- Tarjeta de Información -->
-                        <div class="info-card">
-                            <h3 data-lang-key="notifications.title"></h3>
-                            <p data-lang-key="timersInfo.notificationsDesc"></p>
-                        </div>
-                
-                        <!-- --- INICIO DE LAS TARJETAS AÑADIDAS --- -->
-                        <!-- Tarjeta de Información -->
-                        <div class="info-card">
-                            <h3 data-lang-key="events.title"></h3>
-                            <p data-lang-key="timersInfo.eventsDesc"></p>
-                        </div>
-                        <!-- Tarjeta de Información -->
-                        <div class="info-card">
-                            <h3 data-lang-key="weekly.title"></h3>
-                            <p data-lang-key="timersInfo.weeklyDesc"></p>
-                        </div>
-                        <!-- --- FIN DE LAS TARJETAS AÑADIDAS --- -->
-                
-                        <!-- Tarjeta de Información (ocupa dos columnas) -->
-                        <div class="info-card full-width">
-                            <h3 data-lang-key="banners.title"></h3>
-                            <p data-lang-key="timersInfo.bannersDesc"></p>
-                        </div>
+            <div class="about-modal-content">
+
+                <div class="info-grid">
+                    <!-- Tarjeta de Información -->
+                    <div class="info-card">
+                        <h3 data-lang-key="timers.dailyResetName"></h3>
+                        <p data-lang-key="timersInfo.dailyResetDesc"></p>
                     </div>
-                
-                    <!-- Sección de contacto al final -->
-                    <hr>
-                    <div class="contact-section">
-                        <h3 data-lang-key="about.contactTitle"></h3>
-                        <!-- INICIO DE LA LÍNEA A AÑADIR -->
-                        <p data-lang-key="about.discordHandle"></p>
-                        <!-- FIN DE LA LÍNEA A AÑADIR -->
-                        <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link"
-                                href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer"
-                                data-lang-key="about.discordLinkText"></a></p>
+                    <!-- Tarjeta de Información -->
+                    <div class="info-card">
+                        <h3 data-lang-key="timers.showdownName"></h3>
+                        <p data-lang-key="timersInfo.showdownDesc"></p>
                     </div>
-                
+                    <!-- Tarjeta de Información -->
+                    <div class="info-card">
+                        <h3 data-lang-key="timersInfo.bossesTitle"></h3>
+                        <p data-lang-key="timersInfo.bossesDesc"></p>
+                    </div>
+                    <!-- Tarjeta de Información -->
+                    <div class="info-card">
+                        <h3 data-lang-key="notifications.title"></h3>
+                        <p data-lang-key="timersInfo.notificationsDesc"></p>
+                    </div>
+
+                    <!-- --- INICIO DE LAS TARJETAS AÑADIDAS --- -->
+                    <!-- Tarjeta de Información -->
+                    <div class="info-card">
+                        <h3 data-lang-key="events.title"></h3>
+                        <p data-lang-key="timersInfo.eventsDesc"></p>
+                    </div>
+                    <!-- Tarjeta de Información -->
+                    <div class="info-card">
+                        <h3 data-lang-key="weekly.title"></h3>
+                        <p data-lang-key="timersInfo.weeklyDesc"></p>
+                    </div>
+                    <!-- --- FIN DE LAS TARJETAS AÑADIDAS --- -->
+
+                    <!-- Tarjeta de Información (ocupa dos columnas) -->
+                    <div class="info-card full-width">
+                        <h3 data-lang-key="banners.title"></h3>
+                        <p data-lang-key="timersInfo.bannersDesc"></p>
+                    </div>
                 </div>
+
+                <!-- Sección de contacto al final -->
+                <hr>
+                <div class="contact-section">
+                    <h3 data-lang-key="about.contactTitle"></h3>
+                    <!-- INICIO DE LA LÍNEA A AÑADIR -->
+                    <p data-lang-key="about.discordHandle"></p>
+                    <!-- FIN DE LA LÍNEA A AÑADIR -->
+                    <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link"
+                            href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer"
+                            data-lang-key="about.discordLinkText"></a></p>
+                </div>
+
+            </div>
 
             <button id="close-about-btn" class="settings-btn" data-lang-key="common.closeButton"></button>
         </div>
@@ -516,7 +552,8 @@
             <h3 data-lang-key="loginRequired.title"></h3>
             <p data-lang-key="settings.loginRequired"></p>
             <div class="login-required-buttons">
-                <button id="close-login-required-btn" class="settings-btn secondary-btn" data-lang-key="common.cancelButton"></button>
+                <button id="close-login-required-btn" class="settings-btn secondary-btn"
+                    data-lang-key="common.cancelButton"></button>
                 <button id="go-to-login-btn" class="settings-btn" data-lang-key="common.login"></button>
             </div>
         </div>
@@ -524,12 +561,21 @@
 
     <div id="hero-modal-overlay">
         <div id="hero-modal-content">
-            <button id="hero-modal-close-btn" class="modal-close-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-            <button id="hero-modal-prev-btn" class="hero-modal-nav-btn prev"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
-            <button id="hero-modal-next-btn" class="hero-modal-nav-btn next"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
-            
+            <button id="hero-modal-close-btn" class="modal-close-btn"><svg xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg></button>
+            <button id="hero-modal-prev-btn" class="hero-modal-nav-btn prev"><svg xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg></button>
+            <button id="hero-modal-next-btn" class="hero-modal-nav-btn next"><svg xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg></button>
+
             <img id="hero-modal-image" src="" alt="Hero Image">
-            
+
             <div id="hero-modal-info">
                 <h4 id="hero-modal-tag"></h4>
                 <h3 id="hero-modal-name"></h3>
@@ -537,7 +583,8 @@
                 <div id="hero-modal-details-container">
                     <!-- Fila 1: Rareza y Rol -->
                     <div class="hero-modal-details-row">
-                        <div><img id="hero-modal-element-icon" src="" alt="Element"><span id="hero-modal-rarity"></span></div>
+                        <div><img id="hero-modal-element-icon" src="" alt="Element"><span id="hero-modal-rarity"></span>
+                        </div>
                         <div><img id="hero-modal-role-icon" src="" alt="Role"><span id="hero-modal-role"></span></div>
                     </div>
                     <!-- Fila 2: Rango y Distancia de Ataque (solo texto) -->
@@ -575,8 +622,12 @@
             <div class="streams-modal-footer">
                 <h3 data-lang-key="streams.alertsTitle"></h3>
                 <div class="checkbox-group">
-                    <label class="checkbox-label" for="pre-stream-alert-toggle"><input type="checkbox" id="pre-stream-alert-toggle"><span class="checkbox-custom"></span><span data-lang-key="streams.preStreamAlertLabel"></span></label>
-                    <label class="checkbox-label" for="post-stream-alert-toggle"><input type="checkbox" id="post-stream-alert-toggle"><span class="checkbox-custom"></span><span data-lang-key="streams.postStreamAlertLabel"></span></label>
+                    <label class="checkbox-label" for="pre-stream-alert-toggle"><input type="checkbox"
+                            id="pre-stream-alert-toggle"><span class="checkbox-custom"></span><span
+                            data-lang-key="streams.preStreamAlertLabel"></span></label>
+                    <label class="checkbox-label" for="post-stream-alert-toggle"><input type="checkbox"
+                            id="post-stream-alert-toggle"><span class="checkbox-custom"></span><span
+                            data-lang-key="streams.postStreamAlertLabel"></span></label>
                 </div>
             </div>
         </div>
@@ -606,26 +657,16 @@
     <script src="js/3-ui.js" type="module"></script>
     <script src="js/4-logic.js" type="module"></script>
     <script src="js/5-main.js" type="module"></script>
-    <footer class="main-footer">
-        <div class="footer-content">
-            <hr>
-            <nav class="footer-nav">
-                <a href="roadmap.html">Roadmap del Proyecto</a>
-                <span>•</span>
-                <a href="https://github.com/olivo28/bnsheroes-timer" target="_blank" rel="noopener noreferrer">GitHub</a>
-            </nav>
-        </div>
-    </footer>
 
-        <div id="twitch-fab" class="hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                    d="M11.571 4.714h1.715v5.143H11.57zm4.715 0h1.714v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
-            </svg>
-            <span class="notification-dot"></span>
-        </div>
+    <div id="twitch-fab" class="hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+                d="M11.571 4.714h1.715v5.143H11.57zm4.715 0h1.714v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
+        </svg>
+        <span class="notification-dot"></span>
+    </div>
 
 
-    </body>
+</body>
 
 </html>

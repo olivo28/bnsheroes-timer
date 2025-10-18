@@ -3306,41 +3306,24 @@ select.settings-input option {
 }
 
 /* --- 3.13. roadmap button  --- */
-.main-footer {
-    width: 100%;
-    padding: 2rem 1rem; /* Espacio arriba/abajo y a los lados */
-    margin-top: 2rem;   /* Margen para separarlo del contenido de la página */
-}
 
-/* Un contenedor interno para centrar el contenido del footer */
-.footer-content {
-    /* Usa un max-width similar al de tu .main-wrapper para mantener la alineación visual */
-    max-width: 1200px; 
-    margin: 0 auto;
-    text-align: center;
-}
-
-.footer-content hr {
-    border: none;
-    height: 1px;
-    background-color: #333; /* Color sutil para la línea, como en la imagen */
-    margin-bottom: 1.5rem;
-}
 
 .footer-nav a {
-    color: #a0a0a0; /* Color gris claro para el texto secundario */
+    color: var(--text-muted-color); /* Usamos el mismo color que el texto de la status bar */
     text-decoration: none;
-    font-size: 0.9em;
-    margin: 0 10px; /* Espacio entre los enlaces y el punto */
-    transition: color 0.3s;
+    font-size: 1em; /* Hereda el tamaño de 0.8em de #status-bar */
+    margin: 0 8px; /* Un poco menos de margen */
+    transition: color 0.2s;
 }
 
 .footer-nav a:hover {
-    color: #fff; /* Se ilumina al pasar el ratón */
+    color: var(--text-color); /* Se ilumina al pasar el ratón */
+    text-decoration: underline;
 }
 
+/* Y asegúrate de que el estilo del separador también sea consistente */
 .footer-nav span {
-    color: #555; /* Color más oscuro para el punto separador */
+    color: var(--text-muted-color);
 }
 
 /* --- FIN DE COMPONENTES --- */
