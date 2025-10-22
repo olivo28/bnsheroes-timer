@@ -2676,6 +2676,44 @@ select.settings-input option {
     flex-shrink: 0;
 }
 
+.mission-reward-cell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px; /* Espacio entre múltiples ítems de recompensa */
+    flex-wrap: wrap;
+}
+
+.puzzle-rewards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre cada bloque de recompensa */
+    margin-top: 10px;
+}
+
+.puzzle-item {
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.puzzle-item:last-child {
+    border-bottom: none; /* Quitamos el borde del último elemento */
+    padding-bottom: 5px;
+}
+
+.puzzle-description {
+    margin: 0 0 12px 0; /* Espacio entre el texto y los iconos */
+    font-size: 0.95em;
+    color: var(--text-color);
+}
+
+.puzzle-rewards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; /* Espacio entre los iconos de recompensa */
+}
+
+
 /* --- 3.9.1. Panel de Detalles Semanal (Weekly) --- */
 
 .weekly-details-table {

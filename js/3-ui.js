@@ -597,6 +597,8 @@ renderStreamsModal: function (streams, now) {
     // EN: js/3-ui.js
 
     // REEMPLAZA esta función completa en js/3-ui.js
+    // REEMPLAZA esta función completa en js/3-ui.js
+// REEMPLAZA esta función completa en js/3-ui.js
 openEventDetailsPanel: function (eventId) {
     this.closeAllDetailsPanels();
     const lang = App.state.config.language;
@@ -708,9 +710,8 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`;
     }
 
-    // --- LÓGICA DE SECCIONES (NUEVAS Y ANTIGUAS) ---
+    // --- LÓGICA DE SECCIONES ---
 
-    // SECCIÓN: Misiones Diarias (con Pestañas)
     if (eventData.daily_missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3>`;
         contentHTML += `<div class="tabs-nav">`;
@@ -734,13 +735,10 @@ openEventDetailsPanel: function (eventId) {
             dayData.missions.forEach(mission => {
                 const reward = mission.rewards[0];
                 const rewardGridHTML = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '');
-
                 contentHTML += `<tr>
                                     <td>${mission.description[lang]}</td>
                                     <td class="count-col">${mission.count}</td>
-                                    <td class="mission-reward-cell">
-                                        ${rewardGridHTML}
-                                    </td>
+                                    <td class="mission-reward-cell">${rewardGridHTML}</td>
                                 </tr>`;
             });
             contentHTML += `</tbody></table></div>`;
@@ -748,7 +746,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
 
-    // SECCIÓN: Recompensas Acumulativas por Misiones
     if (eventData.rewards?.cumulative_missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.rewards.cumulative_missions.forEach(reward => {
@@ -761,7 +758,21 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    // SECCIÓN: Sistema de Puntos
+    if (eventData.rewards?.puzzle_completion) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3>`;
+        contentHTML += `<div class="puzzle-rewards-container">`;
+        eventData.rewards.puzzle_completion.forEach(puzzle => {
+            const rewardsHTML = puzzle.rewards.map(reward => 
+                getItemGridDisplay(reward.itemId, reward.quantity, reward.rank)
+            ).join('');
+            contentHTML += `<div class="puzzle-item">
+                                <p class="puzzle-description">${puzzle.description[lang]}</p>
+                                <div class="puzzle-rewards-grid">${rewardsHTML}</div>
+                            </div>`;
+        });
+        contentHTML += `</div></div>`;
+    }
+
     if (eventData.point_system) {
         const ps = eventData.point_system;
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.pointSystemTitle')}</h3>`;
@@ -770,7 +781,6 @@ openEventDetailsPanel: function (eventId) {
         if (ps.daily_max_claims) infoText += `<strong>${Utils.getText('events.pointSystem.dailyClaimLimit')}:</strong> ${ps.daily_max_claims}. `;
         if (ps.daily_max_points) infoText += `<strong>${Utils.getText('events.pointSystem.dailyPointLimit')}:</strong> ${ps.daily_max_points}.`;
         if (infoText) contentHTML += `<div class="weekly-recommendation-box"><p>${infoText}</p></div>`;
-
         contentHTML += `<h4>${Utils.getText('events.pointSystem.pointsPerAction')}</h4><table class="details-table missions-table"><tbody>`;
         ps.missions.forEach(mission => {
             contentHTML += `<tr><td>${mission.description[lang]}</td><td class="points-col">+${mission.points}</td></tr>`;
@@ -778,7 +788,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</tbody></table></div>`;
     }
 
-    // SECCIÓN: Misiones (Formato Antiguo - para retrocompatibilidad)
     if (eventData.missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
         eventData.missions.forEach(m => {
@@ -795,12 +804,10 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</tbody></table></div>`;
     }
 
-    // SECCIÓN: Tienda de Intercambio
     if (eventData.rewards?.exchange_shop) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
         const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
         const currencyItemDef = currencyItemId ? App.state.allItemsData[currencyItemId] : null;
-
         eventData.rewards.exchange_shop.forEach(item => {
             const itemToBuyDef = App.state.allItemsData[item.itemId];
             if (!itemToBuyDef) return;
@@ -830,7 +837,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</tbody></table></div>`;
     }
 
-    // SECCIÓN: Misiones y Recompensas (Grid)
     if (eventData.missions_and_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.missions_and_rewards.forEach(m => {
@@ -840,7 +846,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
 
-    // SECCIÓN: Ranking de Jefe
     if (eventData.boss_details?.ranking_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
         const participation = eventData.boss_details.ranking_rewards.base_on_participation;
@@ -866,7 +871,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div>`;
     }
 
-    // SECCIÓN: Rueda del Destino
     if (eventData.rewards?.wheel_of_fate) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
         const rewards = eventData.rewards.wheel_of_fate;
@@ -876,7 +880,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div>`;
     }
 
-    // SECCIÓN: Recompensas Acumulativas (Spins)
     if (eventData.rewards?.cumulative_spins) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3>`;
         contentHTML += `<div class="details-reward-grid-container">`;
@@ -890,7 +893,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
 
-    // SECCIÓN: Pool de Recompensas
     if (eventData.rewards?.reward_pool) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
         const rewards = eventData.rewards.reward_pool;
@@ -907,18 +909,13 @@ openEventDetailsPanel: function (eventId) {
     if (App.state.isMobile) document.body.classList.add('no-scroll');
     App.state.currentOpenEventId = eventId;
 
-    // Lógica para hacer funcionar las pestañas de misiones diarias
     const tabsNav = App.dom.eventDetailsPanel.querySelector('.tabs-nav');
     if (tabsNav) {
         tabsNav.addEventListener('click', e => {
             if (e.target.classList.contains('tab-link')) {
                 const tabId = e.target.dataset.tab;
-                
-                // Quitar 'active' de todos los botones y contenidos
                 tabsNav.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
                 App.dom.eventDetailsPanel.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                // Añadir 'active' al botón y contenido correctos
                 e.target.classList.add('active');
                 document.getElementById(tabId).classList.add('active');
             }
