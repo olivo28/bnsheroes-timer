@@ -602,7 +602,6 @@ renderStreamsModal: function (streams, now) {
 openEventDetailsPanel: function (eventId) {
     this.closeAllDetailsPanels();
     const lang = App.state.config.language;
-    // --- CORRECCIÓN CLAVE: Buscar el config del evento primero para obtener la ID correcta ---
     const eventConfig = App.state.config.events.find(e => e.id === eventId);
     const eventData = eventConfig ? App.state.allEventsData.events[eventConfig.id] : null;
 
@@ -616,27 +615,20 @@ openEventDetailsPanel: function (eventId) {
     if (eventConfig) {
         const { DateTime } = luxon;
         const { startDate, endDate } = eventConfig;
-
         const resetTime = App.state.config.dailyResetTime;
         const displayTz = App.state.config.displayTimezone;
         const use24h = App.state.config.use24HourFormat;
-
         const startDt = DateTime.fromISO(startDate).setLocale(lang);
         const endDt = DateTime.fromISO(endDate).setLocale(lang);
         const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
-
         const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
-
         const sign = displayTz.startsWith('-') ? '+' : '-';
         const hours = parseInt(displayTz.substring(1, 3));
         const userLuxonTz = `Etc/GMT${sign}${hours}`;
         const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
-
         const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
         const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
-
         const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
-
         periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
     }
 
@@ -649,12 +641,10 @@ openEventDetailsPanel: function (eventId) {
         const name = itemDef.name[lang] || itemDef.name.en || itemId;
         const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
         const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
-
         let probabilityHTML = '';
         if (typeof probability === 'number' && !isNaN(probability)) {
             probabilityHTML = `<span class="reward-probability">${probability.toFixed(1)}%</span>`;
         }
-
         return `<div class="reward-item-wrapper" title="${name} x${quantity}">
                 ${probabilityHTML}
                 <div class="reward-grid-item ${sizeClass}${rankClass}">
@@ -674,7 +664,6 @@ openEventDetailsPanel: function (eventId) {
             const rarityClass = getRarityClass(r.rank);
             let probClass = 'prob-common';
             let probText = '';
-
             if (typeof r.probability === 'number' && !isNaN(r.probability)) {
                 if (r.probability <= 1) probClass = 'prob-legendary';
                 else if (r.probability <= 5) probClass = 'prob-epic';
@@ -682,7 +671,6 @@ openEventDetailsPanel: function (eventId) {
                 else if (r.probability <= 50) probClass = 'prob-uncommon';
                 probText = `${r.probability.toFixed(1)}%`;
             }
-
             listHTML += `<li class="details-reward-list-item">
                         <span class="reward-name-part ${rarityClass}">${name}</span>
                         <span class="reward-quantity-part">x${r.quantity}</span>
@@ -791,7 +779,7 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
 
-    // --- NUEVA SECCIÓN: Para 'Login Event: Prepare for the Hogshead Hamlet Update' ---
+    // --- NUEVA SECCIÓN: Para 'Login Event' ---
     if (eventData.daily_login_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyLoginTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.daily_login_rewards.forEach(item => {
@@ -805,7 +793,7 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    // --- NUEVA SECCIÓN: Para 'Hidden Dragons' Halloween Special Request' ---
+    // --- NUEVA SECCIÓN: Para 'Hidden Dragons' ---
     if (eventData.rewards?.request_bonus) {
         const bonus = eventData.rewards.request_bonus;
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.requestBonusTitle')}</h3>`;
@@ -827,43 +815,24 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div>`;
     }
 
-    // --- SECCIÓN EXISTENTE: Misiones simples con recompensas o puntos ---
-    // Distingue entre misiones con contador (3 columnas) y misiones simples (2 columnas)
-    if (eventData.missions && !eventData.daily_missions) {
-        if (eventData.missions[0].count) { // Misiones con contador como 'Witch Soha's'
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3>
-                        <table class="details-table daily-missions-table">
-                            <thead>
-                                <tr>
-                                    <th>${Utils.getText('events.table.mission')}</th>
-                                    <th class="count-col">${Utils.getText('events.table.count')}</th>
-                                    <th>${Utils.getText('events.table.reward')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-            eventData.missions.forEach(mission => {
-                const reward = mission.rewards[0];
-                const rewardGridHTML = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '');
-                // Nota: el objeto usa `mission.mission` en lugar de `mission.description`
-                const description = mission.mission ? mission.mission[lang] : mission.description[lang];
-                contentHTML += `<tr>
-                                    <td>${description}</td>
-                                    <td class="count-col">${mission.count}</td>
-                                    <td class="mission-reward-cell">${rewardGridHTML}</td>
-                                </tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
-        } else { // Misiones simples como 'Grand Candy Heist'
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
-            eventData.missions.forEach(m => {
-                let rightColumnHTML = m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('');
-                contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
-        }
+    // --- LÓGICA ORIGINAL RESTAURADA: Para misiones simples como 'Monster Busters' y 'Candy Heist' ---
+    if (eventData.missions && !eventData.daily_missions && !eventData.mission_categories) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
+        eventData.missions.forEach(m => {
+            let rightColumnHTML = '';
+            // Importante: Solo intentar renderizar recompensas si existen en el objeto de la misión
+            if (m.rewards) {
+                rightColumnHTML = m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('');
+            }
+            // Para 'Monster Busters', m.rewards es undefined, por lo que rightColumnHTML quedará vacío, lo cual es correcto.
+            contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
+        });
+        contentHTML += `</tbody></table></div>`;
     }
-
+    
     // --- SECCIONES EXISTENTES (SIN CAMBIOS) ---
+    // (Asegúrate de que estas secciones están después de las nuevas para un orden lógico)
+
     if (eventData.rewards?.cumulative_missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.rewards.cumulative_missions.forEach(reward => {
@@ -875,7 +844,7 @@ openEventDetailsPanel: function (eventId) {
         });
         contentHTML += `</div></div>`;
     }
-
+    
     if (eventData.rewards?.puzzle_completion) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3>`;
         contentHTML += `<div class="puzzle-rewards-container">`;
@@ -939,6 +908,7 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</tbody></table></div>`;
     }
 
+    // --- Este ahora maneja 'Witch Soha's' y 'Ukapong' ---
     if (eventData.missions_and_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.missions_and_rewards.forEach(m => {
