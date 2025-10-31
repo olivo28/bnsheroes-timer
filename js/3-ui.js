@@ -602,7 +602,11 @@ renderStreamsModal: function (streams, now) {
 openEventDetailsPanel: function (eventId) {
     this.closeAllDetailsPanels();
     const lang = App.state.config.language;
+
+    // --- 1. OBTENCIÓN DE DATOS DEL EVENTO ---
+    // Busca la configuración del evento en la lista principal para obtener la ID correcta (que es la clave del objeto).
     const eventConfig = App.state.config.events.find(e => e.id === eventId);
+    // Usa esa ID para obtener los datos detallados del evento del objeto principal.
     const eventData = eventConfig ? App.state.allEventsData.events[eventConfig.id] : null;
 
     if (!eventData) {
@@ -610,7 +614,7 @@ openEventDetailsPanel: function (eventId) {
         return;
     }
 
-    // --- CÁLCULO DE FECHA Y HORA ---
+    // --- 2. CÁLCULO DE FECHA Y HORA PARA EL ENCABEZADO ---
     let periodString = '';
     if (eventConfig) {
         const { DateTime } = luxon;
@@ -632,9 +636,8 @@ openEventDetailsPanel: function (eventId) {
         periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
     }
 
-    // --- FUNCIONES AUXILIARES DE RENDERIZADO ---
+    // --- 3. FUNCIONES AUXILIARES DE RENDERIZADO ---
     const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
-
     const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
         const itemDef = App.state.allItemsData[itemId];
         if (!itemDef || !itemDef.icon) return '';
@@ -653,17 +656,14 @@ openEventDetailsPanel: function (eventId) {
                 </div>
             </div>`;
     };
-
     const generateRewardTextList = (rewards) => {
         if (!rewards || rewards.length === 0) return '';
         let listHTML = '<ul class="details-reward-list">';
         rewards.forEach(r => {
-            const itemDef = App.state.allItemsData[r.itemId];
-            if (!itemDef) return;
+            const itemDef = App.state.allItemsData[r.itemId]; if (!itemDef) return;
             const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
             const rarityClass = getRarityClass(r.rank);
-            let probClass = 'prob-common';
-            let probText = '';
+            let probClass = 'prob-common', probText = '';
             if (typeof r.probability === 'number' && !isNaN(r.probability)) {
                 if (r.probability <= 1) probClass = 'prob-legendary';
                 else if (r.probability <= 5) probClass = 'prob-epic';
@@ -671,16 +671,12 @@ openEventDetailsPanel: function (eventId) {
                 else if (r.probability <= 50) probClass = 'prob-uncommon';
                 probText = `${r.probability.toFixed(1)}%`;
             }
-            listHTML += `<li class="details-reward-list-item">
-                        <span class="reward-name-part ${rarityClass}">${name}</span>
-                        <span class="reward-quantity-part">x${r.quantity}</span>
-                        <span class="reward-prob-part ${probClass}">${probText}</span>
-                     </li>`;
+            listHTML += `<li class="details-reward-list-item"><span class="reward-name-part ${rarityClass}">${name}</span><span class="reward-quantity-part">x${r.quantity}</span><span class="reward-prob-part ${probClass}">${probText}</span></li>`;
         });
         return listHTML + '</ul>';
     };
 
-    // --- CONSTRUCCIÓN DEL HTML ---
+    // --- 4. CONSTRUCCIÓN DEL HTML BASE ---
     let contentHTML = `
     <div class="details-header">
         <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
@@ -688,124 +684,89 @@ openEventDetailsPanel: function (eventId) {
         <p>${periodString}</p>
     </div>
     <div class="details-content">
-        <p class="details-summary">${eventData.summary[lang]}</p>
-    `;
+        <p class="details-summary">${eventData.summary[lang]}</p>`;
 
-    if (eventData.details) {
-        contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`;
-    }
+    if (eventData.details) { contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`; }
+    if (eventData.daily_claim_limit) { contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`; }
 
-    if (eventData.daily_claim_limit) {
-        contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`;
-    }
+    // --- 5. RENDERIZADO DE SECCIONES ESPECÍFICAS DEL EVENTO ---
 
-    // --- LÓGICA DE SECCIONES ---
-
-    // --- MODIFICADO: Maneja `daily_missions` por 'day' o por 'date' ---
+    /**
+     * Renders: Eventos con misiones diarias organizadas por pestañas.
+     * Soporta pestañas por número de día (`day: 1`) o por fecha (`date: "2025-10-31"`).
+     * Structure: "daily_missions": [ { "day": 1, "missions": [...] }, { "date": "...", "missions": [...] } ]
+     * Examples: Halloween Countdown Mission, Flash Halloween Weekend Event
+     */
     if (eventData.daily_missions) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3>`;
-        contentHTML += `<div class="tabs-nav">`;
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3><div class="tabs-nav">`;
         eventData.daily_missions.forEach((data, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            const tabId = `tab-${index}`;
-            let tabLabel = '';
-            if (data.day) {
-                tabLabel = `${Utils.getText('events.day')} ${data.day}`;
-            } else if (data.date) {
-                tabLabel = luxon.DateTime.fromISO(data.date).setLocale(lang).toFormat('d MMMM');
-            }
+            const tabId = `tab-${index}`, activeClass = index === 0 ? 'active' : '';
+            let tabLabel = data.day ? `${Utils.getText('events.day')} ${data.day}` : luxon.DateTime.fromISO(data.date).setLocale(lang).toFormat('d MMMM');
             contentHTML += `<button class="tab-link ${activeClass}" data-tab="${tabId}">${tabLabel}</button>`;
         });
         contentHTML += `</div><div class="tabs-content">`;
         eventData.daily_missions.forEach((data, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            const tabId = `tab-${index}`;
-            contentHTML += `<div id="${tabId}" class="tab-content ${activeClass}">
-                            <table class="details-table daily-missions-table">
-                                <thead>
-                                    <tr>
-                                        <th>${Utils.getText('events.table.mission')}</th>
-                                        <th class="count-col">${Utils.getText('events.table.count')}</th>
-                                        <th>${Utils.getText('events.table.reward')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
+            const tabId = `tab-${index}`, activeClass = index === 0 ? 'active' : '';
+            contentHTML += `<div id="${tabId}" class="tab-content ${activeClass}"><table class="details-table daily-missions-table"><thead><tr><th>${Utils.getText('events.table.mission')}</th><th class="count-col">${Utils.getText('events.table.count')}</th><th>${Utils.getText('events.table.reward')}</th></tr></thead><tbody>`;
             data.missions.forEach(mission => {
                 const reward = mission.rewards[0];
-                const rewardGridHTML = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '');
-                contentHTML += `<tr>
-                                    <td>${mission.description[lang]}</td>
-                                    <td class="count-col">${mission.count}</td>
-                                    <td class="mission-reward-cell">${rewardGridHTML}</td>
-                                </tr>`;
+                contentHTML += `<tr><td>${mission.description[lang]}</td><td class="count-col">${mission.count}</td><td class="mission-reward-cell">${getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '')}</td></tr>`;
             });
             contentHTML += `</tbody></table></div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-
-    // --- NUEVA SECCIÓN: Para 'The Journey Begins: Follow the Stars' ---
-    if (eventData.mission_categories) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionCategoriesTitle')}</h3>`;
-        contentHTML += `<div class="tabs-nav">`;
-        eventData.mission_categories.forEach((category, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            contentHTML += `<button class="tab-link ${activeClass}" data-tab="category-${index}">${category.category_name[lang]}</button>`;
-        });
-        contentHTML += `</div><div class="tabs-content">`;
-        eventData.mission_categories.forEach((category, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            contentHTML += `<div id="category-${index}" class="tab-content ${activeClass}">
-                            <table class="details-table daily-missions-table">
-                                <thead>
-                                    <tr>
-                                        <th>${Utils.getText('events.table.mission')}</th>
-                                        <th class="count-col">${Utils.getText('events.table.count')}</th>
-                                        <th>${Utils.getText('events.table.reward')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-            category.missions.forEach(mission => {
-                const reward = mission.rewards[0];
-                const rewardGridHTML = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '');
-                contentHTML += `<tr>
-                                    <td>${mission.description[lang]}</td>
-                                    <td class="count-col">${mission.count}</td>
-                                    <td class="mission-reward-cell">${rewardGridHTML}</td>
-                                </tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-
-    // --- NUEVA SECCIÓN: Para 'Login Event' ---
-    if (eventData.daily_login_rewards) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyLoginTitle')}</h3><div class="details-reward-grid-container">`;
-        eventData.daily_login_rewards.forEach(item => {
-            const dateLabel = luxon.DateTime.fromISO(item.date).setLocale(lang).toFormat('d MMMM');
-            const rewardsHTML = item.rewards.map(reward => getItemGridDisplay(reward.itemId, reward.quantity, reward.rank)).join('');
-            contentHTML += `<div class="details-reward-column">
-                                <span class="details-reward-label">${dateLabel}</span>
-                                <div class="reward-grid">${rewardsHTML}</div>
-                            </div>`;
         });
         contentHTML += `</div></div>`;
     }
     
-    // --- NUEVA SECCIÓN: Para 'Hidden Dragons' ---
+    /**
+     * Renders: Eventos con misiones agrupadas por categorías en pestañas.
+     * Structure: "mission_categories": [ { "category_name": {...}, "missions": [...] } ]
+     * Example: The Journey Begins: Follow the Stars
+     */
+    if (eventData.mission_categories) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionCategoriesTitle')}</h3><div class="tabs-nav">`;
+        eventData.mission_categories.forEach((category, index) => {
+            contentHTML += `<button class="tab-link ${index === 0 ? 'active' : ''}" data-tab="category-${index}">${category.category_name[lang]}</button>`;
+        });
+        contentHTML += `</div><div class="tabs-content">`;
+        eventData.mission_categories.forEach((category, index) => {
+            contentHTML += `<div id="category-${index}" class="tab-content ${index === 0 ? 'active' : ''}"><table class="details-table daily-missions-table"><thead><tr><th>${Utils.getText('events.table.mission')}</th><th class="count-col">${Utils.getText('events.table.count')}</th><th>${Utils.getText('events.table.reward')}</th></tr></thead><tbody>`;
+            category.missions.forEach(mission => {
+                const reward = mission.rewards[0];
+                contentHTML += `<tr><td>${mission.description[lang]}</td><td class="count-col">${mission.count}</td><td class="mission-reward-cell">${getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '')}</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
+        });
+        contentHTML += `</div></div>`;
+    }
+    
+    /**
+     * Renders: Eventos de inicio de sesión diario con recompensas por fecha.
+     * Structure: "daily_login_rewards": [ { "date": "...", "rewards": [...] } ]
+     * Example: Prepare for the Hogshead Hamlet Update
+     */
+    if (eventData.daily_login_rewards) {
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyLoginTitle')}</h3><div class="details-reward-grid-container">`;
+        eventData.daily_login_rewards.forEach(item => {
+            const dateLabel = luxon.DateTime.fromISO(item.date).setLocale(lang).toFormat('d MMMM');
+            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${dateLabel}</span><div class="reward-grid">${item.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
+        });
+        contentHTML += `</div></div>`;
+    }
+    
+    /**
+     * Renders: Eventos que bonifican el sistema de "Requests".
+     * Structure: "rewards": { "request_bonus": { "special_drops": [...], "reward_modifier": {...} } }
+     * Example: Hidden Dragons' Halloween Special Request
+     */
     if (eventData.rewards?.request_bonus) {
         const bonus = eventData.rewards.request_bonus;
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.requestBonusTitle')}</h3>`;
-        if (bonus.description) {
-            contentHTML += `<p>${bonus.description[lang]}</p>`;
-        }
+        if (bonus.description) contentHTML += `<p>${bonus.description[lang]}</p>`;
         if (bonus.special_drops) {
             contentHTML += `<h4>${Utils.getText('events.rewards.specialDropsTitle')}</h4><div class="details-reward-grid-container">`;
             bonus.special_drops.forEach(drop => {
-                const iconGrid = getItemGridDisplay(drop.itemId, drop.quantity, drop.rank);
                 const notes = drop.notes ? `<span class="details-reward-label">${drop.notes[lang]}</span>` : '';
-                contentHTML += `<div class="details-reward-column">${notes}${iconGrid}</div>`;
+                contentHTML += `<div class="details-reward-column">${notes}${getItemGridDisplay(drop.itemId, drop.quantity, drop.rank)}</div>`;
             });
             contentHTML += `</div>`;
         }
@@ -814,74 +775,78 @@ openEventDetailsPanel: function (eventId) {
         }
         contentHTML += `</div>`;
     }
-
-    // --- LÓGICA ORIGINAL RESTAURADA: Para misiones simples como 'Monster Busters' y 'Candy Heist' ---
+    
+    /**
+     * Renders: Eventos con una lista simple de misiones (sin contador, sin pestañas).
+     * Structure: "missions": [ { "description": {...}, "rewards": [...] } ]
+     * Note: Maneja de forma segura misiones que no tienen recompensas directas.
+     * Examples: The Grand Candy Heist, Monster Busters Halloween
+     */
     if (eventData.missions && !eventData.daily_missions && !eventData.mission_categories) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
         eventData.missions.forEach(m => {
-            let rightColumnHTML = '';
-            // Importante: Solo intentar renderizar recompensas si existen en el objeto de la misión
-            if (m.rewards) {
-                rightColumnHTML = m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('');
-            }
-            // Para 'Monster Busters', m.rewards es undefined, por lo que rightColumnHTML quedará vacío, lo cual es correcto.
+            let rightColumnHTML = (m.rewards) ? m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('') : '';
             contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
         });
         contentHTML += `</tbody></table></div>`;
     }
     
-    // --- SECCIONES EXISTENTES (SIN CAMBIOS) ---
-    // (Asegúrate de que estas secciones están después de las nuevas para un orden lógico)
-
+    /**
+     * Renders: Recompensas por completar un número acumulado de misiones.
+     * Soporta dos formatos de JSON para flexibilidad.
+     * Structure 1: "cumulative_missions": [ { "condition": ..., "itemId": ..., "quantity": ... } ]
+     * Structure 2: "cumulative_missions": [ { "condition": ..., "rewards": [ {...} ] } ]
+     * Examples: Halloween Countdown Mission (Structure 1), The Journey Begins: Follow the Stars (Structure 2)
+     */
     if (eventData.rewards?.cumulative_missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
-        eventData.rewards.cumulative_missions.forEach(reward => {
-            const iconGrid = getItemGridDisplay(reward.itemId, reward.quantity, reward.rank);
-            contentHTML += `<div class="details-reward-column">
-                                <span class="details-reward-label">${reward.condition[lang]}</span>
-                                ${iconGrid}
-                            </div>`;
+        eventData.rewards.cumulative_missions.forEach(rewardData => {
+            let iconGrid = (rewardData.rewards) ? rewardData.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('') : getItemGridDisplay(rewardData.itemId, rewardData.quantity, rewardData.rank);
+            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${rewardData.condition[lang]}</span>${iconGrid}</div>`;
         });
         contentHTML += `</div></div>`;
     }
     
+    /**
+     * Renders: Recompensas por completar puzles.
+     * Structure: "rewards": { "puzzle_completion": [ { "description": {...}, "rewards": [...] } ] }
+     * Examples: Trick or Treat Puzzle Event, Black Rose Blooms in the Night
+     */
     if (eventData.rewards?.puzzle_completion) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3>`;
-        contentHTML += `<div class="puzzle-rewards-container">`;
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3><div class="puzzle-rewards-container">`;
         eventData.rewards.puzzle_completion.forEach(puzzle => {
-            const rewardsHTML = puzzle.rewards.map(reward => 
-                getItemGridDisplay(reward.itemId, reward.quantity, reward.rank)
-            ).join('');
-            contentHTML += `<div class="puzzle-item">
-                                <p class="puzzle-description">${puzzle.description[lang]}</p>
-                                <div class="puzzle-rewards-grid">${rewardsHTML}</div>
-                            </div>`;
+            contentHTML += `<div class="puzzle-item"><p class="puzzle-description">${puzzle.description[lang]}</p><div class="puzzle-rewards-grid">${puzzle.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
         });
         contentHTML += `</div></div>`;
     }
-
+    
+    /**
+     * Renders: Eventos de sistema de puntos donde se ganan puntos por acciones.
+     * Structure: "point_system": { "cost_per_claim": ..., "missions": [ { "description": ..., "points": ... } ] }
+     * Example: Halloween Raid Event
+     */
     if (eventData.point_system) {
         const ps = eventData.point_system;
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.pointSystemTitle')}</h3>`;
-        let infoText = '';
-        if (ps.cost_per_claim) infoText += `<strong>${Utils.getText('events.pointSystem.costPerClaim')}:</strong> ${ps.cost_per_claim} Pts. `;
-        if (ps.daily_max_claims) infoText += `<strong>${Utils.getText('events.pointSystem.dailyClaimLimit')}:</strong> ${ps.daily_max_claims}. `;
-        if (ps.daily_max_points) infoText += `<strong>${Utils.getText('events.pointSystem.dailyPointLimit')}:</strong> ${ps.daily_max_points}.`;
-        if (infoText) contentHTML += `<div class="weekly-recommendation-box"><p>${infoText}</p></div>`;
-        contentHTML += `<h4>${Utils.getText('events.pointSystem.pointsPerAction')}</h4><table class="details-table missions-table"><tbody>`;
+        let infoText = `<strong>${Utils.getText('events.pointSystem.costPerClaim')}:</strong> ${ps.cost_per_claim} Pts. <strong>${Utils.getText('events.pointSystem.dailyClaimLimit')}:</strong> ${ps.daily_max_claims}. <strong>${Utils.getText('events.pointSystem.dailyPointLimit')}:</strong> ${ps.daily_max_points}.`;
+        contentHTML += `<div class="weekly-recommendation-box"><p>${infoText}</p></div><h4>${Utils.getText('events.pointSystem.pointsPerAction')}</h4><table class="details-table missions-table"><tbody>`;
         ps.missions.forEach(mission => {
             contentHTML += `<tr><td>${mission.description[lang]}</td><td class="points-col">+${mission.points}</td></tr>`;
         });
         contentHTML += `</tbody></table></div>`;
     }
-
+    
+    /**
+     * Renders: Una tienda de intercambio donde se usa una moneda de evento.
+     * Structure: "rewards": { "exchange_shop": [ { "itemId": ..., "cost": ..., "limit": ... } ] }
+     * Example: The Grand Candy Heist
+     */
     if (eventData.rewards?.exchange_shop) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
         const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
         const currencyItemDef = currencyItemId ? App.state.allItemsData[currencyItemId] : null;
         eventData.rewards.exchange_shop.forEach(item => {
-            const itemToBuyDef = App.state.allItemsData[item.itemId];
-            if (!itemToBuyDef) return;
+            const itemToBuyDef = App.state.allItemsData[item.itemId]; if (!itemToBuyDef) return;
             const itemName = itemToBuyDef.name[lang] || itemToBuyDef.name.en;
             const itemIconHtml = getItemGridDisplay(item.itemId, item.quantity, item.rank);
             let costHtml = `<span class="cost-value">${item.cost}</span>`;
@@ -890,97 +855,94 @@ openEventDetailsPanel: function (eventId) {
             }
             let limitText = '';
             if (item.limit && item.limit.key) {
-                const translationKey = `events.limits.${item.limit.key}`;
-                const translatedLimit = Utils.getText(translationKey, { value: item.limit.value });
+                const translatedLimit = Utils.getText(`events.limits.${item.limit.key}`, { value: item.limit.value });
                 limitText = `<span class="item-limit">${translatedLimit}</span>`;
             }
-            contentHTML += `<tr>
-                          <td class="item-to-buy">
-                            ${itemIconHtml}
-                            <div class="item-info">
-                                <span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>
-                                ${limitText}
-                            </div>
-                          </td>
-                          <td class="item-cost">${costHtml}</td>
-                        </tr>`;
+            contentHTML += `<tr><td class="item-to-buy">${itemIconHtml}<div class="item-info"><span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>${limitText}</div></td><td class="item-cost">${costHtml}</td></tr>`;
         });
         contentHTML += `</tbody></table></div>`;
     }
-
-    // --- Este ahora maneja 'Witch Soha's' y 'Ukapong' ---
+    
+    /**
+     * Renders: Una lista simple de misiones y recompensas en formato de cuadrícula.
+     * Structure: "missions_and_rewards": [ { "mission": {...}, "itemId": ..., "quantity": ... } ]
+     * Examples: Ukapong's Hidden Challenge, Witch Soha's Growth Magic!
+     */
     if (eventData.missions_and_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.missions_and_rewards.forEach(m => {
-            const iconGrid = getItemGridDisplay(m.itemId, m.quantity, m.rank);
-            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${iconGrid}</div>`;
+            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${getItemGridDisplay(m.itemId, m.quantity, m.rank)}</div>`;
         });
         contentHTML += `</div></div>`;
     }
-
+    
+    /**
+     * Renders: Recompensas de clasificación para un jefe de campo.
+     * Structure: "boss_details": { "ranking_rewards": { "base_on_participation": ..., "bonus_by_rank": [...] } }
+     * Example: Field Boss Challenge
+     */
     if (eventData.boss_details?.ranking_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
         const participation = eventData.boss_details.ranking_rewards.base_on_participation;
         if (participation) {
-            const rewardsGrid = participation.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
-            contentHTML += `<div class="participation-reward">
-                            <div class="reward-grid">${rewardsGrid}</div>
-                            <div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div>
-                        </div>`;
+            contentHTML += `<div class="participation-reward"><div class="reward-grid">${participation.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank || 'Common')).join('')}</div><div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div></div>`;
         }
         const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
         if (ranking) {
             contentHTML += `<div class="details-reward-grid-container">`;
             ranking.forEach(r => {
-                const iconGrid = r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('');
-                contentHTML += `<div class="details-reward-column">
-                              <span class="details-reward-label">${r.tier_name[lang]}</span>
-                              <div class="reward-grid">${iconGrid}</div>
-                            </div>`;
+                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${r.tier_name[lang]}</span><div class="reward-grid">${r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('')}</div></div>`;
             });
             contentHTML += `</div>`;
         }
         contentHTML += `</div>`;
     }
-
+    
+    /**
+     * Renders: Las recompensas de una ruleta (gacha). Muestra ítems y sus probabilidades.
+     * Structure: "rewards": { "wheel_of_fate": [ { "itemId": ..., "probability": ... } ] }
+     * Examples: Halloween Wheel of Fate, Field Boss Challenge
+     */
     if (eventData.rewards?.wheel_of_fate) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
-        const rewards = eventData.rewards.wheel_of_fate;
-        const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
-        contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
-        contentHTML += generateRewardTextList(rewards);
+        contentHTML += `<div class="reward-grid">${eventData.rewards.wheel_of_fate.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
+        contentHTML += generateRewardTextList(eventData.rewards.wheel_of_fate);
         contentHTML += `</div>`;
     }
-
+    
+    /**
+     * Renders: Recompensas acumuladas por girar una ruleta un número de veces.
+     * Structure: "rewards": { "cumulative_spins": [ { "condition": {...}, "itemId": ... } ] }
+     * Examples: Halloween Wheel of Fate, Field Boss Challenge
+     */
     if (eventData.rewards?.cumulative_spins) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3>`;
-        contentHTML += `<div class="details-reward-grid-container">`;
+        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.rewards.cumulative_spins.forEach(r => {
-            const iconGrid = getItemGridDisplay(r.itemId, r.quantity, r.rank);
-            contentHTML += `<div class="details-reward-column">
-                          <span class="details-reward-label">${r.condition[lang]}</span>
-                          ${iconGrid}
-                        </div>`;
+            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${r.condition[lang]}</span>${getItemGridDisplay(r.itemId, r.quantity, r.rank)}</div>`;
         });
         contentHTML += `</div></div>`;
     }
-
+    
+    /**
+     * Renders: Una "piscina" de recompensas posibles de una fuente aleatoria (no una ruleta).
+     * Structure: "rewards": { "reward_pool": [ { "itemId": ..., "probability": ... } ] }
+     * Examples: Monster Busters Halloween, Unlimited Skill Growth Chance
+     */
     if (eventData.rewards?.reward_pool) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
-        const rewards = eventData.rewards.reward_pool;
-        const iconGrid = rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('');
-        contentHTML += `<div class="reward-grid">${iconGrid}</div>`;
-        contentHTML += generateRewardTextList(rewards);
+        contentHTML += `<div class="reward-grid">${eventData.rewards.reward_pool.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
+        contentHTML += generateRewardTextList(eventData.rewards.reward_pool);
         contentHTML += `</div>`;
     }
 
-    // --- Cierre y Renderizado Final ---
+    // --- 6. CIERRE Y RENDERIZADO FINAL ---
     contentHTML += `</div>`;
     App.dom.eventDetailsPanel.innerHTML = contentHTML;
     App.dom.eventDetailsPanel.classList.add('visible');
     if (App.state.isMobile) document.body.classList.add('no-scroll');
     App.state.currentOpenEventId = eventId;
 
+    // Añade listeners para las pestañas si existen en el contenido renderizado.
     const tabsNav = App.dom.eventDetailsPanel.querySelector('.tabs-nav');
     if (tabsNav) {
         tabsNav.addEventListener('click', e => {
