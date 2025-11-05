@@ -20,7 +20,7 @@ function getBackendUrl() {
     return 'http://localhost:3001';
   } else {
     // Si no es local, asumimos que estamos en producción.
-    return 'https://pcnetfs.moe/api-bns-heroes-timers';
+    return 'https://bnsheroes.pcnetfs.moe';
   }
 }
 

@@ -2,7 +2,7 @@
 
 const CACHE_NAME_STATIC = 'bns-timer-static-v3.6';
 const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v3.6';
-const API_URL_PREFIX = 'https://pcnetfs.moe/api-bns-heroes-timers/api/';
+const API_URL_PREFIX = 'https://bnsheroes.pcnetfs.moe/api/';
 
 // --- INICIO DE LA CORRECCIÓN UNIVERSAL ---
 // 'self.location.hostname' nos dice el dominio donde corre el SW.
