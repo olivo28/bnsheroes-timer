@@ -1789,6 +1789,9 @@ closeBossDetailsPanel: function() {
                 this.openWeeklyDetailsPanel(App.state.currentOpenWeeklyId);
             }
         }
+        if (App.state.currentOpenBossId) {
+            this.openBossDetailsPanel(App.state.currentOpenBossId);
+        }
     },
     
     populateSelects: function() {

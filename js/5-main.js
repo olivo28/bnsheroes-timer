@@ -509,8 +509,8 @@ import UI from './3-ui.js';
 
                 if (languageChanged) {
                     UI.populateSelects();
-                    UI.applyLanguage(); 
                 }
+                UI.applyLanguage(); 
             }
             // -----------------------
 
@@ -573,6 +573,8 @@ import UI from './3-ui.js';
             App.state.lastRenderedWeeklyIds = null;
 
             // 3. Actualizar
+            UI.applyLanguage(); // <--- AÑADIR ESTA LÍNEA (Refresca el modal abierto)
+
             UI.updateAll();
         });
 
