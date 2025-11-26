@@ -48,13 +48,8 @@ import UI from './3-ui.js';
 
     /**
      * Función principal que se ejecuta después de elegir el idioma.
-     * Carga todos los datos, fusiona configuraciones e inicia la aplicación.
-     * @param {string} locale - El idioma elegido (ej. 'en', 'es').
      */
-    // js/5-main.js
-
     async function startApp(locale) {
-        // --- 1. PREPARACIÓN DE LA PANTALLA DE CARGA ---
         document.getElementById('language-modal-overlay').classList.add('hidden');
         const loadingOverlay = document.getElementById('loading-overlay');
         const loadingMessageEl = document.getElementById('loading-message');
@@ -62,15 +57,9 @@ import UI from './3-ui.js';
 
         Utils.setCookie('userLanguage', locale, 365);
 
-        // --- 2. LÓGICA DE CARGA Y PROCESAMIENTO DE DATOS ---
         try {
             const loadStartTime = Date.now();
 
-            // --- INICIO DE LA CORRECCIÓN ---
-            /**
-             * Función auxiliar para hacer fetch y manejar errores HTTP.
-             * Si la respuesta no es OK (ej. 404, 503), lanza un error.
-             */
             const fetchData = async (url) => {
                 const response = await fetch(url);
                 if (!response.ok) {
@@ -79,7 +68,6 @@ import UI from './3-ui.js';
                 return response.json();
             };
 
-            // Cargamos TODOS los datos necesarios en paralelo usando la función auxiliar
             const [
                 publicConfig, gameConfig, i18nData, heroesData,
                 eventsData, weeklyData, bossesData, streamsData, bannersData, itemsData,
@@ -97,11 +85,7 @@ import UI from './3-ui.js';
                 fetchData(`${Logic.BACKEND_URL}/api/data/items`),
                 fetchData(`${Logic.BACKEND_URL}/api/data/heroweek`),
             ]);
-            // --- FIN DE LA CORRECCIÓN ---
 
-            // --- A partir de aquí, el resto de la función es la original ---
-
-            // Guardamos los datos en el estado global
             App.state.i18n = i18nData;
             App.state.allHeroesData = heroesData;
             App.state.allEventsData = eventsData.gameData;
@@ -112,7 +96,6 @@ import UI from './3-ui.js';
             App.state.allItemsData = itemsData;
             App.state.allHeroWeekData = heroweekData;
 
-            // Lógica para mensajes de carga aleatorios
             const getRandomLoadingMessage = () => {
                 const messages = i18nData.loadingMessages || ['Loading...'];
                 return messages[Math.floor(Math.random() * messages.length)];
@@ -126,7 +109,6 @@ import UI from './3-ui.js';
                 }, 300);
             }, 2000);
 
-            // Lógica de configuración de usuario
             let userPrefs = {};
             const isLoggedIn = !!Logic.getSessionToken();
             App.state.isLoggedIn = isLoggedIn;
@@ -163,7 +145,6 @@ import UI from './3-ui.js';
             }
             App.state.config = mergedConfig;
 
-            // Lógica de guardado de zona horaria para nuevos usuarios
             if (isLoggedIn) {
                 const pendingTimezone = localStorage.getItem('pending_timezone_for_new_user');
                 if (pendingTimezone && !userPrefs.displayTimezone) {
@@ -173,9 +154,8 @@ import UI from './3-ui.js';
                 }
             }
 
-            // --- 3. TRANSICIÓN FINAL ---
             const elapsedTime = Date.now() - loadStartTime;
-            const minLoadTime = 1500; // Reducido para depuración más rápida
+            const minLoadTime = 1500;
             const remainingTime = Math.max(0, minLoadTime - elapsedTime);
 
             setTimeout(() => {
@@ -186,7 +166,6 @@ import UI from './3-ui.js';
             }, remainingTime);
 
         } catch (error) {
-            // Ahora, si cualquier fetchData falla, este catch se activará
             console.error("Error fatal durante la inicialización:", error);
             loadingMessageEl.textContent = 'Error: Could not load application data.';
         }
@@ -223,34 +202,81 @@ import UI from './3-ui.js';
      * Contenedor para todos los event listeners de la aplicación.
      */
     function addEventListeners() {
-        function handlePanelClick(e) {
-            const infoBtn = e.target.closest('.info-button');
-            if (infoBtn) return UI.openInfoModal();
 
-            const syncBtn = e.target.closest('.sync-button');
-            if (syncBtn) return UI.openSyncModal();
+        // --- MANEJO DE CLICS EN PANELES DE TIMERS (Global) ---
+         function handlePanelClick(e) {
+            // 1. Botón de Información (Ticket) - Funciona en ambos paneles
+            if (e.target.closest('.info-button')) return UI.openInfoModal();
 
+            // 2. Botón de Sincronización (Ticket) - Funciona en ambos paneles
+            if (e.target.closest('.sync-button')) return UI.openSyncModal();
+
+            // 3. Toggle de Alerta (Campanita) - Funciona en ambos paneles
             const alertToggle = e.target.closest('.alert-toggle');
             if (alertToggle) {
                 const { bossId, time } = alertToggle.dataset;
                 const key = `${bossId}_${time}`;
+                
                 if (!App.state.config.notificationPrefs) App.state.config.notificationPrefs = {};
                 if (!App.state.config.notificationPrefs.bosses) App.state.config.notificationPrefs.bosses = {};
+                
                 const isCurrentlyDisabled = alertToggle.classList.contains('disabled');
                 App.state.config.notificationPrefs.bosses[key] = isCurrentlyDisabled;
-                const payload = {
-                    prefs: App.state.config.notificationPrefs
-                };
-                Logic.saveUserPreferences(payload);
+                
+                Logic.saveUserPreferences({ prefs: App.state.config.notificationPrefs });
                 UI.updateAll();
+                
+                return; // Salimos para no procesar nada más
+            }
+
+            // 4. ABRIR DETALLES DEL BOSS
+            // --- CAMBIO AQUÍ: Solo si el clic ocurrió dentro del Panel Secundario ---
+            if (e.target.closest('.secondary-panel')) {
+                const bossItem = e.target.closest('[data-boss-id]');
+                if (bossItem && bossItem.dataset.bossId) {
+                    const clickedBossId = bossItem.dataset.bossId;
+
+                    // --- NUEVA LÓGICA DE TOGGLE ---
+                    if (App.state.currentOpenBossId === clickedBossId) {
+                        UI.closeBossDetailsPanel();
+                    } else {
+                        UI.openBossDetailsPanel(clickedBossId);
+                        
+                        // Scroll top en móvil si es necesario
+                        if (App.state.isMobile) {
+                            window.scrollTo(0, 0);
+                        }
+                    }
+                }
             }
         }
+
         App.dom.primaryPanel.addEventListener('click', handlePanelClick);
         App.dom.secondaryPanel.addEventListener('click', handlePanelClick);
 
+        // --- LISTENER DEL PANEL DE DETALLES DE BOSS ---
+        // Maneja cierre y cambio de pestañas
+        if (App.dom.bossDetailsPanel) {
+            App.dom.bossDetailsPanel.addEventListener('click', (e) => {
+                // 1. Caso: Cerrar panel
+                if (e.target.closest('.close-details-btn')) {
+                    UI.closeBossDetailsPanel();
+                    return;
+                }
+
+                // 2. Caso: Cambiar de Boss (clic en los iconos/tabs)
+                const switchBtn = e.target.closest('[data-switch-boss-id]');
+                if (switchBtn) {
+                    const newBossId = switchBtn.dataset.switchBossId;
+                    // Llamamos a la función de apertura con el nuevo ID
+                    UI.openBossDetailsPanel(newBossId);
+                }
+            });
+        }
+
+        // --- MANEJO DE CLICS EN EVENTOS ---
         App.dom.eventsContainer.addEventListener('click', e => {
             const eventItem = e.target.closest('.event-item');
-            // Usamos una comprobación para alternar: si haces clic en el mismo, se cierra.
             if (eventItem?.dataset.eventId) {
                 if (App.state.currentOpenEventId === eventItem.dataset.eventId) {
                     UI.closeEventDetailsPanel();
@@ -259,52 +285,44 @@ import UI from './3-ui.js';
                 }
             }
         });
+
+        // --- MANEJO DE CLICS EN SEMANALES ---
         App.dom.weeklyContainer.addEventListener('click', e => {
-    const weeklyItem = e.target.closest('.weekly-item');
-    if (!weeklyItem) return;
+            const weeklyItem = e.target.closest('.weekly-item');
+            if (!weeklyItem) return;
 
-    // Obtenemos el ID del item clickeado, ya sea semanal o del héroe
-    const weeklyId = weeklyItem.dataset.weeklyId;
-    const hotwId = weeklyItem.dataset.hotwId;
-    const clickedId = weeklyId || hotwId;
+            const weeklyId = weeklyItem.dataset.weeklyId;
+            const hotwId = weeklyItem.dataset.hotwId;
+            const clickedId = weeklyId || hotwId;
 
-    // --- LÓGICA DE CIERRE ---
-    // Si el panel que intentamos abrir ya está abierto, lo cerramos y no hacemos nada más.
-    if (App.state.currentOpenWeeklyId === clickedId) {
-        UI.closeWeeklyDetailsPanel();
-        return; // Detenemos la ejecución
-    }
+            if (App.state.currentOpenWeeklyId === clickedId) {
+                UI.closeWeeklyDetailsPanel();
+                return;
+            }
 
-    // --- LÓGICA DE APERTURA ---
-    // Si no había un panel abierto o se hizo clic en uno diferente, abrimos el correspondiente.
-    if (weeklyId) {
-        UI.openWeeklyDetailsPanel(weeklyId);
-    } else if (hotwId) {
-        UI.openHeroOfTheWeekDetailsPanel(hotwId);
-    }
-});
+            if (weeklyId) {
+                UI.openWeeklyDetailsPanel(weeklyId);
+            } else if (hotwId) {
+                UI.openHeroOfTheWeekDetailsPanel(hotwId);
+            }
+        });
 
+        // --- MANEJADOR UNIFICADO PARA CLICS EN PANELES DE DETALLE (EVENTOS/SEMANAL) ---
         function handleDetailsPanelClick(e) {
-            // --- 1. Lógica para el botón de cerrar ---
-            // Si se hace clic en el botón de cerrar, cerramos ambos paneles y paramos.
-            // No importa cuál esté visible, la función .close() no hará nada si está oculto.
+            // 1. Botón Cerrar
             if (e.target.closest('.close-details-btn')) {
                 UI.closeEventDetailsPanel();
                 UI.closeWeeklyDetailsPanel();
-                return; // Detiene la ejecución para no procesar otros clics.
+                return;
             }
 
-            // --- 2. Lógica para clics en Héroes ---
-            // Esto se ejecutará si el clic no fue en el botón de cerrar.
+            // 2. Clic en Héroes (para abrir modal)
             handleHeroClick(e);
 
-            // --- 3. NUEVA Lógica para los Buffs Desplegables ---
-            // Esto solo se aplicará si el clic fue dentro del panel semanal.
+            // 3. Buffs expandibles
             const buffItem = e.target.closest('.weekly-buff-item.expandable');
             if (buffItem) {
                 const enhancementsList = buffItem.nextElementSibling;
-
-                // Verificamos que el siguiente elemento sea la lista que queremos expandir
                 if (enhancementsList && enhancementsList.classList.contains('weekly-enhancements-list')) {
                     buffItem.classList.toggle('expanded');
                     enhancementsList.classList.toggle('expanded');
@@ -312,7 +330,10 @@ import UI from './3-ui.js';
             }
         }
 
-        // Listener para el botón de guardar de "Account Settings"
+        document.getElementById('event-details-panel').addEventListener('click', handleDetailsPanelClick);
+        document.getElementById('weekly-details-panel').addEventListener('click', handleDetailsPanelClick);
+
+        // Listener para el botón de guardar de "Account Settings" (Push Notifications)
         const savePushSettingsBtn = document.getElementById('save-push-settings-btn');
         if (savePushSettingsBtn) {
             savePushSettingsBtn.addEventListener('click', async () => {
@@ -332,11 +353,7 @@ import UI from './3-ui.js';
                     bosses: App.state.config.notificationPrefs?.bosses || {}
                 };
 
-                // Actualizamos el estado local
                 App.state.config.notificationPrefs = newPushPrefs;
-
-                // --- ESTA ES LA LÍNEA CLAVE ---
-                // Enviamos SOLO las preferencias de notificaciones al backend
                 Logic.saveUserPreferences({ notificationPrefs: newPushPrefs });
 
                 await Utils.alert('alert.settingsSaved.title', 'alert.settingsSaved.body');
@@ -344,9 +361,7 @@ import UI from './3-ui.js';
             });
         }
 
-        document.getElementById('event-details-panel').addEventListener('click', handleDetailsPanelClick);
-        document.getElementById('weekly-details-panel').addEventListener('click', handleDetailsPanelClick);
-
+        // --- CONFIGURACIÓN GENERAL ---
         App.dom.settingsButton.addEventListener('click', UI.openSettingsModal);
         document.getElementById('close-settings-btn').addEventListener('click', UI.closeSettingsModal);
         App.dom.accountModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeAccountModal(); });
@@ -355,11 +370,8 @@ import UI from './3-ui.js';
         document.getElementById('close-about-btn').addEventListener('click', UI.closeAboutModal);
         document.getElementById('close-info-btn').addEventListener('click', UI.closeInfoModal);
 
-        document.getElementById('close-account-modal-btn').addEventListener('click', UI.closeAccountModal);
         if (App.dom.accountModalOverlay) {
-            App.dom.accountModalOverlay.addEventListener('click', async (e) => { // <-- La función ahora es ASYNC
-
-                // Clic en los enlaces de navegación de la barra lateral
+            App.dom.accountModalOverlay.addEventListener('click', async (e) => {
                 const navItem = e.target.closest('.nav-item');
                 if (navItem) {
                     e.preventDefault();
@@ -373,26 +385,22 @@ import UI from './3-ui.js';
                     return;
                 }
 
-                // Clic en el botón de AÑADIR dispositivo
                 if (e.target.closest('#account-subscribe-push-btn')) {
                     UI.handleAddNewSubscription();
                     return;
                 }
 
-                // Clic en el botón de BORRAR dispositivo
                 const deleteButton = e.target.closest('.delete-subscription-btn');
                 if (deleteButton) {
                     const endpoint = deleteButton.dataset.endpoint;
                     const confirmed = await Utils.confirm('confirm.deleteSub.title', 'confirm.deleteSub.body');
                     if (confirmed) {
                         await Logic.unsubscribeFromPushNotifications(endpoint);
-                        // No cerramos el modal, solo refrescamos la lista
                         UI.renderActiveSubscriptions();
                     }
-                    return; // Importante: detenemos la ejecución aquí
+                    return;
                 }
 
-                // Clic para cerrar si se pulsa el botón X o fuera del modal
                 if (e.target.closest('#close-account-modal-btn') || e.target === e.currentTarget) {
                     UI.closeAccountModal();
                 }
@@ -426,12 +434,9 @@ import UI from './3-ui.js';
             });
         }
 
-        // El botón de logout ahora está en el modal, así que le añadimos su listener
         if (App.dom.logoutBtnModal) {
             App.dom.logoutBtnModal.addEventListener('click', () => Logic.logout());
         }
-
-        //document.getElementById('account-subscribe-push-btn').addEventListener('click', () => UI.togglePushSubscription());
 
         App.dom.modalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeSettingsModal(); });
         App.dom.infoModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeInfoModal(); });
@@ -439,8 +444,8 @@ import UI from './3-ui.js';
         App.dom.aboutModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeAboutModal(); });
         document.getElementById('streams-modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) document.getElementById('streams-modal-overlay').classList.remove('visible'); });
 
+        // --- GUARDAR CONFIGURACIÓN ---
         App.dom.saveSettingsBtn.addEventListener('click', async () => {
-            // 1. Recolección de datos (Igual que antes)
             const reminderSettings = {
                 eventDailies: {
                     enabled: document.getElementById('event-dailies-reminder-toggle').checked,
@@ -469,9 +474,11 @@ import UI from './3-ui.js';
                 reminderSettings: reminderSettings
             };
 
+            // Detectar cambios
             const languageChanged = newConfig.language !== App.state.config.language;
+            const timezoneChanged = newConfig.displayTimezone !== App.state.config.displayTimezone;
+            const formatChanged = newConfig.use24HourFormat !== App.state.config.use24HourFormat;
 
-            // 2. Carga del nuevo idioma (Igual que antes)
             if (languageChanged) {
                 try {
                     const newTranslations = await Logic.fetchLocaleData(newConfig.language);
@@ -485,39 +492,34 @@ import UI from './3-ui.js';
                 }
             }
 
-            // 3. Guardar configuración
             App.state.config = { ...App.state.config, ...newConfig };
             Logic.saveUserPreferences(App.state.config);
             UI.closeSettingsModal();
 
-            // 4. LÓGICA CRÍTICA PARA REFRESCAR LA SPA
-            if (languageChanged) {
-                // A) Reiniciamos las banderas de caché.
-                // Esto fuerza a 'updateAll' a entrar en los IFs y regenerar el HTML traducido.
+            // --- CORRECCIÓN AQUÍ ---
+            // Si cambia el idioma, la zona horaria o el formato 12/24h, 
+            // reseteamos todas las cachés de renderizado para forzar el redibujado de las horas.
+            if (languageChanged || timezoneChanged || formatChanged) {
                 App.state.lastRenderedBannerIds = null;
                 App.state.lastRenderedEventIds = null;
                 App.state.lastRenderedWeeklyIds = null;
                 App.state.lastRenderedBossIds = null;
-                App.state.lastRenderedPrimaryTimers = null; // Asumo que usas este para el panel principal
+                App.state.lastRenderedPrimaryTimers = null;
                 App.state.lastShowSecondaryPanel = null;
 
-                // B) Regeneramos los selects (para que se traduzcan las opciones)
-                UI.populateSelects();
-
-                // C) Actualizamos idioma de textos sueltos
-                UI.applyLanguage(); 
+                if (languageChanged) {
+                    UI.populateSelects();
+                    UI.applyLanguage(); 
+                }
             }
+            // -----------------------
 
-            // 5. Llamamos a updateAll
-            // Al haber puesto las variables anteriores a null, updateAll regenerará todo el HTML con el nuevo idioma.
             UI.updateAll();
             
-            // 6. Fix para móvil (Swiper)
-            // Lo hacemos después del updateAll para que recalcule con el nuevo tamaño del HTML
             if (App.state.isMobile && App.state.swiper) {
                 setTimeout(() => {
                     App.state.swiper.update();
-                }, 50); // Un pequeño delay para asegurar que el DOM ya cambió
+                }, 50);
             }
         });
 
@@ -540,13 +542,10 @@ import UI from './3-ui.js';
         const streamsModalFooter = document.querySelector('.streams-modal-footer');
         if (streamsModalFooter) {
             streamsModalFooter.addEventListener('change', (e) => {
-                // Nos aseguramos de que el cambio venga de un checkbox
                 if (e.target.type === 'checkbox') {
-                    // Obtenemos los nuevos valores
                     const preStreamAlert = document.getElementById('pre-stream-alert-toggle').checked;
                     const postStreamAlert = document.getElementById('post-stream-alert-toggle').checked;
 
-                    // Actualizamos el objeto de configuración en el estado
                     if (!App.state.config.notificationPrefs) {
                         App.state.config.notificationPrefs = {};
                     }
@@ -555,30 +554,35 @@ import UI from './3-ui.js';
                         post: postStreamAlert
                     };
 
-                    // Guardamos las preferencias en el backend o en cookies
                     Logic.saveUserPreferences({ notificationPrefs: App.state.config.notificationPrefs });
                 }
             });
         }
 
+        // --- SWITCH 12h/24h (ACTUALIZACIÓN INSTANTÁNEA) ---
         App.dom.timeFormatSwitch.addEventListener('change', () => {
+            // 1. Guardar configuración
             App.state.config.use24HourFormat = App.dom.timeFormatSwitch.checked;
             Logic.saveUserPreferences({ use24HourFormat: App.state.config.use24HourFormat });
+
+            // 2. FORZAR RE-RENDERIZADO (Resetear caché)
+            // Esto obliga a UI.updateAll() a redibujar el HTML con el nuevo formato de hora
+            App.state.lastRenderedPrimaryTimers = null; 
+            App.state.lastRenderedBossIds = null;     
+            App.state.lastRenderedEventIds = null;
+            App.state.lastRenderedWeeklyIds = null;
+
+            // 3. Actualizar
             UI.updateAll();
         });
-
 
         App.dom.testNotificationBtn.addEventListener('click', async () => {
             const config = App.state.config;
             const lang = config.language;
 
-            // 1. Notificación de prueba genérica (la que ya tenías)
             Logic.showFullAlert(Utils.getText('settings.testButton'), 'This is a test notification.', 'favicon.png');
-
-            // Pausa de 2 segundos para no solapar las notificaciones
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // 2. Prueba de recordatorio de Misiones Diarias
             const dailyMissionEvent = config.events?.find(e => App.state.allEventsData.events[e.id]?.hasDailyMissions);
             if (dailyMissionEvent) {
                 Logic.showFullAlert(
@@ -586,13 +590,12 @@ import UI from './3-ui.js';
                     Utils.getText('notifications.dailyMissionReminderBody', { eventName: dailyMissionEvent.name[lang] }),
                     'favicon.png'
                 );
-            } else { // Fallback si no hay eventos de misión diaria
+            } else {
                 Logic.showFullAlert('Test: Daily Mission Event', 'This is a test for a daily mission event reminder.', 'favicon.png');
             }
 
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // 3. Prueba de recordatorio de Fin de Evento
             const regularEvent = config.events?.find(e => !App.state.allEventsData.events[e.id]?.hasDailyMissions);
             if (regularEvent) {
                 Logic.showFullAlert(
@@ -600,16 +603,14 @@ import UI from './3-ui.js';
                     Utils.getText('notifications.eventEndingSoonBody', { eventName: regularEvent.name[lang] }),
                     'favicon.png'
                 );
-            } else { // Fallback si no hay eventos regulares
+            } else {
                 Logic.showFullAlert('Test: Event Ending Soon', 'This is a test for an event ending soon reminder.', 'favicon.png');
             }
 
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // 4. Prueba de recordatorio de Reset Semanal
             const weeklyTimers = Logic.getWeeklyResetTimers(Logic.getCorrectedNow());
             if (weeklyTimers.length > 0) {
-                // Selecciona uno al azar
                 const randomWeekly = weeklyTimers[Math.floor(Math.random() * weeklyTimers.length)];
                 Logic.showFullAlert(
                     Utils.getText('notifications.weeklyResetReminderTitle'),
@@ -620,14 +621,12 @@ import UI from './3-ui.js';
 
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // 5. Prueba de recordatorio de Nuevo Banner
             Logic.showFullAlert(
                 Utils.getText('notifications.newBannerSoonTitle'),
                 Utils.getText('notifications.newBannerSoonBody'),
                 'favicon.png'
             );
         });
-
 
         function handleHeroClick(e) {
             const heroWrapper = e.target.closest('.banner-hero-img-container');
@@ -664,11 +663,9 @@ import UI from './3-ui.js';
         });
 
         window.addEventListener('keydown', e => {
-            // Primero, comprobamos si hay algún modal de pantalla completa abierto
             const isAccountModalVisible = App.dom.accountModalOverlay?.classList.contains('visible');
             const isHeroModalVisible = App.dom.heroModalOverlay?.classList.contains('visible');
 
-            // Lógica para la tecla Escape
             if (e.key === 'Escape') {
                 if (isAccountModalVisible) {
                     UI.closeAccountModal();
@@ -676,10 +673,8 @@ import UI from './3-ui.js';
                 if (isHeroModalVisible) {
                     UI.closeHeroModal();
                 }
-                // Añade aquí más comprobaciones para otros modales si es necesario
             }
 
-            // Lógica para las flechas (SOLO si el modal de héroe está visible)
             if (isHeroModalVisible) {
                 if (e.key === 'ArrowRight') {
                     UI.navigateHeroModal('next');
@@ -710,42 +705,33 @@ import UI from './3-ui.js';
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         if (token) {
-            // Si encontramos un token, lo guardamos en el almacenamiento local.
             localStorage.setItem('session_token', token);
-            // Limpiamos la URL para que el token no quede visible.
             window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
-            // Forzamos una recarga de la página. En la nueva carga, la app
-            // detectará el token en localStorage y se iniciará en modo "logueado".
             window.location.reload();
-            return; // Detenemos la ejecución aquí para que la recarga ocurra.
+            return; 
         }
 
         // 3. DECIDIR SI MOSTRAR MODAL DE IDIOMA O INICIAR LA APP
         const savedLang = Utils.getCookie('userLanguage');
 
         if (savedLang && savedLang !== 'null') {
-            // Si ya tenemos un idioma, iniciamos la app directamente.
             startApp(savedLang);
         } else {
-            // Si no hay idioma, ocultamos la pantalla de carga principal...
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) {
                 loadingOverlay.classList.add('hidden');
             }
-            // ...y mostramos el modal de selección de idioma.
             const langModal = document.getElementById('language-modal-overlay');
             if (langModal) {
                 langModal.classList.remove('hidden');
                 langModal.addEventListener('click', e => {
                     const langBtn = e.target.closest('.language-choice-btn');
                     if (langBtn) {
-                        // Cuando el usuario elige, llamamos a startApp.
                         const chosenLang = langBtn.dataset.lang;
                         startApp(chosenLang);
                     }
                 });
             } else {
-                // Fallback por si el modal no existiera: iniciar en inglés.
                 startApp('en');
             }
         }

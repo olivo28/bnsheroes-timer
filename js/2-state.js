@@ -30,6 +30,7 @@ const App = {
         lastResetCycleDay: null,
         currentOpenEventId: null,
         currentOpenWeeklyId: null,
+        currentOpenBossId: null,
         swiper: null,
         heroModalContext: {
             heroes: [],
@@ -60,6 +61,7 @@ const App = {
         eventsContainer: null,
         weeklyContainer: null,
         bannersContainer: null,
+        bossDetailsPanel: null,
 
         // Barra superior y de estado
         topBar: null,
@@ -123,6 +125,7 @@ const App = {
         this.dom.stickyTicketContainer = document.getElementById('sticky-ticket-container');
         this.dom.eventsContainer = document.getElementById('events-container');
         this.dom.weeklyContainer = document.getElementById('weekly-container');
+        this.dom.bossDetailsPanel = document.getElementById('boss-details-panel');
         this.dom.bannersContainer = document.getElementById('banners-container');
 
         // Barras y estado

@@ -2482,7 +2482,8 @@ select.settings-input option {
 
 /* --- 3.9. Panel de Detalles de Evento (Lateral Derecho) --- */
 #event-details-panel,
-#weekly-details-panel {
+#weekly-details-panel,
+#boss-details-panel {
     background-color: var(--box-bg-color);
     border-radius: 16px;
     border: 1px solid var(--border-color);
@@ -2506,6 +2507,13 @@ select.settings-input option {
     opacity: 1;
     height: 827px;
     margin-left: -17px
+}
+
+#boss-details-panel.visible {
+    width: 450px;
+    opacity: 1;
+    height: 827px;
+    margin-left: -37px
 }
 
 .details-header {
@@ -3498,6 +3506,7 @@ select.settings-input option {
     display: flex;
     gap: 10px;
     border-bottom: 2px solid #444;
+    padding-top: 10px;
     padding-bottom: 10px;
     margin-bottom: 20px;
 }
@@ -3635,6 +3644,42 @@ select.settings-input option {
     margin: 0;
     font-size: 0.9em;
     color: var(--text-muted-color);
+}
+
+.weekly-boss-tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.weekly-boss-tab {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    background: var(--bg-card);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    opacity: 0.5;
+}
+
+.weekly-boss-tab img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.weekly-boss-tab:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.weekly-boss-tab.active {
+    opacity: 1;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.3);
 }
 
 /* --- 3.10. Botón Flotante (FAB) de Twitch --- */
@@ -4398,7 +4443,8 @@ select.settings-input option {
 
         /* --- Adaptación de los Paneles de Detalles (Evento/Semanal) --- */
         #event-details-panel,
-        #weekly-details-panel {
+        #weekly-details-panel,
+        #boss-details-panel {
             position: fixed;
             top: 100%;
             left: 0;
@@ -4411,7 +4457,8 @@ select.settings-input option {
         }
 
         #event-details-panel.visible,
-        #weekly-details-panel.visible {
+        #weekly-details-panel.visible,
+        #boss-details-panel.visible {
             top: 0;
             width: 100%;
             margin-left: 0;

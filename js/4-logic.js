@@ -556,40 +556,53 @@ const Logic = {
     },
 
     getBossTimers(now) {
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Ya no usamos config.bosses, usamos los datos cargados en el estado.
-        const bosses = App.state.allBossesData;
-        if (!bosses) return [];
-        // --- FIN DE LA CORRECCIÓN ---
-        
-        const lang = App.state.config.language || 'en';
+    // Usamos los datos cargados en el estado
+    const bosses = App.state.allBossesData;
+    if (!bosses) return [];
+    
+    const lang = App.state.config.language || 'en';
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Usamos la nueva variable 'bosses' y añadimos el filtro por 'isActive'
-        return bosses
-            .filter(boss => boss.isActive) // <-- LÓGICA 'isActive'
-            .flatMap(boss =>
-                (boss.spawnTimes || []).map(time => {
-                    const targetDate = this.getAbsoluteDateFromReferenceTimezone(time);
-                    const isNotificationOn = App.state.config.notificationPrefs?.bosses?.[`${boss.id}_${time}`] ?? true;
-                    return {
-                        type: 'boss',
-                        id: boss.id,
-                        name: boss.name[lang] || boss.name.en,
-                        imageUrl: boss.imageUrl,
-                        location: boss.location,
-                        isEvent: boss.isEvent, // <-- Pasamos el flag 'isEvent'
-                        time,
-                        targetDate,
-                        isAlertEnabled: App.state.config.showBossTimers,
-                        isNotificationOn: isNotificationOn,
-                        secondsLeft: Math.floor((targetDate - now) / 1000)
-                    };
-                })
-            )
-            .filter(t => t.secondsLeft > -300)
-            .sort((a, b) => (b.isNotificationOn - a.isNotificationOn) || (a.secondsLeft - b.secondsLeft));
-        // --- FIN DE LA CORRECCIÓN ---
+    // 1. Filtramos solo los bosses activos
+    return bosses
+        .filter(boss => boss.isActive) 
+        .map(boss => {
+            // 2. CORRECCIÓN: En lugar de crear una fila por cada horario (flatMap),
+            // calculamos cuál es el PRÓXIMO horario real para este boss.
+            
+            // Generamos todas las posibles fechas futuras (hoy o mañana)
+            const potentialSpawns = (boss.spawnTimes || []).map(time => {
+                return {
+                    timeString: time,
+                    date: this.getAbsoluteDateFromReferenceTimezone(time)
+                };
+            });
+
+            // Ordenamos por fecha para obtener la más cercana
+            potentialSpawns.sort((a, b) => a.date - b.date);
+            
+            // Tomamos la primera (la más cercana en el futuro)
+            const nextSpawn = potentialSpawns[0];
+
+            if (!nextSpawn) return null;
+
+            const isNotificationOn = App.state.config.notificationPrefs?.bosses?.[`${boss.id}_${nextSpawn.timeString}`] ?? true;
+
+            return {
+                type: 'boss',
+                id: boss.id,
+                name: boss.name[lang] || boss.name.en,
+                imageUrl: boss.imageUrl,
+                location: boss.location,
+                isEvent: boss.isEvent,
+                time: nextSpawn.timeString, // La hora original (ej: "14:00")
+                targetDate: nextSpawn.date, // La fecha calculada correcta
+                isAlertEnabled: App.state.config.showBossTimers,
+                isNotificationOn: isNotificationOn,
+                secondsLeft: Math.floor((nextSpawn.date - now) / 1000)
+            };
+        })
+        .filter(item => item !== null) // Limpieza de seguridad
+        .sort((a, b) => (b.isNotificationOn - a.isNotificationOn) || (a.secondsLeft - b.secondsLeft));
     },
 
     getWeeklyResetTimers(now) {

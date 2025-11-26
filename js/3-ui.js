@@ -12,211 +12,210 @@ const UI = {
      * Función principal que orquesta todas las actualizaciones de la UI en cada ciclo.
      */
     updateAll: function () {
-    if (!App.state.config || Object.keys(App.state.config).length === 0) {
-        return;
-    }
-
-    const now = Logic.getCorrectedNow();
-    const config = App.state.config;
-
-    // --- 1. ACTUALIZACIONES QUE OCURREN SIEMPRE (CADA CICLO) ---
-    App.dom.timeFormatSwitch.checked = config.use24HourFormat;
-    const langCode = config.language === 'es-419' ? 'es' : config.language;
-    const currentDateString = Utils.formatDateToLocaleDateString(now, config.displayTimezone, langCode);
-    const currentTimeString = Utils.formatDateToTimezoneString(now, config.displayTimezone, config.use24HourFormat, true);
-    const tzString = `UTC${config.displayTimezone.replace(':00', '')}`;
-    App.dom.currentTime.innerHTML = `<div class="datetime-stack"><span>${currentDateString}</span><span>${currentTimeString}</span></div><span class="timezone-abbr">${tzString}</span>`;
-
-    Logic.checkAndPerformDailyReset(now);
-    const dailyResetTimer = Logic.getDailyResetTimer(now);
-    const lastReset = new Date(dailyResetTimer.targetDate.getTime() - (24 * 60 * 60 * 1000));
-    const showdownTicketTimer = Logic.getShowdownTicketTimer(now, lastReset);
-    const bossTimers = config.showBossTimers ? Logic.getBossTimers(now) : [];
-
-    // --- 2. RENDERIZADO CONDICIONAL DE PANELES ---
-
-    // a) Panel de Banners
-    const currentBannerIds = `${config.banners.activeBanner},${config.banners.nextBanner}`;
-    if (App.state.lastRenderedBannerIds !== currentBannerIds) {
-        console.log("UI: Re-renderizando panel de Banners.");
-        this.renderBannersPanel();
-        App.state.lastRenderedBannerIds = currentBannerIds;
-    }
-
-    // b) Panel de Eventos
-    const currentEventIds = config.showEvents ? config.events.map(e => e.id).join(',') : '';
-    if (App.state.lastRenderedEventIds !== currentEventIds) {
-        console.log("UI: Re-renderizando panel de Eventos.");
-        if (config.showEvents) {
-            App.dom.eventsContainer.innerHTML = this.renderEventsPanel();
-            App.dom.eventsContainer.style.display = 'block';
-        } else {
-            App.dom.eventsContainer.innerHTML = '';
-            App.dom.eventsContainer.style.display = 'none';
-            this.closeEventDetailsPanel();
+        if (!App.state.config || Object.keys(App.state.config).length === 0) {
+            return;
         }
-        App.state.lastRenderedEventIds = currentEventIds;
-    }
 
-    // c) Panel Semanal (incluye Héroe de la Semana)
-    const weeklyTimers = Logic.getWeeklyResetTimers(now);
-    const heroOfTheWeekTimer = Logic.getHeroOfTheWeekTimer(now);
-    if (heroOfTheWeekTimer) weeklyTimers.push(heroOfTheWeekTimer);
-    const currentWeeklyIds = config.showWeekly ? weeklyTimers.map(t => t.id).join(',') : '';
-    if (App.state.lastRenderedWeeklyIds !== currentWeeklyIds) {
-        console.log("UI: Re-renderizando panel Semanal.");
-        if (config.showWeekly && weeklyTimers.length > 0) {
-            App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
-            App.dom.weeklyContainer.style.display = 'block';
-        } else {
-            App.dom.weeklyContainer.innerHTML = '';
-            App.dom.weeklyContainer.style.display = 'none';
-            this.closeWeeklyDetailsPanel();
+        const now = Logic.getCorrectedNow();
+        const config = App.state.config;
+
+        // --- 1. ACTUALIZACIONES QUE OCURREN SIEMPRE (CADA CICLO) ---
+        App.dom.timeFormatSwitch.checked = config.use24HourFormat;
+        const langCode = config.language === 'es-419' ? 'es' : config.language;
+        const currentDateString = Utils.formatDateToLocaleDateString(now, config.displayTimezone, langCode);
+        const currentTimeString = Utils.formatDateToTimezoneString(now, config.displayTimezone, config.use24HourFormat, true);
+        const tzString = `UTC${config.displayTimezone.replace(':00', '')}`;
+        App.dom.currentTime.innerHTML = `<div class="datetime-stack"><span>${currentDateString}</span><span>${currentTimeString}</span></div><span class="timezone-abbr">${tzString}</span>`;
+
+        Logic.checkAndPerformDailyReset(now);
+        const dailyResetTimer = Logic.getDailyResetTimer(now);
+        const lastReset = new Date(dailyResetTimer.targetDate.getTime() - (24 * 60 * 60 * 1000));
+        const showdownTicketTimer = Logic.getShowdownTicketTimer(now, lastReset);
+        const bossTimers = config.showBossTimers ? Logic.getBossTimers(now) : [];
+
+        // --- 2. RENDERIZADO CONDICIONAL DE PANELES ---
+
+        // a) Panel de Banners
+        const currentBannerIds = `${config.banners.activeBanner},${config.banners.nextBanner}`;
+        if (App.state.lastRenderedBannerIds !== currentBannerIds) {
+            console.log("UI: Re-renderizando panel de Banners.");
+            this.renderBannersPanel();
+            App.state.lastRenderedBannerIds = currentBannerIds;
         }
-        App.state.lastRenderedWeeklyIds = currentWeeklyIds;
-    }
 
-    // d) Panel de Jefes
-    const currentBossIds = bossTimers.map(b => b.id).join(',');
-    if (App.state.lastRenderedBossIds !== currentBossIds) {
-        console.log("UI: Re-renderizando panel de Jefes.");
-        const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
-        if (config.showBossTimers) {
-            App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(bossTimers);
-            App.dom.stickyTicketContainer.innerHTML = nextActiveBoss ? this.renderSecondaryTimers([showdownTicketTimer]) : '';
-        } else {
-            App.dom.timersContainer.innerHTML = '';
-            App.dom.stickyTicketContainer.innerHTML = '';
-        }
-        App.state.lastRenderedBossIds = currentBossIds;
-        App.state.lastRenderedPrimaryTimers = ''; 
-    }
-
-    // e) Layout Principal (ancho del contenedor)
-    const showSecondaryPanel = config.showBossTimers || config.showEvents || config.showWeekly;
-    if (App.state.lastShowSecondaryPanel !== showSecondaryPanel) {
-        console.log("UI: Actualizando layout principal.");
-        if (!App.state.isMobile) {
-            if (showSecondaryPanel) {
-                App.dom.mainWrapper.style.width = '860px';
-                App.dom.secondaryPanel.style.opacity = '1';
-                App.dom.secondaryPanel.style.width = '480px';
-                App.dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
-                App.dom.bannersContainer.style.width = '860px';
-                App.dom.bannersContainer.classList.add('horizontal-layout');
+        // b) Panel de Eventos
+        const currentEventIds = config.showEvents ? config.events.map(e => e.id).join(',') : '';
+        if (App.state.lastRenderedEventIds !== currentEventIds) {
+            console.log("UI: Re-renderizando panel de Eventos.");
+            if (config.showEvents) {
+                App.dom.eventsContainer.innerHTML = this.renderEventsPanel();
+                App.dom.eventsContainer.style.display = 'block';
             } else {
-                App.dom.mainWrapper.style.width = '380px';
-                App.dom.secondaryPanel.style.opacity = '0';
-                App.dom.secondaryPanel.style.width = '0px';
-                App.dom.secondaryPanel.style.borderLeft = 'none';
-                App.dom.bannersContainer.style.width = '380px';
-                App.dom.bannersContainer.classList.remove('horizontal-layout');
+                App.dom.eventsContainer.innerHTML = '';
+                App.dom.eventsContainer.style.display = 'none';
+                this.closeEventDetailsPanel();
             }
+            App.state.lastRenderedEventIds = currentEventIds;
+        }
+
+        // c) Panel Semanal (incluye Héroe de la Semana)
+        const weeklyTimers = Logic.getWeeklyResetTimers(now);
+        const heroOfTheWeekTimer = Logic.getHeroOfTheWeekTimer(now);
+        if (heroOfTheWeekTimer) weeklyTimers.push(heroOfTheWeekTimer);
+        const currentWeeklyIds = config.showWeekly ? weeklyTimers.map(t => t.id).join(',') : '';
+        if (App.state.lastRenderedWeeklyIds !== currentWeeklyIds) {
+            console.log("UI: Re-renderizando panel Semanal.");
+            if (config.showWeekly && weeklyTimers.length > 0) {
+                App.dom.weeklyContainer.innerHTML = this.renderWeeklyPanel();
+                App.dom.weeklyContainer.style.display = 'block';
+            } else {
+                App.dom.weeklyContainer.innerHTML = '';
+                App.dom.weeklyContainer.style.display = 'none';
+                this.closeWeeklyDetailsPanel();
+            }
+            App.state.lastRenderedWeeklyIds = currentWeeklyIds;
+        }
+
+        // d) Panel de Jefes
+        const currentBossIds = bossTimers.map(b => b.id).join(',');
+        if (App.state.lastRenderedBossIds !== currentBossIds) {
+            console.log("UI: Re-renderizando panel de Jefes.");
+            const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
+            if (config.showBossTimers) {
+                App.dom.timersContainer.innerHTML = this.renderSecondaryTimers(bossTimers);
+                App.dom.stickyTicketContainer.innerHTML = nextActiveBoss ? this.renderSecondaryTimers([showdownTicketTimer]) : '';
+            } else {
+                App.dom.timersContainer.innerHTML = '';
+                App.dom.stickyTicketContainer.innerHTML = '';
+            }
+            App.state.lastRenderedBossIds = currentBossIds;
+            App.state.lastRenderedPrimaryTimers = ''; 
+        }
+
+        // e) Layout Principal (ancho del contenedor)
+        const showSecondaryPanel = config.showBossTimers || config.showEvents || config.showWeekly;
+        if (App.state.lastShowSecondaryPanel !== showSecondaryPanel) {
+            console.log("UI: Actualizando layout principal.");
+            if (!App.state.isMobile) {
+                if (showSecondaryPanel) {
+                    App.dom.mainWrapper.style.width = '860px';
+                    App.dom.secondaryPanel.style.opacity = '1';
+                    App.dom.secondaryPanel.style.width = '480px';
+                    App.dom.secondaryPanel.style.borderLeft = '1px solid var(--border-color)';
+                    App.dom.bannersContainer.style.width = '860px';
+                    App.dom.bannersContainer.classList.add('horizontal-layout');
+                } else {
+                    App.dom.mainWrapper.style.width = '380px';
+                    App.dom.secondaryPanel.style.opacity = '0';
+                    App.dom.secondaryPanel.style.width = '0px';
+                    App.dom.secondaryPanel.style.borderLeft = 'none';
+                    App.dom.bannersContainer.style.width = '380px';
+                    App.dom.bannersContainer.classList.remove('horizontal-layout');
+                }
+            } else {
+                const secondaryPanelElement = document.querySelector('.secondary-panel');
+                if (secondaryPanelElement) {
+                    const secondarySlide = secondaryPanelElement.closest('.swiper-slide');
+                    if (secondarySlide) secondarySlide.style.display = showSecondaryPanel ? 'block' : 'none';
+                }
+                if (App.state.swiper?.update) App.state.swiper.update();
+            }
+            App.state.lastShowSecondaryPanel = showSecondaryPanel;
+        }
+        
+        // --- 3. ACTUALIZACIÓN DE CONTADORES (CADA CICLO, SIN RECONSTRUIR HTML) ---
+        
+        // a) Panel Primario
+        const primaryTimers = [dailyResetTimer];
+        const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
+        if (config.showBossTimers && nextActiveBoss) {
+            primaryTimers.push(nextActiveBoss);
         } else {
-            const secondaryPanelElement = document.querySelector('.secondary-panel');
-            if (secondaryPanelElement) {
-                const secondarySlide = secondaryPanelElement.closest('.swiper-slide');
-                if (secondarySlide) secondarySlide.style.display = showSecondaryPanel ? 'block' : 'none';
-            }
-            if (App.state.swiper?.update) App.state.swiper.update();
+            primaryTimers.push(showdownTicketTimer);
         }
-        App.state.lastShowSecondaryPanel = showSecondaryPanel;
-    }
-    
-    // --- 3. ACTUALIZACIÓN DE CONTADORES (CADA CICLO, SIN RECONSTRUIR HTML) ---
-    
-    // a) Panel Primario (Este sí se reconstruye porque su lógica es más compleja)
-    const primaryTimers = [dailyResetTimer];
-    const nextActiveBoss = bossTimers.find(boss => boss.secondsLeft >= 0);
-    if (config.showBossTimers && nextActiveBoss) {
-        primaryTimers.push(nextActiveBoss);
-    } else {
-        primaryTimers.push(showdownTicketTimer);
-    }
-    this.renderPrimaryPanel(primaryTimers);
+        this.renderPrimaryPanel(primaryTimers);
 
-    // b) Contadores de Jefes y Ticket Secundario
-    document.querySelectorAll('.countdown-timer').forEach(el => {
-        const bossId = el.closest('.spawn-item')?.querySelector('.alert-toggle')?.dataset.bossId;
-        if (bossId) {
-            const bossData = bossTimers.find(b => b.id === bossId);
-            if(bossData) {
-                el.textContent = Utils.formatTime(bossData.secondsLeft);
-                el.style.color = Utils.getCountdownColor(bossData.secondsLeft, 'boss');
-            }
-        } else if (el.closest('.ticket-item')) { // Es el ticket de showdown
-             el.textContent = Utils.formatTime(showdownTicketTimer.secondsLeft);
-             el.style.color = Utils.getCountdownColor(showdownTicketTimer.secondsLeft, 'ticket');
-        }
-    });
-
-    // c) Contadores de Eventos, Semanales y Banners (estos ya se manejan bien porque sus funciones de renderizado son más simples y no contienen imágenes que parpadeen)
-    // No necesitan actualización de contador individual porque el texto completo se regenera si cambian los datos.
-
-    // --- 4. OTRAS FUNCIONES ---
-    this.updateLanguage(); // Para estado de notificaciones, etc.
-    Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, config.events, config.banners);
-    this.updateStreamsFeature();
-},
-
-    renderPrimaryPanel: function (timers) {
-    const config = App.state.config;
-    const timerTypes = timers.map(t => t.type).join(',');
-
-    // --- LÓGICA DE OPTIMIZACIÓN ---
-    // Si la estructura de los temporizadores no ha cambiado, solo actualizamos el texto.
-    if (App.state.lastRenderedPrimaryTimers === timerTypes) {
-        timers.forEach((timer, index) => {
-            const itemClass = index === 0 ? '.main' : '.secondary';
-            const container = App.dom.primaryTimersContainer.querySelector(`.primary-timer-item${itemClass}`);
-            if (!container) return; // Si el elemento no existe, salimos
-
-            // Actualizamos el contador
-            const countdownEl = container.querySelector('.timer-countdown');
-            if (countdownEl) {
-                countdownEl.textContent = Utils.formatTime(timer.secondsLeft);
-                countdownEl.style.color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
+        // b) Contadores de Jefes y Ticket Secundario
+        document.querySelectorAll('.countdown-timer').forEach(el => {
+            const bossId = el.closest('.spawn-item')?.querySelector('.alert-toggle')?.dataset.bossId;
+            if (bossId) {
+                const bossData = bossTimers.find(b => b.id === bossId);
+                if(bossData) {
+                    el.textContent = Utils.formatTime(bossData.secondsLeft);
+                    el.style.color = Utils.getCountdownColor(bossData.secondsLeft, 'boss');
+                }
+            } else if (el.closest('.ticket-item')) { // Es el ticket de showdown
+                el.textContent = Utils.formatTime(showdownTicketTimer.secondsLeft);
+                el.style.color = Utils.getCountdownColor(showdownTicketTimer.secondsLeft, 'ticket');
             }
         });
-        return; // Detenemos la ejecución para no reconstruir el HTML
-    }
 
-    // --- RENDERIZADO COMPLETO (Solo si la estructura cambia) ---
-    console.log("UI: Re-renderizando panel primario (estructura cambió).");
-    App.state.lastRenderedPrimaryTimers = timerTypes; // Guardamos la nueva estructura
+        // --- 4. OTRAS FUNCIONES ---
+        this.updateLanguage(); 
+        Logic.checkAndTriggerAlerts(now, bossTimers, dailyResetTimer, showdownTicketTimer, config.events, config.banners);
+        this.updateStreamsFeature();
+    },
 
-    const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`;
-    const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`;
+    renderPrimaryPanel: function (timers) {
+        const config = App.state.config;
+        const timerTypes = timers.map(t => t.type).join(',');
 
-    App.dom.primaryTimersContainer.innerHTML = timers.map((timer, index) => {
-        if (!timer || !timer.type) return '';
+        // --- LÓGICA DE OPTIMIZACIÓN ---
+        if (App.state.lastRenderedPrimaryTimers === timerTypes) {
+            timers.forEach((timer, index) => {
+                const itemClass = index === 0 ? '.main' : '.secondary';
+                const container = App.dom.primaryTimersContainer.querySelector(`.primary-timer-item${itemClass}`);
+                if (!container) return; 
 
-        const itemClass = index === 0 ? 'main' : 'secondary';
-        const color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
-        const countdown = Utils.formatTime(timer.secondsLeft);
-        const description = timer.type === 'boss' ? Utils.getText('timers.bossSpawnIn', { loc: timer.location }) : timer.description;
-        const imageDivClass = timer.type === 'ticket' ? 'ticket-image' : 'timer-image';
+                // Actualizamos el contador
+                const countdownEl = container.querySelector('.timer-countdown');
+                if (countdownEl) {
+                    countdownEl.textContent = Utils.formatTime(timer.secondsLeft);
+                    countdownEl.style.color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
+                }
+            });
+            return;
+        }
 
-        let imageContent = timer.type === 'ticket' ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>` : (timer.imageUrl ? `<img src="${timer.imageUrl}" alt="${timer.name}">` : '');
+        // --- RENDERIZADO COMPLETO ---
+        console.log("UI: Re-renderizando panel primario (estructura cambió).");
+        App.state.lastRenderedPrimaryTimers = timerTypes;
 
-        const nameClass = `timer-name ${timer.type === 'boss' ? 'timer-name-boss' : timer.type === 'ticket' ? 'timer-name-ticket' : ''}`;
+        const infoIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>`;
+        const syncIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`;
 
-        const displayTime = Utils.formatDateToTimezoneString(timer.targetDate, config.displayTimezone, config.use24HourFormat);
-        const timeSpan = timer.type !== 'ticket' ? `<span class="timer-target-time">(${displayTime})</span>` : '';
-        const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
-        const nameItself = `<p class="${nameClass}">${timer.name} ${eventLabel} ${timeSpan}</p>`;
+        App.dom.primaryTimersContainer.innerHTML = timers.map((timer, index) => {
+            if (!timer || !timer.type) return '';
 
-        const nameContent = timer.type === 'ticket'
-            ? `<div class="timer-name-container"><p class="${nameClass}">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`
-            : nameItself;
+            const itemClass = index === 0 ? 'main' : 'secondary';
+            const color = Utils.getCountdownColor(timer.secondsLeft, timer.type);
+            const countdown = Utils.formatTime(timer.secondsLeft);
+            const description = timer.type === 'boss' ? Utils.getText('timers.bossSpawnIn', { loc: timer.location }) : timer.description;
+            const imageDivClass = timer.type === 'ticket' ? 'ticket-image' : 'timer-image';
 
-        const countdownContent = timer.type === 'ticket'
-            ? `<div class="timer-countdown-container"><p class="timer-countdown" style="color: ${color};">${countdown}</p><div class="sync-button">${syncIconSVG}</div></div>`
-            : `<p class="timer-countdown" style="color: ${color};">${countdown}</p>`;
+            let imageContent = timer.type === 'ticket' ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>` : (timer.imageUrl ? `<img src="${timer.imageUrl}" alt="${timer.name}">` : '');
 
-        return `<div class="primary-timer-item ${itemClass}"><div class="${imageDivClass}">${imageContent}</div>${nameContent}<p class="timer-desc">${description}</p>${countdownContent}</div>`;
-    }).join('');
-},
+            const nameClass = `timer-name ${timer.type === 'boss' ? 'timer-name-boss' : timer.type === 'ticket' ? 'timer-name-ticket' : ''}`;
+
+            const displayTime = Utils.formatDateToTimezoneString(timer.targetDate, config.displayTimezone, config.use24HourFormat);
+            const timeSpan = timer.type !== 'ticket' ? `<span class="timer-target-time">(${displayTime})</span>` : '';
+            const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
+            const nameItself = `<p class="${nameClass}">${timer.name} ${eventLabel} ${timeSpan}</p>`;
+
+            const nameContent = timer.type === 'ticket'
+                ? `<div class="timer-name-container"><p class="${nameClass}">${timer.name}</p><div class="info-button">${infoIconSVG}</div></div>`
+                : nameItself;
+
+            const countdownContent = timer.type === 'ticket'
+                ? `<div class="timer-countdown-container"><p class="timer-countdown" style="color: ${color};">${countdown}</p><div class="sync-button">${syncIconSVG}</div></div>`
+                : `<p class="timer-countdown" style="color: ${color};">${countdown}</p>`;
+
+            // --- CAMBIO AQUI: Eliminamos data-boss-id para que NO sea clickeable en el panel primario ---
+            const bossIdAttr = ''; 
+
+            return `<div class="primary-timer-item ${itemClass}" ${bossIdAttr}><div class="${imageDivClass}">${imageContent}</div>${nameContent}<p class="timer-desc">${description}</p>${countdownContent}</div>`;
+        }).join('');
+    },
 
     renderSecondaryTimers: function (timers) {
         if (!timers || timers.length === 0) return '';
@@ -237,7 +236,8 @@ const UI = {
                 const eventLabel = timer.isEvent ? `<span class="event-tip small-tip">${Utils.getText('common.event')}</span>` : '';
                 const isAlertEnabled = timer.isNotificationOn;
 
-                 return `<div class="spawn-item ${!isAlertEnabled ? 'disabled' : ''}">${bossIcon}<div class="spawn-item-info"><p class="spawn-item-name spawn-item-name-boss">${timer.name} ${eventLabel}</p><p class="spawn-item-time">${displayTime} (${tzString})</p></div><span class="countdown-timer" style="color: ${color};">${time}</span><div class="alert-toggle ${isAlertEnabled ? 'enabled' : 'disabled'}" data-boss-id="${timer.id}" data-time="${timer.time}">${isAlertEnabled ? bellIcon : noBellIcon}</div></div>`;
+                // --- AQUI SE AGREGA EL data-boss-id PARA QUE EL CLICK FUNCIONE ---
+                return `<div class="spawn-item ${!isAlertEnabled ? 'disabled' : ''}" data-boss-id="${timer.id}">${bossIcon}<div class="spawn-item-info"><p class="spawn-item-name spawn-item-name-boss">${timer.name} ${eventLabel}</p><p class="spawn-item-time">${displayTime} (${tzString})</p></div><span class="countdown-timer" style="color: ${color};">${time}</span><div class="alert-toggle ${isAlertEnabled ? 'enabled' : 'disabled'}" data-boss-id="${timer.id}" data-time="${timer.time}">${isAlertEnabled ? bellIcon : noBellIcon}</div></div>`;
             }
             if (timer.type === 'ticket') {
                 const icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h5.25m-5.25 0h5.25m-5.25 0h5.25M3 4.5h15a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H3a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 013 4.5z" /></svg>`;
@@ -249,6 +249,148 @@ const UI = {
             }
             return '';
         }).join('');
+    },
+
+openBossDetailsPanel: function (bossId) {
+    this.closeAllDetailsPanels();
+    const config = App.state.config;
+    const lang = config.language;
+    
+    // 1. Datos
+    const allActiveBosses = App.state.allBossesData.filter(b => b.isActive);
+    const bossData = allActiveBosses.find(b => b.id === bossId);
+    
+    if (!bossData) return;
+
+    // 2. Tabs (Iconos para cambiar de boss)
+    let tabsHTML = '';
+    if (allActiveBosses.length > 1) {
+        tabsHTML = `<div class="weekly-boss-tabs-nav" style="justify-content: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">`;
+        allActiveBosses.forEach(b => {
+            const isActive = b.id === bossId ? 'active' : '';
+            // Usamos el estilo standard de tus tabs
+            tabsHTML += `
+                <button class="weekly-boss-tab ${isActive}" data-switch-boss-id="${b.id}" style="margin: 0 5px;">
+                    <img src="${b.imageUrl}" alt="${b.name.en}">
+                </button>`;
+        });
+        tabsHTML += `</div>`;
+    }
+
+    // 3. Calcular Tiempos
+    const now = Logic.getCorrectedNow();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    const sortedTimes = (bossData.spawnTimes || []).sort((a, b) => {
+        const [h1, m1] = a.split(':').map(Number);
+        const [h2, m2] = b.split(':').map(Number);
+        return (h1 * 60 + m1) - (h2 * 60 + m2);
+    });
+
+    let nextTimeStr = sortedTimes.find(t => {
+        const [nh, nm] = t.split(':').map(Number);
+        return (nh * 60 + nm) > currentMinutes;
+    });
+    if (!nextTimeStr && sortedTimes.length > 0) nextTimeStr = sortedTimes[0];
+
+    // 4. Generar Grilla de Tiempos (Usando estilo de "Items/Recompensas")
+    let timesHTML = '';
+    sortedTimes.forEach(timeStr => {
+        const date = Logic.getAbsoluteDateFromReferenceTimezone(timeStr);
+        const displayTime = Utils.formatDateToTimezoneString(date, config.displayTimezone, config.use24HourFormat);
+        const isNext = (timeStr === nextTimeStr);
+        
+        // Reutilizamos clases de "rareza" para dar color al siguiente spawn
+        const rankClass = isNext ? 'rank-legendary' : 'rank-common'; 
+        // Estilo inline para forzar que parezca una "caja" de item
+        const boxStyle = `
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 10px; 
+            min-width: 90px;
+            border-radius: 8px;
+            background: var(--bg-input); 
+            border: 1px solid var(--border-color);
+            ${isNext ? 'border-color: var(--color-primary); background: rgba(var(--color-primary-rgb), 0.15);' : ''}
+        `;
+
+        timesHTML += `
+            <div class="reward-grid-item" style="${boxStyle}">
+                <span style="font-size: 1.1em; font-weight: bold; color: var(--text-color);">${displayTime}</span>
+                ${isNext ? `<span style="font-size: 0.7em; color: var(--color-primary); font-weight: 800; text-transform: uppercase; margin-top: 2px;">NEXT</span>` : ''}
+            </div>
+        `;
+    });
+
+    // 5. HTML FINAL - ESTRUCTURA IDÉNTICA A "HERO OF THE WEEK"
+    const contentHTML = `
+        <div class="details-header">
+            <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
+            <h2>${bossData.name[lang] || bossData.name.en}</h2>
+            <p>${bossData.location}</p>
+        </div>
+        
+        <div class="details-content">
+            ${tabsHTML}
+
+            <!-- PERFIL DEL BOSS (Idéntico a Hero of the Week) -->
+            <div class="hotw-profile">
+                <div class="hotw-hero-image-container">
+                    <img src="${bossData.imageUrl}" alt="${bossData.name.en}">
+                </div>
+                <div class="hotw-hero-info">
+                    <h4 style="color: var(--color-danger);">${bossData.name[lang] || bossData.name.en}</h4>
+                    <p>${Utils.getText('common.worldBoss') || 'World Boss'}</p>
+                    <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                        <span style="display: block;">📍 ${bossData.location}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE HORARIOS -->
+            <div class="details-section">
+                <h3>Spawn Times</h3>
+                
+                <div class="weekly-recommendation-box">
+                    <p>Timezone: <strong>UTC${config.displayTimezone}</strong></p>
+                </div>
+
+                <div class="details-reward-grid-container">
+                    <div class="reward-grid" style="justify-content: center; gap: 10px;">
+                        ${timesHTML}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    App.dom.bossDetailsPanel.innerHTML = contentHTML;
+    App.dom.bossDetailsPanel.classList.add('visible');
+    if (App.state.isMobile) document.body.classList.add('no-scroll');
+    App.state.currentOpenBossId = bossId;
+},
+
+closeBossDetailsPanel: function() {
+    if (!App.dom.bossDetailsPanel) return;
+    App.dom.bossDetailsPanel.classList.remove('visible');
+    App.state.currentOpenBossId = null;
+    if (App.state.isMobile) document.body.classList.remove('no-scroll');
+},
+
+closeBossDetailsPanel: function() {
+    if (!App.dom.bossDetailsPanel) return;
+    App.dom.bossDetailsPanel.classList.remove('visible');
+    App.state.currentOpenBossId = null;
+    if (App.state.isMobile) document.body.classList.remove('no-scroll');
+},
+
+    closeBossDetailsPanel: function() {
+        if (!App.dom.bossDetailsPanel) return;
+        App.dom.bossDetailsPanel.classList.remove('visible');
+        App.state.currentOpenBossId = null;
+        if (App.state.isMobile) document.body.classList.remove('no-scroll');
     },
 
     renderEventsPanel: function () {
@@ -279,78 +421,65 @@ const UI = {
     },
 
     renderWeeklyPanel: function () {
-    if (!App.state.weeklyResetsData) return '';
-    
-    // Obtenemos los temporizadores semanales normales Y el del Héroe de la Semana
-    const weeklyTimers = Logic.getWeeklyResetTimers(Logic.getCorrectedNow());
-    const heroOfTheWeekTimer = Logic.getHeroOfTheWeekTimer(Logic.getCorrectedNow());
-
-    // Si hay un Héroe de la Semana activo, lo añadimos a la lista
-    if (heroOfTheWeekTimer) {
-        weeklyTimers.push(heroOfTheWeekTimer);
-    }
-    
-    // Ordenamos para que el que termina antes aparezca primero
-    weeklyTimers.sort((a, b) => a.secondsLeft - b.secondsLeft);
-
-    if (weeklyTimers.length === 0) return '';
-
-    let html = `<h3 class="panel-subtitle">${Utils.getText('weekly.title')}</h3>`;
-    weeklyTimers.forEach(timer => {
-        const timeString = Utils.formatTimeWithDays(timer.secondsLeft, true);
-        const countdownText = Utils.getText('weekly.resetsIn', { d: timeString });
+        if (!App.state.weeklyResetsData) return '';
         
-        // Usamos un atributo de datos diferente para distinguir los tipos de evento
-        const dataAttribute = timer.type === 'heroOfTheWeek' 
-            ? `data-hotw-id="${timer.id}"`
-            : `data-weekly-id="${timer.id}"`;
+        const weeklyTimers = Logic.getWeeklyResetTimers(Logic.getCorrectedNow());
+        const heroOfTheWeekTimer = Logic.getHeroOfTheWeekTimer(Logic.getCorrectedNow());
 
-        html += `<div class="weekly-item" ${dataAttribute}>
-                    <div class="weekly-item-info">
-                        <span class="weekly-name">${timer.name}</span>
-                        <span class="weekly-category">${timer.category}</span>
-                    </div>
-                    <span class="weekly-countdown">${countdownText}</span>
-                </div>`;
-    });
-    return html;
-},
+        if (heroOfTheWeekTimer) {
+            weeklyTimers.push(heroOfTheWeekTimer);
+        }
+        
+        weeklyTimers.sort((a, b) => a.secondsLeft - b.secondsLeft);
+
+        if (weeklyTimers.length === 0) return '';
+
+        let html = `<h3 class="panel-subtitle">${Utils.getText('weekly.title')}</h3>`;
+        weeklyTimers.forEach(timer => {
+            const timeString = Utils.formatTimeWithDays(timer.secondsLeft, true);
+            const countdownText = Utils.getText('weekly.resetsIn', { d: timeString });
+            
+            const dataAttribute = timer.type === 'heroOfTheWeek' 
+                ? `data-hotw-id="${timer.id}"`
+                : `data-weekly-id="${timer.id}"`;
+
+            html += `<div class="weekly-item" ${dataAttribute}>
+                        <div class="weekly-item-info">
+                            <span class="weekly-name">${timer.name}</span>
+                            <span class="weekly-category">${timer.category}</span>
+                        </div>
+                        <span class="weekly-countdown">${countdownText}</span>
+                    </div>`;
+        });
+        return html;
+    },
 
     renderBannersPanel: function () {
         const config = App.state.config;
         const allBanners = App.state.allBannersData;
         
-        // --- INICIO DE LA CORRECCIÓN ---
-
-        // Verificamos que los datos necesarios existan.
         if (!allBanners || !config.banners) {
             App.dom.bannersContainer.innerHTML = '';
             return;
         }
 
-        const bannerConfig = config.banners; // { activeBanner: "ID", nextBanner: "ID" }
+        const bannerConfig = config.banners; 
         const now = new Date();
 
-        // 1. Obtenemos el objeto del banner activo a partir de su ID.
-        //    Añadimos el ID al objeto para consistencia.
         const activeBannerId = bannerConfig.activeBanner;
         const activeBanner = activeBannerId && allBanners[activeBannerId] 
             ? { id: activeBannerId, ...allBanners[activeBannerId] }
             : null;
 
-        // 2. Obtenemos el objeto del siguiente banner a partir de su ID.
         const nextBannerId = bannerConfig.nextBanner;
         const nextBanner = nextBannerId && allBanners[nextBannerId]
             ? { id: nextBannerId, ...allBanners[nextBannerId] }
             : null;
 
-        // --- FIN DE LA CORRECCIÓN ---
-
         const createBannerHTML = (banner, type) => {
             const title = Utils.getText(type === 'active' ? 'banners.activeTitle' : 'banners.nextTitle');
             let countdownHTML = '';
 
-            // La lógica del countdown sigue funcionando con las fechas de cada objeto de banner.
             if (banner && ((type === 'active' && banner.endDate) || (type === 'next' && banner.startDate))) {
                 const targetDate = Logic.getAbsoluteDateWithCustomDate(type === 'active' ? banner.endDate : banner.startDate, config.dailyResetTime);
                 const secondsLeft = Math.floor((targetDate - now) / 1000);
@@ -363,7 +492,6 @@ const UI = {
 
             let content;
             if (!banner || !banner.heroes) {
-                // Si el banner es null o no tiene héroes, muestra "No Anunciado".
                 content = `<div class="banner-box"><div class="empty-banner">${Utils.getText('common.notAnnounced')}</div></div>`;
             } else {
                 const heroNames = banner.heroes.split(',').map(name => name.trim());
@@ -397,23 +525,15 @@ const UI = {
         App.dom.bannersContainer.innerHTML = createBannerHTML(activeBanner, 'active') + createBannerHTML(nextBanner, 'next');
     },
 
-    /**
-     * Renderiza el widget flotante del próximo stream.
-     */
     updateStreamsFeature: function () {
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Cambiamos la fuente de los datos
          const streams = App.state.allStreamsData;
-    if (!streams || streams.length === 0) {
-    // --- FIN DE LA CORRECCIÓN ---
-        App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
-        return;
-    }
+        if (!streams || streams.length === 0) {
+            App.dom.twitchFab.classList.remove('visible', 'alert-active', 'live-active');
+            return;
+        }
 
         const now = Logic.getCorrectedNow();
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Usamos la nueva variable 'streams'
         const upcomingStreams = streams
         .map(stream => ({ ...stream, date: new Date(stream.streamTimeUTC) }))
         .filter(stream => {
@@ -454,465 +574,446 @@ const UI = {
         }
     },
 
-renderStreamsModal: function (streams, now) {
-    const modalContent = document.getElementById('streams-modal-content');
-    if (!modalContent) return;
+    renderStreamsModal: function (streams, now) {
+        const modalContent = document.getElementById('streams-modal-content');
+        if (!modalContent) return;
 
-    if (streams.length === 0) {
-        modalContent.innerHTML = `<p class="no-streams-message">${Utils.getText('modals.streams.noStreams')}</p>`;
-        return;
-    }
-
-    const lang = App.state.config.language;
-
-    const contentHTML = streams.map(stream => {
-        const secondsLeft = Math.floor((stream.date.getTime() - now.getTime()) / 1000);
-        let countdownHTML;
-
-        if (secondsLeft <= 0) {
-            countdownHTML = `<p class="stream-is-live">${Utils.getText('streams.isLive')}</p>`;
-        } else {
-            // --- INICIO DE LA CORRECCIÓN ---
-            // Usamos formatTime para obtener HH:MM:SS
-            const timeString = Utils.formatTime(secondsLeft); 
-            // Mostramos el contador directamente. El texto "Starts in" no es necesario
-            // si ya tenemos un contador de tiempo claro.
-            countdownHTML = `<p class="stream-countdown">${timeString}</p>`;
-            // --- FIN DE LA CORRECCIÓN ---
+        if (streams.length === 0) {
+            modalContent.innerHTML = `<p class="no-streams-message">${Utils.getText('modals.streams.noStreams')}</p>`;
+            return;
         }
-        
-        const streamTitle = (stream.title && stream.title[lang]) ? stream.title[lang] : (stream.title?.en || stream.name);
-        
-        const imageUrl = stream.imageUrl.includes('/') 
-            ? stream.imageUrl 
-            : `style/${stream.imageUrl}`;
 
-        return `
-            <div class="modal-stream-item">
-                <a href="https://twitch.tv/${stream.twitchChannel}" 
-                   target="_blank" rel="noopener noreferrer" 
-                   class="stream-image-link">
-                   <img src="${imageUrl}" alt="${streamTitle}" class="stream-thumbnail">
-                </a>
-                <div class="stream-info">
-                    <p class="stream-title">${streamTitle}</p>
-                    <p class="streamer-name">by ${stream.name}</p>
+        const lang = App.state.config.language;
+
+        const contentHTML = streams.map(stream => {
+            const secondsLeft = Math.floor((stream.date.getTime() - now.getTime()) / 1000);
+            let countdownHTML;
+
+            if (secondsLeft <= 0) {
+                countdownHTML = `<p class="stream-is-live">${Utils.getText('streams.isLive')}</p>`;
+            } else {
+                const timeString = Utils.formatTime(secondsLeft); 
+                countdownHTML = `<p class="stream-countdown">${timeString}</p>`;
+            }
+            
+            const streamTitle = (stream.title && stream.title[lang]) ? stream.title[lang] : (stream.title?.en || stream.name);
+            
+            const imageUrl = stream.imageUrl.includes('/') 
+                ? stream.imageUrl 
+                : `style/${stream.imageUrl}`;
+
+            return `
+                <div class="modal-stream-item">
+                    <a href="https://twitch.tv/${stream.twitchChannel}" 
+                    target="_blank" rel="noopener noreferrer" 
+                    class="stream-image-link">
+                    <img src="${imageUrl}" alt="${streamTitle}" class="stream-thumbnail">
+                    </a>
+                    <div class="stream-info">
+                        <p class="stream-title">${streamTitle}</p>
+                        <p class="streamer-name">by ${stream.name}</p>
+                    </div>
+                    ${countdownHTML}
                 </div>
-                ${countdownHTML}
+            `;
+        }).join('');
+
+        modalContent.innerHTML = contentHTML;
+
+        const streamPrefs = App.state.config.notificationPrefs?.streams || { pre: false, post: false };
+        const preStreamToggle = document.getElementById('pre-stream-alert-toggle');
+        const postStreamToggle = document.getElementById('post-stream-alert-toggle');
+
+        if (preStreamToggle) preStreamToggle.checked = streamPrefs.pre;
+        if (postStreamToggle) postStreamToggle.checked = streamPrefs.post;
+    },
+
+    openHeroOfTheWeekDetailsPanel: function (hotwId) {
+        this.closeAllDetailsPanels();
+        const lang = App.state.config.language;
+        const eventData = App.state.allHeroWeekData.find(e => e.id === hotwId);
+        if (!eventData) {
+            console.error(`Hero of the Week data not found for ID: ${hotwId}`);
+            return;
+        }
+
+        const heroData = Logic.findHeroByName(eventData.heroName);
+        const heroImage = heroData ? `assets/heroes_icon/${heroData.short_image}` : 'assets/wimp_default.jpg';
+        const heroColor = heroData && heroData.element 
+            ? `var(--color-${heroData.element}-role)` 
+            : 'var(--text-color)';
+
+        const getItemGridDisplay = (itemId, quantity, rank = 'Common') => {
+            const itemDef = App.state.allItemsData[itemId];
+            if (!itemDef || !itemDef.icon) return `<div class="reward-grid-item rank-common" title="${itemId} x${quantity}"><span class="reward-quantity">${quantity}</span></div>`;
+            const name = itemDef.name[lang] || itemDef.name.en || itemId;
+            const rankClass = `rank-${rank.toLowerCase()}`;
+            const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
+            return `<div class="reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
+                        <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                        <span class="reward-quantity">${quantity}</span>
+                    </div>`;
+        };
+
+        let contentHTML = `
+            <div class="details-header">
+                <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
+                <h2>${eventData.title[lang]}</h2>
+                <p>${eventData.durationText[lang]}</p>
+            </div>
+            <div class="details-content">
+                <div class="hotw-profile">
+                    <div class="hotw-hero-image-container"><img src="${heroImage}" alt="${eventData.heroName}"></div>
+                    <div class="hotw-hero-info">
+                        <h4 style="color: ${heroColor};">${eventData.heroName}</h4>
+                        <p>${Utils.getText('weekly.heroOfTheWeek')}</p>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>${Utils.getText('weekly.howToParticipate')}</h3>
+                    <div class="weekly-recommendation-box"><p>${eventData.howToParticipate[lang]}</p></div>
+                </div>
+
+                <div class="details-section">
+                    <h3>${Utils.getText('weekly.missions')}</h3>
+                    <div class="hotw-mission-list">
+                        ${eventData.missions.map(mission => `
+                            <div class="hotw-mission-item">
+                                <strong>${mission.title[lang]}</strong>
+                                <p>${mission.description[lang]}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>${Utils.getText('weekly.rewards')}</h3>
+                    <p class="details-summary">${eventData.rewardDistribution[lang]} (${eventData.limits[lang]})</p>
+                    <div class="details-reward-grid-container">
+                        ${eventData.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}
+                    </div>
+                </div>
             </div>
         `;
-    }).join('');
 
-    modalContent.innerHTML = contentHTML;
+        App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
+        App.dom.weeklyDetailsPanel.classList.add('visible');
+        if (App.state.isMobile) document.body.classList.add('no-scroll');
+        App.state.currentOpenWeeklyId = hotwId;
+    },
 
-    const streamPrefs = App.state.config.notificationPrefs?.streams || { pre: false, post: false };
-    const preStreamToggle = document.getElementById('pre-stream-alert-toggle');
-    const postStreamToggle = document.getElementById('post-stream-alert-toggle');
+    openEventDetailsPanel: function (eventId) {
+        this.closeAllDetailsPanels();
+        const lang = App.state.config.language;
 
-    if (preStreamToggle) preStreamToggle.checked = streamPrefs.pre;
-    if (postStreamToggle) postStreamToggle.checked = streamPrefs.post;
-},
+        const eventConfig = App.state.config.events.find(e => e.id === eventId);
+        const eventData = eventConfig ? App.state.allEventsData.events[eventConfig.id] : null;
 
-/* heroe de la semana */
-    openHeroOfTheWeekDetailsPanel: function (hotwId) {
-    this.closeAllDetailsPanels();
-    const lang = App.state.config.language;
-    const eventData = App.state.allHeroWeekData.find(e => e.id === hotwId);
-    if (!eventData) {
-        console.error(`Hero of the Week data not found for ID: ${hotwId}`);
-        return;
-    }
+        if (!eventData) {
+            console.error(`Event data not found for ID: ${eventId}`);
+            return;
+        }
 
-    const heroData = Logic.findHeroByName(eventData.heroName);
-    const heroImage = heroData ? `assets/heroes_icon/${heroData.short_image}` : 'assets/wimp_default.jpg';
+        let periodString = '';
+        if (eventConfig) {
+            const { DateTime } = luxon;
+            const { startDate, endDate } = eventConfig;
+            const resetTime = App.state.config.dailyResetTime;
+            const displayTz = App.state.config.displayTimezone;
+            const use24h = App.state.config.use24HourFormat;
+            const startDt = DateTime.fromISO(startDate).setLocale(lang);
+            const endDt = DateTime.fromISO(endDate).setLocale(lang);
+            const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
+            const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
+            const sign = displayTz.startsWith('-') ? '+' : '-';
+            const hours = parseInt(displayTz.substring(1, 3));
+            const userLuxonTz = `Etc/GMT${sign}${hours}`;
+            const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
+            const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
+            const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
+            const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
+            periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
+        }
 
-    // --- INICIO DE LA MEJORA ---
-    // Obtenemos el color del elemento del héroe. Si no tiene, usamos un color por defecto.
-    const heroColor = heroData && heroData.element 
-        ? `var(--color-${heroData.element}-role)` 
-        : 'var(--text-color)';
-    // --- FIN DE LA MEJORA ---
-
-    const getItemGridDisplay = (itemId, quantity, rank = 'Common') => {
-        const itemDef = App.state.allItemsData[itemId];
-        if (!itemDef || !itemDef.icon) return `<div class="reward-grid-item rank-common" title="${itemId} x${quantity}"><span class="reward-quantity">${quantity}</span></div>`;
-        const name = itemDef.name[lang] || itemDef.name.en || itemId;
-        const rankClass = `rank-${rank.toLowerCase()}`;
-        const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
-        return `<div class="reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
-                    <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
-                    <span class="reward-quantity">${quantity}</span>
+        const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
+        
+        const getItemGridDisplay = (itemId, quantity, rank = '') => {
+            const itemDef = App.state.allItemsData[itemId];
+            if (!itemDef || !itemDef.icon) return '';
+            const name = itemDef.name[lang] || itemDef.name.en || itemId;
+            const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
+            const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
+            
+            return `<div class="reward-item-wrapper" title="${name} x${quantity}">
+                    <div class="reward-grid-item ${sizeClass}${rankClass}">
+                        <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
+                        <span class="reward-quantity">${quantity}</span>
+                    </div>
                 </div>`;
-    };
+        };
 
-    let contentHTML = `
+        const generateRewardTextList = (rewards) => {
+            if (!rewards || rewards.length === 0) return '';
+            let listHTML = '<ul class="details-reward-list">';
+            rewards.forEach(r => {
+                const itemDef = App.state.allItemsData[r.itemId]; if (!itemDef) return;
+                const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
+                const rarityClass = getRarityClass(r.rank);
+                let probClass = 'prob-common', probText = '';
+                if (typeof r.probability === 'number' && !isNaN(r.probability)) {
+                    if (r.probability <= 1) probClass = 'prob-legendary';
+                    else if (r.probability <= 5) probClass = 'prob-epic';
+                    else if (r.probability <= 20) probClass = 'prob-rare';
+                    else if (r.probability <= 50) probClass = 'prob-uncommon';
+                    probText = `${r.probability.toFixed(1)}%`;
+                }
+                listHTML += `<li class="details-reward-list-item"><span class="reward-name-part ${rarityClass}">${name}</span><span class="reward-quantity-part">x${r.quantity}</span><span class="reward-prob-part ${probClass}">${probText}</span></li>`;
+            });
+            return listHTML + '</ul>';
+        };
+
+        let contentHTML = `
         <div class="details-header">
             <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
-            <h2>${eventData.title[lang]}</h2>
-            <p>${eventData.durationText[lang]}</p>
+            <h2>${eventData.name[lang]}</h2>
+            <p>${periodString}</p>
         </div>
         <div class="details-content">
-            <div class="hotw-profile">
-                <div class="hotw-hero-image-container"><img src="${heroImage}" alt="${eventData.heroName}"></div>
-                <div class="hotw-hero-info">
-                    <h4 style="color: ${heroColor};">${eventData.heroName}</h4>
-                    <p>${Utils.getText('weekly.heroOfTheWeek')}</p>
-                </div>
-            </div>
+            <p class="details-summary">${eventData.summary[lang]}</p>`;
 
-            <div class="details-section">
-                <h3>${Utils.getText('weekly.howToParticipate')}</h3>
-                <div class="weekly-recommendation-box"><p>${eventData.howToParticipate[lang]}</p></div>
-            </div>
+        if (eventData.details) { contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`; }
+        if (eventData.daily_claim_limit) { contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`; }
 
-            <div class="details-section">
-                <h3>${Utils.getText('weekly.missions')}</h3>
-                <div class="hotw-mission-list">
-                    ${eventData.missions.map(mission => `
-                        <div class="hotw-mission-item">
-                            <strong>${mission.title[lang]}</strong>
-                            <p>${mission.description[lang]}</p>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <div class="details-section">
-                <h3>${Utils.getText('weekly.rewards')}</h3>
-                <p class="details-summary">${eventData.rewardDistribution[lang]} (${eventData.limits[lang]})</p>
-                <div class="details-reward-grid-container">
-                    ${eventData.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}
-                </div>
-            </div>
-        </div>
-    `;
-
-    App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
-    App.dom.weeklyDetailsPanel.classList.add('visible');
-    if (App.state.isMobile) document.body.classList.add('no-scroll');
-    App.state.currentOpenWeeklyId = hotwId;
-},
-
-    // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
-openEventDetailsPanel: function (eventId) {
-    this.closeAllDetailsPanels();
-    const lang = App.state.config.language;
-
-    // --- 1. OBTENCIÓN DE DATOS DEL EVENTO ---
-    const eventConfig = App.state.config.events.find(e => e.id === eventId);
-    const eventData = eventConfig ? App.state.allEventsData.events[eventConfig.id] : null;
-
-    if (!eventData) {
-        console.error(`Event data not found for ID: ${eventId}`);
-        return;
-    }
-
-    // --- 2. CÁLCULO DE FECHA Y HORA PARA EL ENCABEZADO ---
-    let periodString = '';
-    if (eventConfig) {
-        const { DateTime } = luxon;
-        const { startDate, endDate } = eventConfig;
-        const resetTime = App.state.config.dailyResetTime;
-        const displayTz = App.state.config.displayTimezone;
-        const use24h = App.state.config.use24HourFormat;
-        const startDt = DateTime.fromISO(startDate).setLocale(lang);
-        const endDt = DateTime.fromISO(endDate).setLocale(lang);
-        const datePart = `${startDt.toFormat('d MMMM')} - ${endDt.toFormat('d MMMM')}`;
-        const resetTimeInRefTz = DateTime.fromISO(`2000-01-01T${resetTime}`, { zone: App.state.config.referenceTimezone });
-        const sign = displayTz.startsWith('-') ? '+' : '-';
-        const hours = parseInt(displayTz.substring(1, 3));
-        const userLuxonTz = `Etc/GMT${sign}${hours}`;
-        const resetTimeInUserTz = resetTimeInRefTz.setZone(userLuxonTz);
-        const timeFormat = use24h ? 'HH:mm' : 'h:mm a';
-        const formattedTime = resetTimeInUserTz.toFormat(timeFormat);
-        const userTzAbbr = `(UTC${displayTz.replace(':00', '')})`;
-        periodString = `${datePart}, ${formattedTime} ${userTzAbbr}`;
-    }
-
-    // --- 3. FUNCIONES AUXILIARES DE RENDERIZADO ---
-    const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
-    
-    const getItemGridDisplay = (itemId, quantity, rank = '') => {
-        const itemDef = App.state.allItemsData[itemId];
-        if (!itemDef || !itemDef.icon) return '';
-        const name = itemDef.name[lang] || itemDef.name.en || itemId;
-        const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
-        const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
-        
-        return `<div class="reward-item-wrapper" title="${name} x${quantity}">
-                <div class="reward-grid-item ${sizeClass}${rankClass}">
-                    <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
-                    <span class="reward-quantity">${quantity}</span>
-                </div>
-            </div>`;
-    };
-
-    const generateRewardTextList = (rewards) => {
-        if (!rewards || rewards.length === 0) return '';
-        let listHTML = '<ul class="details-reward-list">';
-        rewards.forEach(r => {
-            const itemDef = App.state.allItemsData[r.itemId]; if (!itemDef) return;
-            const name = itemDef.name[lang] || itemDef.name.en || r.itemId;
-            const rarityClass = getRarityClass(r.rank);
-            let probClass = 'prob-common', probText = '';
-            if (typeof r.probability === 'number' && !isNaN(r.probability)) {
-                if (r.probability <= 1) probClass = 'prob-legendary';
-                else if (r.probability <= 5) probClass = 'prob-epic';
-                else if (r.probability <= 20) probClass = 'prob-rare';
-                else if (r.probability <= 50) probClass = 'prob-uncommon';
-                probText = `${r.probability.toFixed(1)}%`;
-            }
-            listHTML += `<li class="details-reward-list-item"><span class="reward-name-part ${rarityClass}">${name}</span><span class="reward-quantity-part">x${r.quantity}</span><span class="reward-prob-part ${probClass}">${probText}</span></li>`;
-        });
-        return listHTML + '</ul>';
-    };
-
-    // --- 4. CONSTRUCCIÓN DEL HTML BASE ---
-    let contentHTML = `
-    <div class="details-header">
-        <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
-        <h2>${eventData.name[lang]}</h2>
-        <p>${periodString}</p>
-    </div>
-    <div class="details-content">
-        <p class="details-summary">${eventData.summary[lang]}</p>`;
-
-    if (eventData.details) { contentHTML += `<p class="details-extra">${eventData.details[lang]}</p>`; }
-    if (eventData.daily_claim_limit) { contentHTML += `<div class="weekly-recommendation-box"><p>${Utils.getText('events.dailyClaimLimit', { limit: eventData.daily_claim_limit })}</p></div>`; }
-
-    // --- 5. RENDERIZADO DE SECCIONES ESPECÍFICAS DEL EVENTO ---
-
-    if (eventData.daily_missions) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3><div class="tabs-nav">`;
-        eventData.daily_missions.forEach((data, index) => {
-            const tabId = `tab-${index}`, activeClass = index === 0 ? 'active' : '';
-            let tabLabel = data.day ? `${Utils.getText('events.day')} ${data.day}` : luxon.DateTime.fromISO(data.date).setLocale(lang).toFormat('d MMMM');
-            contentHTML += `<button class="tab-link ${activeClass}" data-tab="${tabId}">${tabLabel}</button>`;
-        });
-        contentHTML += `</div><div class="tabs-content">`;
-        eventData.daily_missions.forEach((data, index) => {
-            const tabId = `tab-${index}`, activeClass = index === 0 ? 'active' : '';
-            contentHTML += `<div id="${tabId}" class="tab-content ${activeClass}"><table class="details-table daily-missions-table"><thead><tr><th>${Utils.getText('events.table.mission')}</th><th class="count-col">${Utils.getText('events.table.count')}</th><th>${Utils.getText('events.table.reward')}</th></tr></thead><tbody>`;
-            data.missions.forEach(mission => {
-                const reward = mission.rewards[0];
-                contentHTML += `<tr><td>${mission.description[lang]}</td><td class="count-col">${mission.count}</td><td class="mission-reward-cell">${getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '')}</td></tr>`;
+        if (eventData.daily_missions) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3><div class="tabs-nav">`;
+            eventData.daily_missions.forEach((data, index) => {
+                const tabId = `tab-${index}`, activeClass = index === 0 ? 'active' : '';
+                let tabLabel = data.day ? `${Utils.getText('events.day')} ${data.day}` : luxon.DateTime.fromISO(data.date).setLocale(lang).toFormat('d MMMM');
+                contentHTML += `<button class="tab-link ${activeClass}" data-tab="${tabId}">${tabLabel}</button>`;
             });
-            contentHTML += `</tbody></table></div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-    
-    if (eventData.mission_categories) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionCategoriesTitle')}</h3><div class="tabs-nav">`;
-        eventData.mission_categories.forEach((category, index) => {
-            contentHTML += `<button class="tab-link ${index === 0 ? 'active' : ''}" data-tab="category-${index}">${category.category_name[lang]}</button>`;
-        });
-        contentHTML += `</div><div class="tabs-content">`;
-        eventData.mission_categories.forEach((category, index) => {
-            contentHTML += `<div id="category-${index}" class="tab-content ${index === 0 ? 'active' : ''}"><table class="details-table daily-missions-table"><thead><tr><th>${Utils.getText('events.table.mission')}</th><th class="count-col">${Utils.getText('events.table.count')}</th><th>${Utils.getText('events.table.reward')}</th></tr></thead><tbody>`;
-            category.missions.forEach(mission => {
-                const reward = mission.rewards[0];
-                contentHTML += `<tr><td>${mission.description[lang]}</td><td class="count-col">${mission.count}</td><td class="mission-reward-cell">${getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '')}</td></tr>`;
-            });
-            contentHTML += `</tbody></table></div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-    
-    const loginRewards = eventData.rewards?.daily_login_rewards || eventData.daily_login_rewards;
-    if (loginRewards) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyLoginTitle')}</h3><div class="details-reward-grid-container">`;
-        loginRewards.forEach(item => {
-            let label;
-            if (item.day) {
-                label = `${Utils.getText('events.day')} ${item.day}`;
-            } else if (item.date) {
-                label = luxon.DateTime.fromISO(item.date).setLocale(lang).toFormat('d MMMM');
-            }
-            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${label}</span><div class="reward-grid">${item.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-    
-    if (eventData.rewards?.request_bonus) {
-        const bonus = eventData.rewards.request_bonus;
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.requestBonusTitle')}</h3>`;
-        if (bonus.description) contentHTML += `<p>${bonus.description[lang]}</p>`;
-        if (bonus.special_drops) {
-            contentHTML += `<h4>${Utils.getText('events.rewards.specialDropsTitle')}</h4><div class="details-reward-grid-container">`;
-            bonus.special_drops.forEach(drop => {
-                const notes = drop.notes ? `<span class="details-reward-label">${drop.notes[lang]}</span>` : '';
-                contentHTML += `<div class="details-reward-column">${notes}${getItemGridDisplay(drop.itemId, drop.quantity, drop.rank)}</div>`;
-            });
-            contentHTML += `</div>`;
-        }
-        if (bonus.reward_modifier) {
-            contentHTML += `<h4>${Utils.getText('events.rewards.bonusModifierTitle')}</h4><div class="weekly-recommendation-box"><p>${bonus.reward_modifier.description[lang]}</p></div>`;
-        }
-        contentHTML += `</div>`;
-    }
-    
-    if (eventData.missions && !eventData.daily_missions && !eventData.mission_categories) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
-        eventData.missions.forEach(m => {
-            let rightColumnHTML = (m.rewards) ? m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('') : '';
-            contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
-        });
-        contentHTML += `</tbody></table></div>`;
-    }
-    
-    if (eventData.rewards?.cumulative_missions) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
-        eventData.rewards.cumulative_missions.forEach(rewardData => {
-            let iconGrid = (rewardData.rewards) ? rewardData.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('') : getItemGridDisplay(rewardData.itemId, rewardData.quantity, rewardData.rank);
-            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${rewardData.condition[lang]}</span>${iconGrid}</div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-    
-    if (eventData.rewards?.puzzle_completion) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3><div class="puzzle-rewards-container">`;
-        eventData.rewards.puzzle_completion.forEach(puzzle => {
-            contentHTML += `<div class="puzzle-item"><p class="puzzle-description">${puzzle.description[lang]}</p><div class="puzzle-rewards-grid">${puzzle.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-    
-    if (eventData.point_system) {
-        const ps = eventData.point_system;
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.pointSystemTitle')}</h3>`;
-        let infoText = `<strong>${Utils.getText('events.pointSystem.costPerClaim')}:</strong> ${ps.cost_per_claim} Pts. <strong>${Utils.getText('events.pointSystem.dailyClaimLimit')}:</strong> ${ps.daily_max_claims}. <strong>${Utils.getText('events.pointSystem.dailyPointLimit')}:</strong> ${ps.daily_max_points}.`;
-        contentHTML += `<div class="weekly-recommendation-box"><p>${infoText}</p></div><h4>${Utils.getText('events.pointSystem.pointsPerAction')}</h4><table class="details-table missions-table"><tbody>`;
-        ps.missions.forEach(mission => {
-            contentHTML += `<tr><td>${mission.description[lang]}</td><td class="points-col">+${mission.points}</td></tr>`;
-        });
-        contentHTML += `</tbody></table>`;
-        if (eventData.rewards?.mission_completion_reward) {
-             contentHTML += `<h4>${Utils.getText('events.rewards.claimRewardTitle')}</h4><div class="reward-grid">${eventData.rewards.mission_completion_reward.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>`;
-        }
-        contentHTML += `</div>`;
-    }
-    
-    if (eventData.rewards?.exchange_shop) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
-        const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
-        const currencyItemDef = currencyItemId ? App.state.allItemsData[currencyItemId] : null;
-        eventData.rewards.exchange_shop.forEach(item => {
-            const itemToBuyDef = App.state.allItemsData[item.itemId]; if (!itemToBuyDef) return;
-            const itemName = itemToBuyDef.name[lang] || itemToBuyDef.name.en;
-            const itemIconHtml = getItemGridDisplay(item.itemId, item.quantity, item.rank);
-            let costHtml = `<span class="cost-value">${item.cost}</span>`;
-            if (currencyItemDef) {
-                costHtml += `<img src="assets/items/${currencyItemDef.icon}.png" class="currency-icon" alt="${currencyItemDef.name[lang]}">`;
-            }
-            let limitText = '';
-            if (item.limit && item.limit.key) {
-                const translatedLimit = Utils.getText(`events.limits.${item.limit.key}`, { value: item.limit.value });
-                limitText = `<span class="item-limit">${translatedLimit}</span>`;
-            }
-            contentHTML += `<tr><td class="item-to-buy">${itemIconHtml}<div class="item-info"><span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>${limitText}</div></td><td class="item-cost">${costHtml}</td></tr>`;
-        });
-        contentHTML += `</tbody></table></div>`;
-    }
-    
-    const missions = eventData.rewards?.missions_and_rewards || eventData.missions_and_rewards;
-    if (missions) {
-        const firstEntry = missions[0];
-        if (firstEntry && firstEntry.condition && firstEntry.rewards) {
-             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
-             missions.forEach(m => {
-                 contentHTML += `<div class="details-reward-column">
-                     <span class="details-reward-label">${m.condition[lang]}</span>
-                     <div class="reward-grid">${m.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>
-                 </div>`;
-             });
-             contentHTML += `</div></div>`;
-        } 
-        else if (firstEntry && firstEntry.mission && firstEntry.itemId) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
-            missions.forEach(m => {
-                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${getItemGridDisplay(m.itemId, m.quantity, m.rank)}</div>`;
+            contentHTML += `</div><div class="tabs-content">`;
+            eventData.daily_missions.forEach((data, index) => {
+                const tabId = `tab-${index}`, activeClass = index === 0 ? 'active' : '';
+                contentHTML += `<div id="${tabId}" class="tab-content ${activeClass}"><table class="details-table daily-missions-table"><thead><tr><th>${Utils.getText('events.table.mission')}</th><th class="count-col">${Utils.getText('events.table.count')}</th><th>${Utils.getText('events.table.reward')}</th></tr></thead><tbody>`;
+                data.missions.forEach(mission => {
+                    const reward = mission.rewards[0];
+                    contentHTML += `<tr><td>${mission.description[lang]}</td><td class="count-col">${mission.count}</td><td class="mission-reward-cell">${getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '')}</td></tr>`;
+                });
+                contentHTML += `</tbody></table></div>`;
             });
             contentHTML += `</div></div>`;
         }
-    }
-    
-    if (eventData.boss_details?.ranking_rewards) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
-        const participation = eventData.boss_details.ranking_rewards.base_on_participation;
-        if (participation) {
-            contentHTML += `<div class="participation-reward"><div class="reward-grid">${participation.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank || 'Common')).join('')}</div><div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div></div>`;
-        }
-        const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
-        if (ranking) {
-            contentHTML += `<div class="details-reward-grid-container">`;
-            ranking.forEach(r => {
-                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${r.tier_name[lang]}</span><div class="reward-grid">${r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('')}</div></div>`;
+        
+        if (eventData.mission_categories) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionCategoriesTitle')}</h3><div class="tabs-nav">`;
+            eventData.mission_categories.forEach((category, index) => {
+                contentHTML += `<button class="tab-link ${index === 0 ? 'active' : ''}" data-tab="category-${index}">${category.category_name[lang]}</button>`;
             });
-            contentHTML += `</div>`;
+            contentHTML += `</div><div class="tabs-content">`;
+            eventData.mission_categories.forEach((category, index) => {
+                contentHTML += `<div id="category-${index}" class="tab-content ${index === 0 ? 'active' : ''}"><table class="details-table daily-missions-table"><thead><tr><th>${Utils.getText('events.table.mission')}</th><th class="count-col">${Utils.getText('events.table.count')}</th><th>${Utils.getText('events.table.reward')}</th></tr></thead><tbody>`;
+                category.missions.forEach(mission => {
+                    const reward = mission.rewards[0];
+                    contentHTML += `<tr><td>${mission.description[lang]}</td><td class="count-col">${mission.count}</td><td class="mission-reward-cell">${getItemGridDisplay(reward.itemId, reward.quantity, reward.rank || '')}</td></tr>`;
+                });
+                contentHTML += `</tbody></table></div>`;
+            });
+            contentHTML += `</div></div>`;
         }
-        contentHTML += `</div>`;
-    }
-    
-    if (eventData.rewards?.wheel_of_fate) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
-        contentHTML += `<div class="reward-grid">${eventData.rewards.wheel_of_fate.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
-        contentHTML += generateRewardTextList(eventData.rewards.wheel_of_fate);
-        contentHTML += `</div>`;
-    }
-    
-    if (eventData.rewards?.cumulative_spins) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3><div class="details-reward-grid-container">`;
-        eventData.rewards.cumulative_spins.forEach(r => {
-            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${r.condition[lang]}</span>${getItemGridDisplay(r.itemId, r.quantity, r.rank)}</div>`;
-        });
-        contentHTML += `</div></div>`;
-    }
-    
-    if (eventData.rewards?.reward_pool) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
-        contentHTML += `<div class="reward-grid">${eventData.rewards.reward_pool.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
-        contentHTML += generateRewardTextList(eventData.rewards.reward_pool);
-        contentHTML += `</div>`;
-    }
-
-    if (eventData.rewards?.box_contents) {
-        const boxes = eventData.rewards.box_contents;
-        for (const boxId in boxes) {
-            if (Object.hasOwnProperty.call(boxes, boxId)) {
-                const boxDef = App.state.allItemsData[boxId];
-                const boxName = boxDef ? (boxDef.name[lang] || boxDef.name.en) : boxId.replace(/_/g, ' ');
-                const itemsInside = boxes[boxId];
-                
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.boxContentsTitle', { boxName: boxName })}</h3>`;
-                contentHTML += `<div class="reward-grid">${itemsInside.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>`;
-                contentHTML += generateRewardTextList(itemsInside);
+        
+        const loginRewards = eventData.rewards?.daily_login_rewards || eventData.daily_login_rewards;
+        if (loginRewards) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyLoginTitle')}</h3><div class="details-reward-grid-container">`;
+            loginRewards.forEach(item => {
+                let label;
+                if (item.day) {
+                    label = `${Utils.getText('events.day')} ${item.day}`;
+                } else if (item.date) {
+                    label = luxon.DateTime.fromISO(item.date).setLocale(lang).toFormat('d MMMM');
+                }
+                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${label}</span><div class="reward-grid">${item.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
+            });
+            contentHTML += `</div></div>`;
+        }
+        
+        if (eventData.rewards?.request_bonus) {
+            const bonus = eventData.rewards.request_bonus;
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.requestBonusTitle')}</h3>`;
+            if (bonus.description) contentHTML += `<p>${bonus.description[lang]}</p>`;
+            if (bonus.special_drops) {
+                contentHTML += `<h4>${Utils.getText('events.rewards.specialDropsTitle')}</h4><div class="details-reward-grid-container">`;
+                bonus.special_drops.forEach(drop => {
+                    const notes = drop.notes ? `<span class="details-reward-label">${drop.notes[lang]}</span>` : '';
+                    contentHTML += `<div class="details-reward-column">${notes}${getItemGridDisplay(drop.itemId, drop.quantity, drop.rank)}</div>`;
+                });
                 contentHTML += `</div>`;
             }
-        }
-    }
-
-    // --- 6. CIERRE Y RENDERIZADO FINAL ---
-    contentHTML += `</div>`;
-    App.dom.eventDetailsPanel.innerHTML = contentHTML;
-    App.dom.eventDetailsPanel.classList.add('visible');
-    if (App.state.isMobile) document.body.classList.add('no-scroll');
-    App.state.currentOpenEventId = eventId;
-
-    const tabsNav = App.dom.eventDetailsPanel.querySelector('.tabs-nav');
-    if (tabsNav) {
-        tabsNav.addEventListener('click', e => {
-            if (e.target.classList.contains('tab-link')) {
-                const tabId = e.target.dataset.tab;
-                tabsNav.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
-                App.dom.eventDetailsPanel.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                e.target.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
+            if (bonus.reward_modifier) {
+                contentHTML += `<h4>${Utils.getText('events.rewards.bonusModifierTitle')}</h4><div class="weekly-recommendation-box"><p>${bonus.reward_modifier.description[lang]}</p></div>`;
             }
-        });
-    }
-},
+            contentHTML += `</div>`;
+        }
+        
+        if (eventData.missions && !eventData.daily_missions && !eventData.mission_categories) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
+            eventData.missions.forEach(m => {
+                let rightColumnHTML = (m.rewards) ? m.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank)).join('') : '';
+                contentHTML += `<tr><td>${m.description[lang]}</td><td class="mission-reward-cell">${rightColumnHTML}</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
+        }
+        
+        if (eventData.rewards?.cumulative_missions) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
+            eventData.rewards.cumulative_missions.forEach(rewardData => {
+                let iconGrid = (rewardData.rewards) ? rewardData.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('') : getItemGridDisplay(rewardData.itemId, rewardData.quantity, rewardData.rank);
+                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${rewardData.condition[lang]}</span>${iconGrid}</div>`;
+            });
+            contentHTML += `</div></div>`;
+        }
+        
+        if (eventData.rewards?.puzzle_completion) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3><div class="puzzle-rewards-container">`;
+            eventData.rewards.puzzle_completion.forEach(puzzle => {
+                contentHTML += `<div class="puzzle-item"><p class="puzzle-description">${puzzle.description[lang]}</p><div class="puzzle-rewards-grid">${puzzle.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
+            });
+            contentHTML += `</div></div>`;
+        }
+        
+        if (eventData.point_system) {
+            const ps = eventData.point_system;
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.pointSystemTitle')}</h3>`;
+            let infoText = `<strong>${Utils.getText('events.pointSystem.costPerClaim')}:</strong> ${ps.cost_per_claim} Pts. <strong>${Utils.getText('events.pointSystem.dailyClaimLimit')}:</strong> ${ps.daily_max_claims}. <strong>${Utils.getText('events.pointSystem.dailyPointLimit')}:</strong> ${ps.daily_max_points}.`;
+            contentHTML += `<div class="weekly-recommendation-box"><p>${infoText}</p></div><h4>${Utils.getText('events.pointSystem.pointsPerAction')}</h4><table class="details-table missions-table"><tbody>`;
+            ps.missions.forEach(mission => {
+                contentHTML += `<tr><td>${mission.description[lang]}</td><td class="points-col">+${mission.points}</td></tr>`;
+            });
+            contentHTML += `</tbody></table>`;
+            if (eventData.rewards?.mission_completion_reward) {
+                contentHTML += `<h4>${Utils.getText('events.rewards.claimRewardTitle')}</h4><div class="reward-grid">${eventData.rewards.mission_completion_reward.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>`;
+            }
+            contentHTML += `</div>`;
+        }
+        
+        if (eventData.rewards?.exchange_shop) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
+            const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
+            const currencyItemDef = currencyItemId ? App.state.allItemsData[currencyItemId] : null;
+            eventData.rewards.exchange_shop.forEach(item => {
+                const itemToBuyDef = App.state.allItemsData[item.itemId]; if (!itemToBuyDef) return;
+                const itemName = itemToBuyDef.name[lang] || itemToBuyDef.name.en;
+                const itemIconHtml = getItemGridDisplay(item.itemId, item.quantity, item.rank);
+                let costHtml = `<span class="cost-value">${item.cost}</span>`;
+                if (currencyItemDef) {
+                    costHtml += `<img src="assets/items/${currencyItemDef.icon}.png" class="currency-icon" alt="${currencyItemDef.name[lang]}">`;
+                }
+                let limitText = '';
+                if (item.limit && item.limit.key) {
+                    const translatedLimit = Utils.getText(`events.limits.${item.limit.key}`, { value: item.limit.value });
+                    limitText = `<span class="item-limit">${translatedLimit}</span>`;
+                }
+                contentHTML += `<tr><td class="item-to-buy">${itemIconHtml}<div class="item-info"><span class="item-name ${getRarityClass(item.rank)}">${itemName}</span>${limitText}</div></td><td class="item-cost">${costHtml}</td></tr>`;
+            });
+            contentHTML += `</tbody></table></div>`;
+        }
+        
+        const missions = eventData.rewards?.missions_and_rewards || eventData.missions_and_rewards;
+        if (missions) {
+            const firstEntry = missions[0];
+            if (firstEntry && firstEntry.condition && firstEntry.rewards) {
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
+                missions.forEach(m => {
+                    contentHTML += `<div class="details-reward-column">
+                        <span class="details-reward-label">${m.condition[lang]}</span>
+                        <div class="reward-grid">${m.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>
+                    </div>`;
+                });
+                contentHTML += `</div></div>`;
+            } 
+            else if (firstEntry && firstEntry.mission && firstEntry.itemId) {
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
+                missions.forEach(m => {
+                    contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${getItemGridDisplay(m.itemId, m.quantity, m.rank)}</div>`;
+                });
+                contentHTML += `</div></div>`;
+            }
+        }
+        
+        if (eventData.boss_details?.ranking_rewards) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
+            const participation = eventData.boss_details.ranking_rewards.base_on_participation;
+            if (participation) {
+                contentHTML += `<div class="participation-reward"><div class="reward-grid">${participation.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank || 'Common')).join('')}</div><div class="participation-reward-text"><strong>${Utils.getText('events.rewards.participationTitle')}</strong><span>${participation.description[lang]}</span></div></div>`;
+            }
+            const ranking = eventData.boss_details.ranking_rewards.bonus_by_rank;
+            if (ranking) {
+                contentHTML += `<div class="details-reward-grid-container">`;
+                ranking.forEach(r => {
+                    contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${r.tier_name[lang]}</span><div class="reward-grid">${r.rewards.map(rew => getItemGridDisplay(rew.itemId, rew.quantity, rew.rank || 'Common')).join('')}</div></div>`;
+                });
+                contentHTML += `</div>`;
+            }
+            contentHTML += `</div>`;
+        }
+        
+        if (eventData.rewards?.wheel_of_fate) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
+            contentHTML += `<div class="reward-grid">${eventData.rewards.wheel_of_fate.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
+            contentHTML += generateRewardTextList(eventData.rewards.wheel_of_fate);
+            contentHTML += `</div>`;
+        }
+        
+        if (eventData.rewards?.cumulative_spins) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3><div class="details-reward-grid-container">`;
+            eventData.rewards.cumulative_spins.forEach(r => {
+                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${r.condition[lang]}</span>${getItemGridDisplay(r.itemId, r.quantity, r.rank)}</div>`;
+            });
+            contentHTML += `</div></div>`;
+        }
+        
+        if (eventData.rewards?.reward_pool) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
+            contentHTML += `<div class="reward-grid">${eventData.rewards.reward_pool.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
+            contentHTML += generateRewardTextList(eventData.rewards.reward_pool);
+            contentHTML += `</div>`;
+        }
 
+        if (eventData.rewards?.box_contents) {
+            const boxes = eventData.rewards.box_contents;
+            for (const boxId in boxes) {
+                if (Object.hasOwnProperty.call(boxes, boxId)) {
+                    const boxDef = App.state.allItemsData[boxId];
+                    const boxName = boxDef ? (boxDef.name[lang] || boxDef.name.en) : boxId.replace(/_/g, ' ');
+                    const itemsInside = boxes[boxId];
+                    
+                    contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.boxContentsTitle', { boxName: boxName })}</h3>`;
+                    contentHTML += `<div class="reward-grid">${itemsInside.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>`;
+                    contentHTML += generateRewardTextList(itemsInside);
+                    contentHTML += `</div>`;
+                }
+            }
+        }
+
+        contentHTML += `</div>`;
+        App.dom.eventDetailsPanel.innerHTML = contentHTML;
+        App.dom.eventDetailsPanel.classList.add('visible');
+        if (App.state.isMobile) document.body.classList.add('no-scroll');
+        App.state.currentOpenEventId = eventId;
+
+        const tabsNav = App.dom.eventDetailsPanel.querySelector('.tabs-nav');
+        if (tabsNav) {
+            tabsNav.addEventListener('click', e => {
+                if (e.target.classList.contains('tab-link')) {
+                    const tabId = e.target.dataset.tab;
+                    tabsNav.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
+                    App.dom.eventDetailsPanel.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                }
+            });
+        }
+    },
 
     closeEventDetailsPanel: function () {
         if (!App.dom.eventDetailsPanel) return;
@@ -921,248 +1022,242 @@ openEventDetailsPanel: function (eventId) {
         if (App.state.isMobile) document.body.classList.remove('no-scroll');
     },
 
-    // REEMPLAZA esta función completa en js/3-ui.js
-// REEMPLAZA esta función completa en js/3-ui.js
-openWeeklyDetailsPanel: function (weeklyId) {
-    this.closeAllDetailsPanels();
+    openWeeklyDetailsPanel: function (weeklyId) {
+        this.closeAllDetailsPanels();
 
-    const lang = App.state.config.language;
-    const weeklyData = App.state.weeklyResetsData;
-    if (!weeklyData) return;
+        const lang = App.state.config.language;
+        const weeklyData = App.state.weeklyResetsData;
+        if (!weeklyData) return;
 
-    const eventData = weeklyData.events.find(e => e.id === weeklyId);
-    if (!eventData) {
-        console.error(`Weekly event data not found for ID: ${weeklyId}`);
-        return;
-    }
-
-    const getWeeklyItemGridDisplay = (itemId, quantity, rank = 'Common') => {
-        const itemDef = App.state.allItemsData[itemId];
-        if (!itemDef || !itemDef.icon) return '';
-        const name = itemDef.name[lang] || itemDef.name.en || itemId;
-        const rankClass = `rank-${rank.toLowerCase()}`;
-        const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
-        return `<div class="weekly-reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
-                    <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon" alt="${name}">
-                    <span class="weekly-reward-quantity">${quantity}</span>
-                </div>`;
-    };
-
-    let contentHTML = `
-        <div class="details-header">
-            <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
-            <h2>${eventData.eventName[lang]}</h2>
-            <p>${eventData.description ? eventData.description[lang] : ''}</p>
-        </div>
-        <div class="details-content">
-    `;
-
-    if (eventData.seasonBuffs) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.seasonBuffsTitle')}</h3>`;
-        eventData.seasonBuffs.forEach((buff, index) => {
-            let buffDescription = buff.description ? (Array.isArray(buff.description) ? buff.description.map(d => d[lang]).join('<br>') : buff.description[lang]) : '';
-            contentHTML += `<div class="weekly-buff-item">
-                              <img src="assets/spells_icons/${buff.icon}.png">
-                              <div><strong>${buff.name[lang]}</strong><p>${buffDescription}</p></div>
-                            </div>`;
-            if (index < eventData.seasonBuffs.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
-        });
-        contentHTML += `</div>`;
-    }
-
-    if (eventData.chosenBuffs) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.chosenBuffsTitle')}</h3>`;
-        const arrowSVG = `<svg class="expand-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-        eventData.chosenBuffs.forEach((buff, index) => {
-            const hasEnhancements = buff.enhancements && buff.enhancements.length > 0;
-            const expandableClass = hasEnhancements ? ' expandable' : '';
-            contentHTML += `<div class="weekly-buff-item${expandableClass}">
-                      <img src="assets/spells_icons/${buff.icon}.png">
-                      <div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div>
-                      ${hasEnhancements ? arrowSVG : ''}
-                    </div>`;
-            if (hasEnhancements) {
-                contentHTML += `<div class="weekly-enhancements-list">`;
-                contentHTML += `<p class="enhancements-title">${Utils.getText('weekly.enhancementsTitle')}</p>`;
-                buff.enhancements.forEach(enh => {
-                    contentHTML += `<div class="weekly-enhancement-item"><strong>${enh.name[lang]}</strong><p>${enh.description[lang]}</p></div>`;
-                });
-                contentHTML += `</div>`;
-            }
-            if (index < eventData.chosenBuffs.length - 1) {
-                contentHTML += '<hr class="weekly-buff-separator">';
-            }
-        });
-        contentHTML += `</div>`;
-    }
-
-    if (eventData.stages) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.stagesTitle')}</h3>`;
-        if (eventData.stages[0].recommendedHeroes) {
-            contentHTML += `<div class="weekly-recommendation-box"><p>${eventData.stages[0].recommendedHeroes.description[lang]}</p></div>`;
+        const eventData = weeklyData.events.find(e => e.id === weeklyId);
+        if (!eventData) {
+            console.error(`Weekly event data not found for ID: ${weeklyId}`);
+            return;
         }
-        eventData.stages.forEach((stage, index) => {
-            const elementalIcons = stage.elementalWeakness.map(el => `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="weekly-element-icon" alt="${el}">`).join('');
-            contentHTML += `<div class="weekly-stage-item">
-                                <h4 class="weekly-stage-title">${stage.stageName[lang]}</h4>
-                                <div class="weekly-stage-info-grid">
-                                    <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.combatPower')}</span><div class="weekly-stage-info-value"><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${stage.recommendedPower}</div></div>
-                                    <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${stage.timeLimit[lang]}</div></div>
-                                    <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.weakness')}</span><div class="weekly-stage-info-value weekly-elemental-weakness">${elementalIcons}</div></div>
-                                </div>
-                                <div class="weekly-stage-rewards">`;
-            stage.completionRewards.forEach(rewardTier => {
-                const rewardsGrid = rewardTier.rewards.map(r => getWeeklyItemGridDisplay(r.itemId, r.quantity, r.rank)).join('');
-                contentHTML += `<div class="weekly-reward-tier"><p><strong class="rarity-text-rare">${Utils.getText('events.rewards.rankHeader')} ${rewardTier.stageLevel}:</strong></p><div class="weekly-reward-grid">${rewardsGrid}</div></div>`;
-            });
-            contentHTML += `</div></div>`;
-            if (index < eventData.stages.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
-        });
-        contentHTML += `</div>`;
-    }
 
-    const bossesToRender = eventData.activeBosses || (eventData.currentBoss ? [eventData.currentBoss] : []);
-    
-    if (bossesToRender.length > 0) {
-        if (bossesToRender.length > 1) {
-            contentHTML += `<div class="details-section weekly-boss-tabs-nav">`;
-            bossesToRender.forEach((boss, index) => {
-                const activeClass = index === 0 ? 'active' : '';
-                contentHTML += `
-                    <button class="weekly-boss-tab ${activeClass}" data-boss-target="${boss.bossId}">
-                        <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
-                        <span>${boss.name[lang]}</span>
-                    </button>`;
+        const getWeeklyItemGridDisplay = (itemId, quantity, rank = 'Common') => {
+            const itemDef = App.state.allItemsData[itemId];
+            if (!itemDef || !itemDef.icon) return '';
+            const name = itemDef.name[lang] || itemDef.name.en || itemId;
+            const rankClass = `rank-${rank.toLowerCase()}`;
+            const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
+            return `<div class="weekly-reward-grid-item ${sizeClass} ${rankClass}" title="${name} x${quantity}">
+                        <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon" alt="${name}">
+                        <span class="weekly-reward-quantity">${quantity}</span>
+                    </div>`;
+        };
+
+        let contentHTML = `
+            <div class="details-header">
+                <div class="close-details-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></div>
+                <h2>${eventData.eventName[lang]}</h2>
+                <p>${eventData.description ? eventData.description[lang] : ''}</p>
+            </div>
+            <div class="details-content">
+        `;
+
+        if (eventData.seasonBuffs) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.seasonBuffsTitle')}</h3>`;
+            eventData.seasonBuffs.forEach((buff, index) => {
+                let buffDescription = buff.description ? (Array.isArray(buff.description) ? buff.description.map(d => d[lang]).join('<br>') : buff.description[lang]) : '';
+                contentHTML += `<div class="weekly-buff-item">
+                                <img src="assets/spells_icons/${buff.icon}.png">
+                                <div><strong>${buff.name[lang]}</strong><p>${buffDescription}</p></div>
+                                </div>`;
+                if (index < eventData.seasonBuffs.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
             });
             contentHTML += `</div>`;
         }
 
-        bossesToRender.forEach((boss, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            contentHTML += `<div class="weekly-boss-content ${activeClass}" id="${boss.bossId}">`;
-
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.bossInfoTitle')}</h3>
-                <div class="weekly-boss-info-header">
-                    <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
-                    <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
-                </div>
-                <p class="details-summary">${boss.description[lang]}</p>
-            </div>`;
-
-            if (boss.recommendedHeroes?.description) {
-                contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
-                if (boss.recommendedHeroes.heroesByTag) {
-                    boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
-                        contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
-                        tagGroup.heroList.forEach(hero => {
-                            const heroData = Logic.findHeroByName(hero);
-                            if (heroData) {
-                                const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
-                                contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
-                            }
-                        });
-                        contentHTML += `</div></div>`;
+        if (eventData.chosenBuffs) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.chosenBuffsTitle')}</h3>`;
+            const arrowSVG = `<svg class="expand-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+            eventData.chosenBuffs.forEach((buff, index) => {
+                const hasEnhancements = buff.enhancements && buff.enhancements.length > 0;
+                const expandableClass = hasEnhancements ? ' expandable' : '';
+                contentHTML += `<div class="weekly-buff-item${expandableClass}">
+                        <img src="assets/spells_icons/${buff.icon}.png">
+                        <div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div>
+                        ${hasEnhancements ? arrowSVG : ''}
+                        </div>`;
+                if (hasEnhancements) {
+                    contentHTML += `<div class="weekly-enhancements-list">`;
+                    contentHTML += `<p class="enhancements-title">${Utils.getText('weekly.enhancementsTitle')}</p>`;
+                    buff.enhancements.forEach(enh => {
+                        contentHTML += `<div class="weekly-enhancement-item"><strong>${enh.name[lang]}</strong><p>${enh.description[lang]}</p></div>`;
                     });
+                    contentHTML += `</div>`;
                 }
-                contentHTML += `</div>`;
-            }
+                if (index < eventData.chosenBuffs.length - 1) {
+                    contentHTML += '<hr class="weekly-buff-separator">';
+                }
+            });
+            contentHTML += `</div>`;
+        }
 
-            if (boss.difficultyTiers) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.modifiersTitle')}</h3>`;
-                Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
-                    contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
-                    data.modifiers.forEach(mod => {
-                        contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
-                    });
-                    contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
-                    data.progression.forEach(prog => {
-                        contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
-                    });
-                    contentHTML += `</table></div>`;
-                });
-                contentHTML += `</div>`;
+        if (eventData.stages) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.stagesTitle')}</h3>`;
+            if (eventData.stages[0].recommendedHeroes) {
+                contentHTML += `<div class="weekly-recommendation-box"><p>${eventData.stages[0].recommendedHeroes.description[lang]}</p></div>`;
             }
-
-            if (boss.scoreRewards) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.scoreRewardsTitle')}</h3><div class="weekly-score-rewards-grid">`;
-                boss.scoreRewards.forEach(tier => {
-                    const rewardItem = tier.rewards[0];
-                    const itemDef = App.state.allItemsData[rewardItem.itemId];
-                    const rank = rewardItem.rank || 'Common';
-                    const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
-                    const iconHTML = itemDef?.icon ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}"><img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon"><span class="weekly-reward-quantity">${rewardItem.quantity}</span></div>` : '';
-                    contentHTML += `<div class="weekly-score-reward-column"><span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>${iconHTML}</div>`;
+            eventData.stages.forEach((stage, index) => {
+                const elementalIcons = stage.elementalWeakness.map(el => `<img src="assets/elements/${el.toLowerCase()}_icon.png" class="weekly-element-icon" alt="${el}">`).join('');
+                contentHTML += `<div class="weekly-stage-item">
+                                    <h4 class="weekly-stage-title">${stage.stageName[lang]}</h4>
+                                    <div class="weekly-stage-info-grid">
+                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.combatPower')}</span><div class="weekly-stage-info-value"><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${stage.recommendedPower}</div></div>
+                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${stage.timeLimit[lang]}</div></div>
+                                        <div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.weakness')}</span><div class="weekly-stage-info-value weekly-elemental-weakness">${elementalIcons}</div></div>
+                                    </div>
+                                    <div class="weekly-stage-rewards">`;
+                stage.completionRewards.forEach(rewardTier => {
+                    const rewardsGrid = rewardTier.rewards.map(r => getWeeklyItemGridDisplay(r.itemId, r.quantity, r.rank)).join('');
+                    contentHTML += `<div class="weekly-reward-tier"><p><strong class="rarity-text-rare">${Utils.getText('events.rewards.rankHeader')} ${rewardTier.stageLevel}:</strong></p><div class="weekly-reward-grid">${rewardsGrid}</div></div>`;
                 });
                 contentHTML += `</div></div>`;
+                if (index < eventData.stages.length - 1) contentHTML += '<hr class="weekly-buff-separator">';
+            });
+            contentHTML += `</div>`;
+        }
+
+        const bossesToRender = eventData.activeBosses || (eventData.currentBoss ? [eventData.currentBoss] : []);
+        
+        if (bossesToRender.length > 0) {
+            if (bossesToRender.length > 1) {
+                contentHTML += `<div class="details-section weekly-boss-tabs-nav">`;
+                bossesToRender.forEach((boss, index) => {
+                    const activeClass = index === 0 ? 'active' : '';
+                    contentHTML += `
+                        <button class="weekly-boss-tab ${activeClass}" data-boss-target="${boss.bossId}">
+                            <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
+                            <span>${boss.name[lang]}</span>
+                        </button>`;
+                });
+                contentHTML += `</div>`;
             }
 
-            if (boss.tips?.length > 0) {
-                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
-                boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
-                contentHTML += `</ul></div>`;
-            }
-            
-            contentHTML += `</div>`;
-        });
-    }
+            bossesToRender.forEach((boss, index) => {
+                const activeClass = index === 0 ? 'active' : '';
+                contentHTML += `<div class="weekly-boss-content ${activeClass}" id="${boss.bossId}">`;
+
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.bossInfoTitle')}</h3>
+                    <div class="weekly-boss-info-header">
+                        <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
+                        <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
+                    </div>
+                    <p class="details-summary">${boss.description[lang]}</p>
+                </div>`;
+
+                if (boss.recommendedHeroes?.description) {
+                    contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
+                    if (boss.recommendedHeroes.heroesByTag) {
+                        boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
+                            contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
+                            tagGroup.heroList.forEach(hero => {
+                                const heroData = Logic.findHeroByName(hero);
+                                if (heroData) {
+                                    const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
+                                    contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
+                                }
+                            });
+                            contentHTML += `</div></div>`;
+                        });
+                    }
+                    contentHTML += `</div>`;
+                }
+
+                if (boss.difficultyTiers) {
+                    contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.modifiersTitle')}</h3>`;
+                    Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
+                        contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
+                        data.modifiers.forEach(mod => {
+                            contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
+                        });
+                        contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
+                        data.progression.forEach(prog => {
+                            contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
+                        });
+                        contentHTML += `</table></div>`;
+                    });
+                    contentHTML += `</div>`;
+                }
+
+                if (boss.scoreRewards) {
+                    contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.scoreRewardsTitle')}</h3><div class="weekly-score-rewards-grid">`;
+                    boss.scoreRewards.forEach(tier => {
+                        const rewardItem = tier.rewards[0];
+                        const itemDef = App.state.allItemsData[rewardItem.itemId];
+                        const rank = rewardItem.rank || 'Common';
+                        const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
+                        const iconHTML = itemDef?.icon ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}"><img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon"><span class="weekly-reward-quantity">${rewardItem.quantity}</span></div>` : '';
+                        contentHTML += `<div class="weekly-score-reward-column"><span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>${iconHTML}</div>`;
+                    });
+                    contentHTML += `</div></div>`;
+                }
+
+                if (boss.tips?.length > 0) {
+                    contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
+                    boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
+                    contentHTML += `</ul></div>`;
+                }
+                
+                contentHTML += `</div>`;
+            });
+        }
 
         const upcomingBosses = eventData.nextBosses || (eventData.nextBoss ? [eventData.nextBoss] : []);
 
-    if (upcomingBosses.length > 0) {
-        const titleKey = upcomingBosses.length > 1 ? 'weekly.nextBosses' : 'weekly.nextBoss';
-        contentHTML += `<div class="details-section"><h3>${Utils.getText(titleKey)}</h3>`;
+        if (upcomingBosses.length > 0) {
+            const titleKey = upcomingBosses.length > 1 ? 'weekly.nextBosses' : 'weekly.nextBoss';
+            contentHTML += `<div class="details-section"><h3>${Utils.getText(titleKey)}</h3>`;
 
-        upcomingBosses.forEach((boss, index) => {
-            contentHTML += `
-                <div class="weekly-buff-item">
-                    <img src="assets/enemies_icon/${boss.icon}" alt="${boss.name[lang]}">
-                    <div><strong>${boss.name[lang]}</strong><p>${boss.description[lang]}</p></div>
-                </div>`;
-            
-            // Añadir un separador si no es el último jefe de la lista
-            if (index < upcomingBosses.length - 1) {
-                contentHTML += '<hr class="weekly-buff-separator">';
-            }
-        });
+            upcomingBosses.forEach((boss, index) => {
+                contentHTML += `
+                    <div class="weekly-buff-item">
+                        <img src="assets/enemies_icon/${boss.icon}" alt="${boss.name[lang]}">
+                        <div><strong>${boss.name[lang]}</strong><p>${boss.description[lang]}</p></div>
+                    </div>`;
+                
+                if (index < upcomingBosses.length - 1) {
+                    contentHTML += '<hr class="weekly-buff-separator">';
+                }
+            });
+
+            contentHTML += `</div>`;
+        }
 
         contentHTML += `</div>`;
-    }
+        App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
+        App.dom.weeklyDetailsPanel.classList.add('visible');
+        if (App.state.isMobile) document.body.classList.add('no-scroll');
+        App.state.currentOpenWeeklyId = weeklyId;
 
-    contentHTML += `</div>`;
-    App.dom.weeklyDetailsPanel.innerHTML = contentHTML;
-    App.dom.weeklyDetailsPanel.classList.add('visible');
-    if (App.state.isMobile) document.body.classList.add('no-scroll');
-    App.state.currentOpenWeeklyId = weeklyId;
+        const bossTabsNav = App.dom.weeklyDetailsPanel.querySelector('.weekly-boss-tabs-nav');
+        if (bossTabsNav) {
+            bossTabsNav.addEventListener('click', e => {
+                const tabButton = e.target.closest('.weekly-boss-tab');
+                if (tabButton) {
+                    const bossId = tabButton.dataset.bossTarget;
+                    
+                    bossTabsNav.querySelectorAll('.weekly-boss-tab').forEach(btn => btn.classList.remove('active'));
+                    tabButton.classList.add('active');
 
-    const bossTabsNav = App.dom.weeklyDetailsPanel.querySelector('.weekly-boss-tabs-nav');
-    if (bossTabsNav) {
-        bossTabsNav.addEventListener('click', e => {
-            const tabButton = e.target.closest('.weekly-boss-tab');
-            if (tabButton) {
-                const bossId = tabButton.dataset.bossTarget;
-                
-                bossTabsNav.querySelectorAll('.weekly-boss-tab').forEach(btn => btn.classList.remove('active'));
-                tabButton.classList.add('active');
-
-                App.dom.weeklyDetailsPanel.querySelectorAll('.weekly-boss-content').forEach(content => content.classList.remove('active'));
-                document.getElementById(bossId).classList.add('active');
-            }
+                    App.dom.weeklyDetailsPanel.querySelectorAll('.weekly-boss-content').forEach(content => content.classList.remove('active'));
+                    document.getElementById(bossId).classList.add('active');
+                }
+            });
+        }
+        
+        App.dom.weeklyDetailsPanel.querySelectorAll('.weekly-buff-item.expandable').forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.toggle('expanded');
+                const enhancementsList = item.nextElementSibling;
+                if (enhancementsList && enhancementsList.classList.contains('weekly-enhancements-list')) {
+                    enhancementsList.style.display = item.classList.contains('expanded') ? 'block' : 'none';
+                }
+            });
         });
-    }
-    
-    App.dom.weeklyDetailsPanel.querySelectorAll('.weekly-buff-item.expandable').forEach(item => {
-        item.addEventListener('click', () => {
-            item.classList.toggle('expanded');
-            const enhancementsList = item.nextElementSibling;
-            if (enhancementsList && enhancementsList.classList.contains('weekly-enhancements-list')) {
-                enhancementsList.style.display = item.classList.contains('expanded') ? 'block' : 'none';
-            }
-        });
-    });
-},
-
-    /** Cierra el panel de detalles del evento semanal. */
-    // ... continuación de js/3-ui.js
+    },
 
     closeWeeklyDetailsPanel: function() {
         if (!App.dom.weeklyDetailsPanel) return;
@@ -1172,9 +1267,10 @@ openWeeklyDetailsPanel: function (weeklyId) {
     },
 
     closeAllDetailsPanels: function() {
-    this.closeEventDetailsPanel();
-    this.closeWeeklyDetailsPanel();
-},
+        this.closeEventDetailsPanel();
+        this.closeWeeklyDetailsPanel();
+        this.closeBossDetailsPanel();
+    },
 
     openSettingsModal: function() {
         const config = App.state.config;
@@ -1187,7 +1283,6 @@ openWeeklyDetailsPanel: function (weeklyId) {
         App.dom.timezoneSelect.value = config.displayTimezone;
         App.dom.languageSelect.value = config.language;
 
-        // --- INICIO DE LA CORRECCIÓN: Cargar valores de recordatorios ---
         const reminders = config.reminderSettings || {};
         const eventDailies = reminders.eventDailies || { enabled: true, hours: 12 };
         const weekly = reminders.weekly || { enabled: true, days: 3 };
@@ -1199,7 +1294,6 @@ openWeeklyDetailsPanel: function (weeklyId) {
         document.getElementById('weekly-reminder-days').value = weekly.days;
         document.getElementById('banner-reminder-toggle').checked = banner.enabled;
         document.getElementById('banner-reminder-days').value = banner.days;
-        // --- FIN DE LA CORRECCIÓN ---
 
         App.dom.modalOverlay.classList.add('visible');
     },
@@ -1208,112 +1302,87 @@ openWeeklyDetailsPanel: function (weeklyId) {
         App.dom.modalOverlay.classList.remove('visible');
     },
 
-    // Reemplaza tu función openAccountModal con esta versión corregida
-async openAccountModal() {
-    // Llenar datos de traducción cada vez que se abre
-    App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
-        const key = el.dataset.langKey;
-        const text = Utils.getText(key);
-        if (text !== key) el.innerHTML = text;
-    });
+    async openAccountModal() {
+        App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.dataset.langKey;
+            const text = Utils.getText(key);
+            if (text !== key) el.innerHTML = text;
+        });
 
-    const myAccountSection = document.getElementById('section-my-account');
-    const logoutButton = document.getElementById('logout-btn-modal');
-    const footer = logoutButton.parentElement;
+        const myAccountSection = document.getElementById('section-my-account');
+        const logoutButton = document.getElementById('logout-btn-modal');
+        const footer = logoutButton.parentElement;
 
-    // --- INICIO DE LA CORRECCIÓN ---
-    // 1. Siempre nos aseguramos de que el botón de logout original sea visible
-    logoutButton.style.display = 'flex';
+        logoutButton.style.display = 'flex';
 
-    // 2. Buscamos y eliminamos cualquier botón de login que haya quedado de antes
-    const existingLoginButton = document.getElementById('login-btn-modal');
-    if (existingLoginButton) {
-        existingLoginButton.remove();
-    }
-    // --- FIN DE LA CORRECCIÓN ---
+        const existingLoginButton = document.getElementById('login-btn-modal');
+        if (existingLoginButton) {
+            existingLoginButton.remove();
+        }
 
-    if (App.state.isLoggedIn && App.state.userInfo) {
-        // --- LÓGICA PARA USUARIO LOGUEADO ---
-        const { global_name, avatarUrl } = App.state.userInfo;
-        myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
-        myAccountSection.querySelector('.user-profile-name').textContent = global_name;
+        if (App.state.isLoggedIn && App.state.userInfo) {
+            const { global_name, avatarUrl } = App.state.userInfo;
+            myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
+            myAccountSection.querySelector('.user-profile-name').textContent = global_name;
 
-        // Cargar preferencias de push en la UI
-        const prefs = App.state.config.notificationPrefs || {};
-        document.getElementById('push-daily-reset-toggle').checked = prefs.dailyReset ?? true;
-        document.getElementById('push-showdown-ticket-toggle').checked = prefs.showdownTicket ?? true;
-        document.getElementById('push-weekly-reset-toggle').checked = prefs.weeklyResetReminder?.enabled ?? true;
-        document.getElementById('push-weekly-days-input').value = prefs.weeklyResetReminder?.daysBefore ?? 2;
-        document.getElementById('push-event-dailies-toggle').checked = prefs.eventDailiesReminder?.enabled ?? true;
-        document.getElementById('push-event-hours-input').value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
-        
-        this.renderActiveSubscriptions();
+            const prefs = App.state.config.notificationPrefs || {};
+            document.getElementById('push-daily-reset-toggle').checked = prefs.dailyReset ?? true;
+            document.getElementById('push-showdown-ticket-toggle').checked = prefs.showdownTicket ?? true;
+            document.getElementById('push-weekly-reset-toggle').checked = prefs.weeklyResetReminder?.enabled ?? true;
+            document.getElementById('push-weekly-days-input').value = prefs.weeklyResetReminder?.daysBefore ?? 2;
+            document.getElementById('push-event-dailies-toggle').checked = prefs.eventDailiesReminder?.enabled ?? true;
+            document.getElementById('push-event-hours-input').value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
+            
+            this.renderActiveSubscriptions();
+            this.switchAccountModalSection('my-account');
+
+        } else {
+            myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
+            myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
+
+            logoutButton.style.display = 'none';
+
+            const loginButtonHTML = `
+                <button id="login-btn-modal" class="logout-button login-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    <span data-lang-key="common.login">${Utils.getText('common.login')}</span>
+                </button>
+            `;
+            footer.insertAdjacentHTML('beforeend', loginButtonHTML);
+            document.getElementById('login-btn-modal').addEventListener('click', () => Logic.redirectToDiscordLogin());
+        }
+
         this.switchAccountModalSection('my-account');
+        App.dom.accountModalOverlay.classList.add('visible');
+    },
 
-    } else {
-        // --- LÓGICA PARA INVITADO ---
-        myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
-        myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
-
-        // Ocultar el botón de Logout estático
-        logoutButton.style.display = 'none';
-
-        // Crear y añadir un botón de Login dinámicamente
-        const loginButtonHTML = `
-            <button id="login-btn-modal" class="logout-button login-button">
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                </svg>
-                <span data-lang-key="common.login">${Utils.getText('common.login')}</span>
-            </button>
-        `;
-        // Usamos .innerHTML aquí para reemplazar cualquier contenido residual
-        footer.insertAdjacentHTML('beforeend', loginButtonHTML);
-        document.getElementById('login-btn-modal').addEventListener('click', () => Logic.redirectToDiscordLogin());
-    }
-
-    this.switchAccountModalSection('my-account');
-    App.dom.accountModalOverlay.classList.add('visible');
-},
-
-    /**
-     * Cambia la sección visible dentro del modal de cuenta.
-     * @param {string} sectionId - El ID de la sección a mostrar (ej. 'my-account').
-     */
     switchAccountModalSection(sectionId) {
         const modal = App.dom.accountModalOverlay;
         if (!modal) return;
 
-        // 1. Ocultar todas las secciones de contenido
         modal.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
         });
 
-        // 2. Quitar la clase 'active' de todos los enlaces de navegación
         modal.querySelectorAll('.nav-item').forEach(navLink => {
             navLink.classList.remove('active');
         });
 
-        // 3. Mostrar la sección de contenido correcta
         const activeSection = modal.querySelector(`#section-${sectionId}`);
         if (activeSection) {
             activeSection.classList.add('active');
         }
 
-        // 4. Marcar como 'active' el enlace de navegación correcto
         const activeNavLink = modal.querySelector(`.nav-item[data-section="${sectionId}"]`);
         if (activeNavLink) {
             activeNavLink.classList.add('active');
         }
     },
 
-    /**
-     * Devuelve el SVG correspondiente al sistema operativo.
-     * @param {string} os - El nombre del sistema operativo (ej. "Windows").
-     * @returns {string} El string SVG del icono.
-     */
     getDeviceIcon(os) {
-        const osLower = (os || '').toLowerCase(); // Maneja el caso de que 'os' sea undefined
+        const osLower = (os || '').toLowerCase(); 
         if (osLower.includes('windows')) {
             return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3,12V6.75L9,5.43V11.91L3,12M21,12V4.5L11,3V11.91L21,12M3,13L9,13.09V19.57L3,18.25V13M21,13L11,13.09V21L21,19.5V13Z" /></svg>`;
         }
@@ -1326,13 +1395,9 @@ async openAccountModal() {
         if (osLower.includes('macos')) {
             return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20,2H4C2.9,2 2,2.9 2,4V16C2,17.1 2.9,18 4,18H9V20H7V22H17V20H15V18H20C21.1,18 22,17.1 22,16V4C22,2.9 21.1,2 20,2M20,16H4V4H20V16Z" /></svg>`;
         }
-        // Icono por defecto para Linux, etc.
         return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z" /></svg>`;
     },
 
-    /**
-     * Obtiene y renderiza la lista de suscripciones push activas del usuario.
-     */
     async renderActiveSubscriptions() {
         const listContainer = document.getElementById('active-subscriptions-list');
         if (!listContainer) return;
@@ -1340,11 +1405,9 @@ async openAccountModal() {
         listContainer.innerHTML = `<p class="settings-description">${Utils.getText('account.loadingSubscriptions')}</p>`;
 
         try {
-            // Obtenemos los datos más recientes del usuario, incluidas las suscripciones
             const userData = await Logic.fetchUserPreferences();
             const subscriptions = userData?.preferences?.pushSubscriptions || [];
 
-            // Obtenemos la suscripción del navegador actual para compararla
             const registration = await navigator.serviceWorker.ready;
             const currentSubscription = await registration.pushManager.getSubscription();
 
@@ -1392,10 +1455,8 @@ async openAccountModal() {
             
             listContainer.innerHTML = listHTML;
 
-            // Comprobamos si el dispositivo actual ya está en la lista de suscripciones guardadas
             const isCurrentDeviceSubscribed = currentSubscription && subscriptions.some(sub => sub.endpoint === currentSubscription.endpoint);
 
-            // Si el dispositivo actual NO está suscrito, mostramos el botón para añadirlo
             if (!isCurrentDeviceSubscribed) {
                 const addButtonHTML = `
                     <div class="subscription-item add-new-device">
@@ -1404,7 +1465,6 @@ async openAccountModal() {
                     </div>
                 `;
                 listContainer.insertAdjacentHTML('beforeend', addButtonHTML);
-                // Volvemos a aplicar las traducciones solo para este nuevo elemento
                 listContainer.querySelector('[data-lang-key]').innerHTML = Utils.getText('pushSettings.addDevice');
             }
 
@@ -1416,9 +1476,7 @@ async openAccountModal() {
     
     async handleAddNewSubscription() {
         try {
-            // Logic.subscribeToPushNotifications ya se encarga de pedir el alias
             await Logic.subscribeToPushNotifications();
-            // Una vez suscrito, volvemos a renderizar la lista para que se actualice
             this.renderActiveSubscriptions();
         } catch (error) {
             console.error("Fallo al añadir nueva suscripción:", error);
@@ -1430,7 +1488,6 @@ async openAccountModal() {
         if (App.dom.accountModalOverlay) {
             App.dom.accountModalOverlay.classList.remove('visible');
         }
-        // La parte clave: SIEMPRE eliminamos la clase no-scroll al cerrar
         document.body.classList.remove('no-scroll');
     },
 
@@ -1455,11 +1512,7 @@ async openAccountModal() {
     },
 
     openAboutModal: function() {
-        // --- INICIO DE LA CORRECCIÓN ---
-        document.body.classList.add('no-scroll'); // <-- AÑADE ESTA LÍNEA
-        // --- FIN DE LA CORRECCIÓN ---
-
-        // Añadimos la lógica de traducción aquí
+        document.body.classList.add('no-scroll');
         document.querySelectorAll('#about-modal-overlay [data-lang-key]').forEach(el => {
             const key = el.dataset.langKey;
             const text = Utils.getText(key);
@@ -1469,10 +1522,7 @@ async openAccountModal() {
     },
 
     closeAboutModal: function() { 
-        // --- INICIO DE LA CORRECCIÓN ---
-        document.body.classList.remove('no-scroll'); // <-- AÑADE ESTA LÍNEA
-        // --- FIN DE LA CORRECCIÓN ---
-
+        document.body.classList.remove('no-scroll');
         App.dom.aboutModalOverlay.classList.remove('visible');
     },
 
@@ -1491,7 +1541,6 @@ async openAccountModal() {
 
         const setImage = (path) => { document.getElementById('hero-modal-image').src = path; };
 
-        // Lógica de Skins
         const availableSkins = [{ 
             imgPath: `assets/heroes_full/${heroData.long_image}`, 
             thumbPath: `assets/heroes_icon/${heroData.short_image}`
@@ -1523,18 +1572,14 @@ async openAccountModal() {
             skinPreviewsContainer.style.display = 'none';
         }
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Lógica de Héroes Relacionados
-        // Eliminamos el .filter() para mostrar SIEMPRE todos los héroes del contexto.
         if (contextHeroes.length > 0) {
             relatedHeroesContainer.style.display = 'block';
-            contextHeroes.forEach(contextHero => { // <-- Se itera sobre 'contextHeroes' directamente
+            contextHeroes.forEach(contextHero => {
                 const otherHeroData = Logic.findHeroByName(contextHero.name);
                 if (otherHeroData) {
                     const previewDiv = document.createElement('div');
                     previewDiv.className = 'hero-preview-item';
                     
-                    // Si el héroe de la lista es el que estamos viendo, lo marcamos como activo.
                     if (otherHeroData.game_name === heroData.game_name) {
                         previewDiv.classList.add('active');
                     }
@@ -1551,9 +1596,7 @@ async openAccountModal() {
         } else {
             relatedHeroesContainer.style.display = 'none';
         }
-        // --- FIN DE LA CORRECCIÓN ---
         
-        // El resto de la función sigue igual...
         setImage(`assets/heroes_full/${heroData.long_image}`);
 
         const showNav = contextHeroes.length > 1;
@@ -1632,11 +1675,7 @@ async openAccountModal() {
         }
     },
 
-    /**
-     * Abre el modal que indica al usuario que necesita iniciar sesión.
-     */
     openLoginRequiredModal: function() {
-        // Aplica traducciones
         const modalOverlay = document.getElementById('login-required-modal-overlay');
         if (modalOverlay) {
             modalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
@@ -1650,9 +1689,6 @@ async openAccountModal() {
         }
     },
 
-    /**
-     * Cierra el modal de "requiere inicio de sesión".
-     */
     closeLoginRequiredModal: function() {
         const modalOverlay = document.getElementById('login-required-modal-overlay');
         if (modalOverlay) {
@@ -1671,7 +1707,6 @@ async openAccountModal() {
         let actionButtonHTML = '';
 
         if (App.state.isLoggedIn && App.state.userInfo) {
-            // --- LÓGICA PARA USUARIO LOGUEADO ---
             const { global_name, avatarUrl } = App.state.userInfo;
             userInfoHTML = `
                 <div class="user-info-static">
@@ -1679,25 +1714,21 @@ async openAccountModal() {
                     <p class="user-name">${global_name || 'User'}</p>
                 </div>
             `;
-            // Se genera el botón de LOGOUT
             actionButtonHTML = `
                 <button id="logout-btn" class="user-action-btn logout-icon" title="${Utils.getText('common.logout')}">${powerIconSVG}</button>
             `;
         } else {
-            // --- LÓGICA PARA INVITADO ---
             userInfoHTML = `
                 <div class="user-info-static">
                     <img src="assets/wimp_default.jpg" alt="Guest Avatar" class="user-avatar">
                     <p class="user-name guest" data-lang-key="common.guest"></p>
                 </div>
             `;
-            // Se genera el botón de LOGIN
             actionButtonHTML = `
                 <button id="login-btn" class="user-action-btn login-icon" title="${Utils.getText('common.login')}">${powerIconSVG}</button>
             `;
         }
 
-        // Se construye el HTML completo
         userStatusDiv.innerHTML = `
             ${userInfoHTML}
             <div class="user-widget-divider"></div>
@@ -1705,7 +1736,6 @@ async openAccountModal() {
             ${actionButtonHTML}
         `;
         
-        // Se añaden los listeners a los botones que ACABAMOS de crear
         document.getElementById('user-settings-btn').addEventListener('click', () => this.openAccountModal());
         
         if (App.state.isLoggedIn) {
@@ -1717,32 +1747,24 @@ async openAccountModal() {
         this.applyLanguage();
     },
 
-    
     updateLanguage: function() {
-    // Esta función ahora solo actualiza elementos dinámicos que no dependen de un cambio de idioma
-    // explícito del usuario, como el estado de los permisos de notificación.
-    const p = Notification.permission;
-    const statusBarSpan = App.dom.statusBar.querySelector('span');
-    
-    // Usamos una comprobación para no causar un error si el span no existe
-    if (!statusBarSpan) return;
+        const p = Notification.permission;
+        const statusBarSpan = App.dom.statusBar.querySelector('span');
+        
+        if (!statusBarSpan) return;
 
-    if (p === "granted") {
-        statusBarSpan.textContent = Utils.getText('notifications.alertsEnabled');
-        statusBarSpan.style.color = 'var(--color-success)';
-    } else if (p === "denied") {
-        statusBarSpan.textContent = Utils.getText('notifications.alertsDisabled');
-        statusBarSpan.style.color = 'var(--color-danger)';
-    } else {
-        statusBarSpan.textContent = Utils.getText('settings.permissionRequired');
-        statusBarSpan.style.color = 'var(--color-warning)';
-    }
-},
+        if (p === "granted") {
+            statusBarSpan.textContent = Utils.getText('notifications.alertsEnabled');
+            statusBarSpan.style.color = 'var(--color-success)';
+        } else if (p === "denied") {
+            statusBarSpan.textContent = Utils.getText('notifications.alertsDisabled');
+            statusBarSpan.style.color = 'var(--color-danger)';
+        } else {
+            statusBarSpan.textContent = Utils.getText('settings.permissionRequired');
+            statusBarSpan.style.color = 'var(--color-warning)';
+        }
+    },
 
-    /**
-     * Aplica las traducciones a todos los elementos estáticos de la UI.
-     * Esta función debe ser llamada solo cuando el idioma cambia.
-     */
     applyLanguage: function () {
         if (!App.state.i18n || Object.keys(App.state.i18n).length === 0) return;
 
@@ -1755,29 +1777,25 @@ async openAccountModal() {
             if (text !== key) el.textContent = text;
         });
 
-        // Actualiza los paneles abiertos si los hay
         if (App.state.currentOpenEventId) {
             this.openEventDetailsPanel(App.state.currentOpenEventId);
         }
         if (App.state.currentOpenWeeklyId) {
-        // Comprobamos si el ID corresponde a un Héroe de la Semana
-        const isHeroOfTheWeek = App.state.allHeroWeekData.some(e => e.id === App.state.currentOpenWeeklyId);
-        
-        if (isHeroOfTheWeek) {
-            this.openHeroOfTheWeekDetailsPanel(App.state.currentOpenWeeklyId);
-        } else {
-            this.openWeeklyDetailsPanel(App.state.currentOpenWeeklyId);
+            const isHeroOfTheWeek = App.state.allHeroWeekData.some(e => e.id === App.state.currentOpenWeeklyId);
+            
+            if (isHeroOfTheWeek) {
+                this.openHeroOfTheWeekDetailsPanel(App.state.currentOpenWeeklyId);
+            } else {
+                this.openWeeklyDetailsPanel(App.state.currentOpenWeeklyId);
+            }
         }
-    }
     },
     
     populateSelects: function() {
-        // Llenar selector de zona horaria
         for (let i = 14; i >= -12; i--) {
             const offset = `${i >= 0 ? '+' : '-'}${String(Math.abs(i)).padStart(2, '0')}:00`;
             App.dom.timezoneSelect.add(new Option(`UTC ${offset}`, offset));
         }
-        // Llenar selector de idioma
         App.dom.languageSelect.innerHTML = `<option value="es">Español</option><option value="en">English</option>`;
     }
 };
