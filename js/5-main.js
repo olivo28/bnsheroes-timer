@@ -494,7 +494,16 @@ import UI from './3-ui.js';
 
             // Si el idioma cambió, llamamos a nuestra nueva función para aplicar los cambios de texto
             if (languageChanged) {
-                UI.applyLanguage();
+                // 1. Aplica las traducciones a los textos estáticos
+                UI.applyLanguage(); 
+                
+                // 2. IMPORTANTE: Regenera los selects (dropdowns) con el nuevo idioma
+                UI.populateSelects(); 
+
+                // 3. IMPORTANTE PARA MÓVIL: Si existe Swiper, actualiza su layout
+                if (App.state.isMobile && App.state.swiper) {
+                    App.state.swiper.update();
+                }
             }
 
             // Actualizamos el resto de la UI (relojes, timers, etc.)
