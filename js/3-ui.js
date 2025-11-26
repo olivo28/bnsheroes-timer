@@ -594,19 +594,12 @@ renderStreamsModal: function (streams, now) {
 },
 
     // REEMPLAZA tu función openEventDetailsPanel completa con esta versión
-    // EN: js/3-ui.js
-
-    // REEMPLAZA esta función completa en js/3-ui.js
-    // REEMPLAZA esta función completa en js/3-ui.js
-// REEMPLAZA esta función completa en js/3-ui.js
 openEventDetailsPanel: function (eventId) {
     this.closeAllDetailsPanels();
     const lang = App.state.config.language;
 
     // --- 1. OBTENCIÓN DE DATOS DEL EVENTO ---
-    // Busca la configuración del evento en la lista principal para obtener la ID correcta (que es la clave del objeto).
     const eventConfig = App.state.config.events.find(e => e.id === eventId);
-    // Usa esa ID para obtener los datos detallados del evento del objeto principal.
     const eventData = eventConfig ? App.state.allEventsData.events[eventConfig.id] : null;
 
     if (!eventData) {
@@ -638,24 +631,22 @@ openEventDetailsPanel: function (eventId) {
 
     // --- 3. FUNCIONES AUXILIARES DE RENDERIZADO ---
     const getRarityClass = (rank) => rank ? `rarity-text-${rank.toLowerCase()}` : 'rarity-text-common';
-    const getItemGridDisplay = (itemId, quantity, rank = '', probability = null) => {
+    
+    const getItemGridDisplay = (itemId, quantity, rank = '') => {
         const itemDef = App.state.allItemsData[itemId];
         if (!itemDef || !itemDef.icon) return '';
         const name = itemDef.name[lang] || itemDef.name.en || itemId;
         const sizeClass = (itemDef.size && itemDef.size.trim().toLowerCase() === 'double') ? 'double-width' : '';
         const rankClass = rank ? ` rank-${rank.toLowerCase()}` : ' rank-common';
-        let probabilityHTML = '';
-        if (typeof probability === 'number' && !isNaN(probability)) {
-            probabilityHTML = `<span class="reward-probability">${probability.toFixed(1)}%</span>`;
-        }
+        
         return `<div class="reward-item-wrapper" title="${name} x${quantity}">
-                ${probabilityHTML}
                 <div class="reward-grid-item ${sizeClass}${rankClass}">
                     <img src="assets/items/${itemDef.icon}.png" class="reward-icon" alt="${name}">
                     <span class="reward-quantity">${quantity}</span>
                 </div>
             </div>`;
     };
+
     const generateRewardTextList = (rewards) => {
         if (!rewards || rewards.length === 0) return '';
         let listHTML = '<ul class="details-reward-list">';
@@ -691,12 +682,6 @@ openEventDetailsPanel: function (eventId) {
 
     // --- 5. RENDERIZADO DE SECCIONES ESPECÍFICAS DEL EVENTO ---
 
-    /**
-     * Renders: Eventos con misiones diarias organizadas por pestañas.
-     * Soporta pestañas por número de día (`day: 1`) o por fecha (`date: "2025-10-31"`).
-     * Structure: "daily_missions": [ { "day": 1, "missions": [...] }, { "date": "...", "missions": [...] } ]
-     * Examples: Halloween Countdown Mission, Flash Halloween Weekend Event
-     */
     if (eventData.daily_missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyMissionsTitle')}</h3><div class="tabs-nav">`;
         eventData.daily_missions.forEach((data, index) => {
@@ -717,11 +702,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    /**
-     * Renders: Eventos con misiones agrupadas por categorías en pestañas.
-     * Structure: "mission_categories": [ { "category_name": {...}, "missions": [...] } ]
-     * Example: The Journey Begins: Follow the Stars
-     */
     if (eventData.mission_categories) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionCategoriesTitle')}</h3><div class="tabs-nav">`;
         eventData.mission_categories.forEach((category, index) => {
@@ -739,25 +719,21 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    /**
-     * Renders: Eventos de inicio de sesión diario con recompensas por fecha.
-     * Structure: "daily_login_rewards": [ { "date": "...", "rewards": [...] } ]
-     * Example: Prepare for the Hogshead Hamlet Update
-     */
-    if (eventData.daily_login_rewards) {
+    const loginRewards = eventData.rewards?.daily_login_rewards || eventData.daily_login_rewards;
+    if (loginRewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.dailyLoginTitle')}</h3><div class="details-reward-grid-container">`;
-        eventData.daily_login_rewards.forEach(item => {
-            const dateLabel = luxon.DateTime.fromISO(item.date).setLocale(lang).toFormat('d MMMM');
-            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${dateLabel}</span><div class="reward-grid">${item.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
+        loginRewards.forEach(item => {
+            let label;
+            if (item.day) {
+                label = `${Utils.getText('events.day')} ${item.day}`;
+            } else if (item.date) {
+                label = luxon.DateTime.fromISO(item.date).setLocale(lang).toFormat('d MMMM');
+            }
+            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${label}</span><div class="reward-grid">${item.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div></div>`;
         });
         contentHTML += `</div></div>`;
     }
     
-    /**
-     * Renders: Eventos que bonifican el sistema de "Requests".
-     * Structure: "rewards": { "request_bonus": { "special_drops": [...], "reward_modifier": {...} } }
-     * Example: Hidden Dragons' Halloween Special Request
-     */
     if (eventData.rewards?.request_bonus) {
         const bonus = eventData.rewards.request_bonus;
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.requestBonusTitle')}</h3>`;
@@ -776,12 +752,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div>`;
     }
     
-    /**
-     * Renders: Eventos con una lista simple de misiones (sin contador, sin pestañas).
-     * Structure: "missions": [ { "description": {...}, "rewards": [...] } ]
-     * Note: Maneja de forma segura misiones que no tienen recompensas directas.
-     * Examples: The Grand Candy Heist, Monster Busters Halloween
-     */
     if (eventData.missions && !eventData.daily_missions && !eventData.mission_categories) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsTitle')}</h3><table class="details-table missions-table"><tbody>`;
         eventData.missions.forEach(m => {
@@ -791,13 +761,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</tbody></table></div>`;
     }
     
-    /**
-     * Renders: Recompensas por completar un número acumulado de misiones.
-     * Soporta dos formatos de JSON para flexibilidad.
-     * Structure 1: "cumulative_missions": [ { "condition": ..., "itemId": ..., "quantity": ... } ]
-     * Structure 2: "cumulative_missions": [ { "condition": ..., "rewards": [ {...} ] } ]
-     * Examples: Halloween Countdown Mission (Structure 1), The Journey Begins: Follow the Stars (Structure 2)
-     */
     if (eventData.rewards?.cumulative_missions) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeMissionsTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.rewards.cumulative_missions.forEach(rewardData => {
@@ -807,11 +770,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    /**
-     * Renders: Recompensas por completar puzles.
-     * Structure: "rewards": { "puzzle_completion": [ { "description": {...}, "rewards": [...] } ] }
-     * Examples: Trick or Treat Puzzle Event, Black Rose Blooms in the Night
-     */
     if (eventData.rewards?.puzzle_completion) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.puzzleCompletionTitle')}</h3><div class="puzzle-rewards-container">`;
         eventData.rewards.puzzle_completion.forEach(puzzle => {
@@ -820,11 +778,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    /**
-     * Renders: Eventos de sistema de puntos donde se ganan puntos por acciones.
-     * Structure: "point_system": { "cost_per_claim": ..., "missions": [ { "description": ..., "points": ... } ] }
-     * Example: Halloween Raid Event
-     */
     if (eventData.point_system) {
         const ps = eventData.point_system;
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.pointSystemTitle')}</h3>`;
@@ -833,14 +786,13 @@ openEventDetailsPanel: function (eventId) {
         ps.missions.forEach(mission => {
             contentHTML += `<tr><td>${mission.description[lang]}</td><td class="points-col">+${mission.points}</td></tr>`;
         });
-        contentHTML += `</tbody></table></div>`;
+        contentHTML += `</tbody></table>`;
+        if (eventData.rewards?.mission_completion_reward) {
+             contentHTML += `<h4>${Utils.getText('events.rewards.claimRewardTitle')}</h4><div class="reward-grid">${eventData.rewards.mission_completion_reward.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>`;
+        }
+        contentHTML += `</div>`;
     }
     
-    /**
-     * Renders: Una tienda de intercambio donde se usa una moneda de evento.
-     * Structure: "rewards": { "exchange_shop": [ { "itemId": ..., "cost": ..., "limit": ... } ] }
-     * Example: The Grand Candy Heist
-     */
     if (eventData.rewards?.exchange_shop) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.exchangeShopTitle')}</h3><table class="details-table exchange-shop-table"><tbody>`;
         const currencyItemId = eventData.missions?.[0]?.rewards?.[0]?.itemId;
@@ -863,24 +815,28 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</tbody></table></div>`;
     }
     
-    /**
-     * Renders: Una lista simple de misiones y recompensas en formato de cuadrícula.
-     * Structure: "missions_and_rewards": [ { "mission": {...}, "itemId": ..., "quantity": ... } ]
-     * Examples: Ukapong's Hidden Challenge, Witch Soha's Growth Magic!
-     */
-    if (eventData.missions_and_rewards) {
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
-        eventData.missions_and_rewards.forEach(m => {
-            contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${getItemGridDisplay(m.itemId, m.quantity, m.rank)}</div>`;
-        });
-        contentHTML += `</div></div>`;
+    const missions = eventData.rewards?.missions_and_rewards || eventData.missions_and_rewards;
+    if (missions) {
+        const firstEntry = missions[0];
+        if (firstEntry && firstEntry.condition && firstEntry.rewards) {
+             contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
+             missions.forEach(m => {
+                 contentHTML += `<div class="details-reward-column">
+                     <span class="details-reward-label">${m.condition[lang]}</span>
+                     <div class="reward-grid">${m.rewards.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>
+                 </div>`;
+             });
+             contentHTML += `</div></div>`;
+        } 
+        else if (firstEntry && firstEntry.mission && firstEntry.itemId) {
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.missionsAndRewardsTitle')}</h3><div class="details-reward-grid-container">`;
+            missions.forEach(m => {
+                contentHTML += `<div class="details-reward-column"><span class="details-reward-label">${m.mission[lang]}</span>${getItemGridDisplay(m.itemId, m.quantity, m.rank)}</div>`;
+            });
+            contentHTML += `</div></div>`;
+        }
     }
     
-    /**
-     * Renders: Recompensas de clasificación para un jefe de campo.
-     * Structure: "boss_details": { "ranking_rewards": { "base_on_participation": ..., "bonus_by_rank": [...] } }
-     * Example: Field Boss Challenge
-     */
     if (eventData.boss_details?.ranking_rewards) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.bossRankingTitle')}</h3>`;
         const participation = eventData.boss_details.ranking_rewards.base_on_participation;
@@ -898,11 +854,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div>`;
     }
     
-    /**
-     * Renders: Las recompensas de una ruleta (gacha). Muestra ítems y sus probabilidades.
-     * Structure: "rewards": { "wheel_of_fate": [ { "itemId": ..., "probability": ... } ] }
-     * Examples: Halloween Wheel of Fate, Field Boss Challenge
-     */
     if (eventData.rewards?.wheel_of_fate) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.wheelTitle')}</h3>`;
         contentHTML += `<div class="reward-grid">${eventData.rewards.wheel_of_fate.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
@@ -910,11 +861,6 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div>`;
     }
     
-    /**
-     * Renders: Recompensas acumuladas por girar una ruleta un número de veces.
-     * Structure: "rewards": { "cumulative_spins": [ { "condition": {...}, "itemId": ... } ] }
-     * Examples: Halloween Wheel of Fate, Field Boss Challenge
-     */
     if (eventData.rewards?.cumulative_spins) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.cumulativeTitle')}</h3><div class="details-reward-grid-container">`;
         eventData.rewards.cumulative_spins.forEach(r => {
@@ -923,16 +869,27 @@ openEventDetailsPanel: function (eventId) {
         contentHTML += `</div></div>`;
     }
     
-    /**
-     * Renders: Una "piscina" de recompensas posibles de una fuente aleatoria (no una ruleta).
-     * Structure: "rewards": { "reward_pool": [ { "itemId": ..., "probability": ... } ] }
-     * Examples: Monster Busters Halloween, Unlimited Skill Growth Chance
-     */
     if (eventData.rewards?.reward_pool) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.possibleTitle')}</h3>`;
         contentHTML += `<div class="reward-grid">${eventData.rewards.reward_pool.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank, r.probability)).join('')}</div>`;
         contentHTML += generateRewardTextList(eventData.rewards.reward_pool);
         contentHTML += `</div>`;
+    }
+
+    if (eventData.rewards?.box_contents) {
+        const boxes = eventData.rewards.box_contents;
+        for (const boxId in boxes) {
+            if (Object.hasOwnProperty.call(boxes, boxId)) {
+                const boxDef = App.state.allItemsData[boxId];
+                const boxName = boxDef ? (boxDef.name[lang] || boxDef.name.en) : boxId.replace(/_/g, ' ');
+                const itemsInside = boxes[boxId];
+                
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('events.rewards.boxContentsTitle', { boxName: boxName })}</h3>`;
+                contentHTML += `<div class="reward-grid">${itemsInside.map(r => getItemGridDisplay(r.itemId, r.quantity, r.rank)).join('')}</div>`;
+                contentHTML += generateRewardTextList(itemsInside);
+                contentHTML += `</div>`;
+            }
+        }
     }
 
     // --- 6. CIERRE Y RENDERIZADO FINAL ---
@@ -942,7 +899,6 @@ openEventDetailsPanel: function (eventId) {
     if (App.state.isMobile) document.body.classList.add('no-scroll');
     App.state.currentOpenEventId = eventId;
 
-    // Añade listeners para las pestañas si existen en el contenido renderizado.
     const tabsNav = App.dom.eventDetailsPanel.querySelector('.tabs-nav');
     if (tabsNav) {
         tabsNav.addEventListener('click', e => {
@@ -956,6 +912,7 @@ openEventDetailsPanel: function (eventId) {
         });
     }
 },
+
 
     closeEventDetailsPanel: function () {
         if (!App.dom.eventDetailsPanel) return;
@@ -1015,36 +972,27 @@ openWeeklyDetailsPanel: function (weeklyId) {
 
     if (eventData.chosenBuffs) {
         contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.chosenBuffsTitle')}</h3>`;
-
         const arrowSVG = `<svg class="expand-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-
         eventData.chosenBuffs.forEach((buff, index) => {
             const hasEnhancements = buff.enhancements && buff.enhancements.length > 0;
             const expandableClass = hasEnhancements ? ' expandable' : '';
-
             contentHTML += `<div class="weekly-buff-item${expandableClass}">
                       <img src="assets/spells_icons/${buff.icon}.png">
                       <div><strong>${buff.name[lang]}</strong><p>${buff.description[lang]}</p></div>
                       ${hasEnhancements ? arrowSVG : ''}
                     </div>`;
-
             if (hasEnhancements) {
                 contentHTML += `<div class="weekly-enhancements-list">`;
-                    contentHTML += `<p class="enhancements-title">${Utils.getText('weekly.enhancementsTitle')}</p>`;
+                contentHTML += `<p class="enhancements-title">${Utils.getText('weekly.enhancementsTitle')}</p>`;
                 buff.enhancements.forEach(enh => {
-                    contentHTML += `<div class="weekly-enhancement-item">
-                              <strong>${enh.name[lang]}</strong>
-                              <p>${enh.description[lang]}</p>
-                            </div>`;
+                    contentHTML += `<div class="weekly-enhancement-item"><strong>${enh.name[lang]}</strong><p>${enh.description[lang]}</p></div>`;
                 });
                 contentHTML += `</div>`;
             }
-
             if (index < eventData.chosenBuffs.length - 1) {
                 contentHTML += '<hr class="weekly-buff-separator">';
             }
         });
-
         contentHTML += `</div>`;
     }
 
@@ -1073,87 +1021,111 @@ openWeeklyDetailsPanel: function (weeklyId) {
         contentHTML += `</div>`;
     }
 
-    if (eventData.currentBoss) {
-        const boss = eventData.currentBoss;
-        contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.bossInfoTitle')}</h3>
-            <div class="weekly-boss-info-header">
-                <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
-                <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
-            </div>
-            <p class="details-summary">${boss.description[lang]}</p>
-        </div>`;
-
-        if (boss.recommendedHeroes?.description) {
-            contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
-            if (boss.recommendedHeroes.heroesByTag) {
-                boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
-                    contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
-                    tagGroup.heroList.forEach(hero => {
-                        const heroData = Logic.findHeroByName(hero);
-                        if (heroData) {
-                            const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
-                            contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
-                        }
-                    });
-                    contentHTML += `</div></div>`;
-                });
-            }
-            contentHTML += `</div>`;
-        }
-
-        if (boss.difficultyTiers) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.modifiersTitle')}</h3>`;
-            Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
-                contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
-                data.modifiers.forEach(mod => {
-                    contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
-                });
-                contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
-                data.progression.forEach(prog => {
-                    contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
-                });
-                contentHTML += `</table></div>`;
+    const bossesToRender = eventData.activeBosses || (eventData.currentBoss ? [eventData.currentBoss] : []);
+    
+    if (bossesToRender.length > 0) {
+        if (bossesToRender.length > 1) {
+            contentHTML += `<div class="details-section weekly-boss-tabs-nav">`;
+            bossesToRender.forEach((boss, index) => {
+                const activeClass = index === 0 ? 'active' : '';
+                contentHTML += `
+                    <button class="weekly-boss-tab ${activeClass}" data-boss-target="${boss.bossId}">
+                        <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
+                        <span>${boss.name[lang]}</span>
+                    </button>`;
             });
             contentHTML += `</div>`;
         }
 
-        if (boss.scoreRewards) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.scoreRewardsTitle')}</h3><div class="weekly-score-rewards-grid">`;
-            boss.scoreRewards.forEach(tier => {
-                const rewardItem = tier.rewards[0];
-                const itemDef = App.state.allItemsData[rewardItem.itemId];
-                const rank = rewardItem.rank || 'Common';
-                const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
+        bossesToRender.forEach((boss, index) => {
+            const activeClass = index === 0 ? 'active' : '';
+            contentHTML += `<div class="weekly-boss-content ${activeClass}" id="${boss.bossId}">`;
 
-                const iconHTML = itemDef?.icon
-                    ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}">
-                           <img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon">
-                           <span class="weekly-reward-quantity">${rewardItem.quantity}</span>
-                       </div>`
-                    : '';
-
-                contentHTML += `<div class="weekly-score-reward-column">
-                                  <span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>
-                                  ${iconHTML}
-                                </div>`;
-            });
-            contentHTML += `</div></div>`;
-        }
-
-        if (boss.tips?.length > 0) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
-            boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
-            contentHTML += `</ul></div>`;
-        }
-
-        if (eventData.nextBoss) {
-            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.nextBoss')}</h3>
-                <div class="weekly-buff-item">
-                    <img src="assets/enemies_icon/${eventData.nextBoss.icon}" alt="${eventData.nextBoss.name[lang]}">
-                    <div><strong>${eventData.nextBoss.name[lang]}</strong><p>${eventData.nextBoss.description[lang]}</p></div>
+            contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.bossInfoTitle')}</h3>
+                <div class="weekly-boss-info-header">
+                    <img src="assets/enemies_icon/${boss.enemyIcon}.png" alt="${boss.name[lang]}">
+                    <div class="boss-info-details"><h4>${boss.name[lang]}</h4><div class="weekly-stage-info-grid"><div class="weekly-stage-info-item"><span class="weekly-stage-info-label">${Utils.getText('weekly.timeLimit')}</span><div class="weekly-stage-info-value">🕒 ${boss.turnLimit} Turns</div></div></div></div>
                 </div>
-             </div>`;
-        }
+                <p class="details-summary">${boss.description[lang]}</p>
+            </div>`;
+
+            if (boss.recommendedHeroes?.description) {
+                contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
+                if (boss.recommendedHeroes.heroesByTag) {
+                    boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
+                        contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
+                        tagGroup.heroList.forEach(hero => {
+                            const heroData = Logic.findHeroByName(hero);
+                            if (heroData) {
+                                const roleIcon = heroData.role ? `<div class="hero-role-icon element-${heroData.element || 'default'}"><img class="role-icon" src="assets/roles/${heroData.role}_icon.png" alt="${heroData.role}"></div>` : '';
+                                contentHTML += `<div class="banner-hero-wrapper"><div class="banner-hero-img-container" data-hero-name="${heroData.game_name}"><div class="banner-hero-img rarity-${heroData.rarity}"><img src="assets/heroes_icon/${heroData.short_image}" alt="${heroData.game_name}"></div>${roleIcon}</div><span class="banner-hero-name">${heroData.game_name}</span></div>`;
+                            }
+                        });
+                        contentHTML += `</div></div>`;
+                    });
+                }
+                contentHTML += `</div>`;
+            }
+
+            if (boss.difficultyTiers) {
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.modifiersTitle')}</h3>`;
+                Object.entries(boss.difficultyTiers).forEach(([tier, data]) => {
+                    contentHTML += `<div class="weekly-difficulty-tier"><h4>${'★'.repeat(parseInt(tier))}</h4>`;
+                    data.modifiers.forEach(mod => {
+                        contentHTML += `<div class="weekly-modifier-item"><strong>${mod.name[lang]} (+${mod.points})</strong><p>${mod.description[lang]}</p></div>`;
+                    });
+                    contentHTML += `<table class="weekly-details-table weekly-progression-table">`;
+                    data.progression.forEach(prog => {
+                        contentHTML += `<tr><td>+${prog.modifiersSelected} mods</td><td><img src="assets/combat_power.png" class="weekly-combat-power-icon" /> ${prog.recommendedPower.toLocaleString()}</td><td>${prog.cumulativeScore.toLocaleString()} Pts</td></tr>`;
+                    });
+                    contentHTML += `</table></div>`;
+                });
+                contentHTML += `</div>`;
+            }
+
+            if (boss.scoreRewards) {
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.scoreRewardsTitle')}</h3><div class="weekly-score-rewards-grid">`;
+                boss.scoreRewards.forEach(tier => {
+                    const rewardItem = tier.rewards[0];
+                    const itemDef = App.state.allItemsData[rewardItem.itemId];
+                    const rank = rewardItem.rank || 'Common';
+                    const name = itemDef ? itemDef.name[lang] : rewardItem.itemId;
+                    const iconHTML = itemDef?.icon ? `<div class="weekly-score-reward-item rank-${rank.toLowerCase()}" title="${name} x${rewardItem.quantity}"><img src="assets/items/${itemDef.icon}.png" class="weekly-reward-icon"><span class="weekly-reward-quantity">${rewardItem.quantity}</span></div>` : '';
+                    contentHTML += `<div class="weekly-score-reward-column"><span class="weekly-score-reward-points">${tier.scoreThreshold.toLocaleString()} Pts</span>${iconHTML}</div>`;
+                });
+                contentHTML += `</div></div>`;
+            }
+
+            if (boss.tips?.length > 0) {
+                contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
+                boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
+                contentHTML += `</ul></div>`;
+            }
+            
+            contentHTML += `</div>`;
+        });
+    }
+
+        const upcomingBosses = eventData.nextBosses || (eventData.nextBoss ? [eventData.nextBoss] : []);
+
+    if (upcomingBosses.length > 0) {
+        const titleKey = upcomingBosses.length > 1 ? 'weekly.nextBosses' : 'weekly.nextBoss';
+        contentHTML += `<div class="details-section"><h3>${Utils.getText(titleKey)}</h3>`;
+
+        upcomingBosses.forEach((boss, index) => {
+            contentHTML += `
+                <div class="weekly-buff-item">
+                    <img src="assets/enemies_icon/${boss.icon}" alt="${boss.name[lang]}">
+                    <div><strong>${boss.name[lang]}</strong><p>${boss.description[lang]}</p></div>
+                </div>`;
+            
+            // Añadir un separador si no es el último jefe de la lista
+            if (index < upcomingBosses.length - 1) {
+                contentHTML += '<hr class="weekly-buff-separator">';
+            }
+        });
+
+        contentHTML += `</div>`;
     }
 
     contentHTML += `</div>`;
@@ -1161,6 +1133,32 @@ openWeeklyDetailsPanel: function (weeklyId) {
     App.dom.weeklyDetailsPanel.classList.add('visible');
     if (App.state.isMobile) document.body.classList.add('no-scroll');
     App.state.currentOpenWeeklyId = weeklyId;
+
+    const bossTabsNav = App.dom.weeklyDetailsPanel.querySelector('.weekly-boss-tabs-nav');
+    if (bossTabsNav) {
+        bossTabsNav.addEventListener('click', e => {
+            const tabButton = e.target.closest('.weekly-boss-tab');
+            if (tabButton) {
+                const bossId = tabButton.dataset.bossTarget;
+                
+                bossTabsNav.querySelectorAll('.weekly-boss-tab').forEach(btn => btn.classList.remove('active'));
+                tabButton.classList.add('active');
+
+                App.dom.weeklyDetailsPanel.querySelectorAll('.weekly-boss-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(bossId).classList.add('active');
+            }
+        });
+    }
+    
+    App.dom.weeklyDetailsPanel.querySelectorAll('.weekly-buff-item.expandable').forEach(item => {
+        item.addEventListener('click', () => {
+            item.classList.toggle('expanded');
+            const enhancementsList = item.nextElementSibling;
+            if (enhancementsList && enhancementsList.classList.contains('weekly-enhancements-list')) {
+                enhancementsList.style.display = item.classList.contains('expanded') ? 'block' : 'none';
+            }
+        });
+    });
 },
 
     /** Cierra el panel de detalles del evento semanal. */
