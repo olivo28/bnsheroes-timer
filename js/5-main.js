@@ -471,74 +471,54 @@ import UI from './3-ui.js';
 
             const languageChanged = newConfig.language !== App.state.config.language;
 
-            // 2. Si cambió el idioma, traemos el nuevo JSON (FETCH)
+            // 2. Carga del nuevo idioma (Igual que antes)
             if (languageChanged) {
-                // Indicador visual de carga en el botón (opcional pero recomendado)
-                const originalBtnText = App.dom.saveSettingsBtn.textContent;
-                App.dom.saveSettingsBtn.textContent = "...";
-                App.dom.saveSettingsBtn.disabled = true;
-
                 try {
                     const newTranslations = await Logic.fetchLocaleData(newConfig.language);
                     if (newTranslations) {
-                        App.state.i18n = newTranslations; // Actualizamos el estado global
+                        App.state.i18n = newTranslations;
                         Utils.setCookie('userLanguage', newConfig.language, 365);
-                    } else {
-                        throw new Error("Traducción vacía");
                     }
                 } catch (err) {
                     console.error("Error cargando idioma:", err);
-                    alert("Error loading language.");
-                    App.dom.saveSettingsBtn.textContent = originalBtnText;
-                    App.dom.saveSettingsBtn.disabled = false;
-                    return; // Cancelamos si falla la red
+                    return; 
                 }
-                
-                // Restauramos el botón
-                App.dom.saveSettingsBtn.textContent = originalBtnText;
-                App.dom.saveSettingsBtn.disabled = false;
             }
 
-            // 3. Guardamos la configuración y cerramos modal
+            // 3. Guardar configuración
             App.state.config = { ...App.state.config, ...newConfig };
             Logic.saveUserPreferences(App.state.config);
             UI.closeSettingsModal();
 
-            // 4. LÓGICA DE ACTUALIZACIÓN VISUAL (SPA)
+            // 4. LÓGICA CRÍTICA PARA REFRESCAR LA SPA
             if (languageChanged) {
-                // A) Llamada estándar (por si acaso)
-                UI.applyLanguage();
+                // A) Reiniciamos las banderas de caché.
+                // Esto fuerza a 'updateAll' a entrar en los IFs y regenerar el HTML traducido.
+                App.state.lastRenderedBannerIds = null;
+                App.state.lastRenderedEventIds = null;
+                App.state.lastRenderedWeeklyIds = null;
+                App.state.lastRenderedBossIds = null;
+                App.state.lastRenderedPrimaryTimers = null; // Asumo que usas este para el panel principal
+                App.state.lastShowSecondaryPanel = null;
 
-                // B) Regenerar selects (Esto arregla los desplegables que se quedan en el idioma anterior)
+                // B) Regeneramos los selects (para que se traduzcan las opciones)
                 UI.populateSelects();
 
-                // C) FORZADO MANUAL DE TEXTOS (El arreglo clave)
-                // Recorremos todo el DOM buscando elementos con [data-i18n] y los actualizamos a la fuerza.
-                // Esto soluciona el problema de elementos movidos por el Swiper o referencias perdidas.
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const key = el.dataset.i18n;
-                    // Usamos Utils.getText si existe, o accedemos directamente al objeto i18n
-                    // Asumo que Utils.getText hace el trabajo de buscar 'settings.title' dentro del objeto.
-                    const text = Utils.getText(key); 
-                    
-                    if (text) {
-                        if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
-                            el.placeholder = text;
-                        } else {
-                            // Usamos textContent para texto plano, innerHTML si tus traducciones tienen negritas/html
-                            el.innerHTML = text; 
-                        }
-                    }
-                });
-
-                // D) Actualizar Swiper (necesario si el texto cambió de tamaño)
-                if (App.state.isMobile && App.state.swiper) {
-                    App.state.swiper.update();
-                }
+                // C) Actualizamos idioma de textos sueltos
+                UI.applyLanguage(); 
             }
 
-            // 5. Actualizar timers y datos dinámicos
+            // 5. Llamamos a updateAll
+            // Al haber puesto las variables anteriores a null, updateAll regenerará todo el HTML con el nuevo idioma.
             UI.updateAll();
+            
+            // 6. Fix para móvil (Swiper)
+            // Lo hacemos después del updateAll para que recalcule con el nuevo tamaño del HTML
+            if (App.state.isMobile && App.state.swiper) {
+                setTimeout(() => {
+                    App.state.swiper.update();
+                }, 50); // Un pequeño delay para asegurar que el DOM ya cambió
+            }
         });
 
         document.getElementById('save-sync-btn').addEventListener('click', () => {
@@ -586,7 +566,6 @@ import UI from './3-ui.js';
             Logic.saveUserPreferences({ use24HourFormat: App.state.config.use24HourFormat });
             UI.updateAll();
         });
-
 
 
         App.dom.testNotificationBtn.addEventListener('click', async () => {
