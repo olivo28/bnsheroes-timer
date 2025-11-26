@@ -440,6 +440,7 @@ import UI from './3-ui.js';
         document.getElementById('streams-modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) document.getElementById('streams-modal-overlay').classList.remove('visible'); });
 
         App.dom.saveSettingsBtn.addEventListener('click', async () => {
+            // 1. Recolección de datos (Igual que antes)
             const reminderSettings = {
                 eventDailies: {
                     enabled: document.getElementById('event-dailies-reminder-toggle').checked,
@@ -470,48 +471,75 @@ import UI from './3-ui.js';
 
             const languageChanged = newConfig.language !== App.state.config.language;
 
-            // Si el idioma cambió, cargamos los nuevos datos de traducción
+            // 2. Si cambió el idioma, traemos el nuevo JSON (FETCH)
             if (languageChanged) {
-                const newTranslations = await Logic.fetchLocaleData(newConfig.language);
-                if (newTranslations) {
-                    App.state.i18n = newTranslations;
-                    Utils.setCookie('userLanguage', newConfig.language, 365);
-                } else {
-                    console.error("No se pudo cargar el nuevo idioma. No se guardaron los cambios.");
-                    alert("Error: Could not load the new language. Settings were not saved."); // Opcional: alerta al usuario
-                    return;
+                // Indicador visual de carga en el botón (opcional pero recomendado)
+                const originalBtnText = App.dom.saveSettingsBtn.textContent;
+                App.dom.saveSettingsBtn.textContent = "...";
+                App.dom.saveSettingsBtn.disabled = true;
+
+                try {
+                    const newTranslations = await Logic.fetchLocaleData(newConfig.language);
+                    if (newTranslations) {
+                        App.state.i18n = newTranslations; // Actualizamos el estado global
+                        Utils.setCookie('userLanguage', newConfig.language, 365);
+                    } else {
+                        throw new Error("Traducción vacía");
+                    }
+                } catch (err) {
+                    console.error("Error cargando idioma:", err);
+                    alert("Error loading language.");
+                    App.dom.saveSettingsBtn.textContent = originalBtnText;
+                    App.dom.saveSettingsBtn.disabled = false;
+                    return; // Cancelamos si falla la red
                 }
+                
+                // Restauramos el botón
+                App.dom.saveSettingsBtn.textContent = originalBtnText;
+                App.dom.saveSettingsBtn.disabled = false;
             }
 
-            // Actualizamos el estado de la aplicación con toda la nueva configuración
+            // 3. Guardamos la configuración y cerramos modal
             App.state.config = { ...App.state.config, ...newConfig };
-
-            // Guardamos las preferencias
             Logic.saveUserPreferences(App.state.config);
-
-            // Cerramos el modal de configuración
             UI.closeSettingsModal();
 
-            // Si el idioma cambió, llamamos a nuestra nueva función para aplicar los cambios de texto
+            // 4. LÓGICA DE ACTUALIZACIÓN VISUAL (SPA)
             if (languageChanged) {
-                // 1. Aplica las traducciones a los textos estáticos
-                UI.applyLanguage(); 
-                
-                // 2. IMPORTANTE: Regenera los selects (dropdowns) con el nuevo idioma
-                UI.populateSelects(); 
+                // A) Llamada estándar (por si acaso)
+                UI.applyLanguage();
 
-                // 3. IMPORTANTE PARA MÓVIL: Si existe Swiper, actualiza su layout
+                // B) Regenerar selects (Esto arregla los desplegables que se quedan en el idioma anterior)
+                UI.populateSelects();
+
+                // C) FORZADO MANUAL DE TEXTOS (El arreglo clave)
+                // Recorremos todo el DOM buscando elementos con [data-i18n] y los actualizamos a la fuerza.
+                // Esto soluciona el problema de elementos movidos por el Swiper o referencias perdidas.
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.dataset.i18n;
+                    // Usamos Utils.getText si existe, o accedemos directamente al objeto i18n
+                    // Asumo que Utils.getText hace el trabajo de buscar 'settings.title' dentro del objeto.
+                    const text = Utils.getText(key); 
+                    
+                    if (text) {
+                        if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
+                            el.placeholder = text;
+                        } else {
+                            // Usamos textContent para texto plano, innerHTML si tus traducciones tienen negritas/html
+                            el.innerHTML = text; 
+                        }
+                    }
+                });
+
+                // D) Actualizar Swiper (necesario si el texto cambió de tamaño)
                 if (App.state.isMobile && App.state.swiper) {
                     App.state.swiper.update();
                 }
             }
 
-            // Actualizamos el resto de la UI (relojes, timers, etc.)
+            // 5. Actualizar timers y datos dinámicos
             UI.updateAll();
-
         });
-
-
 
         document.getElementById('save-sync-btn').addEventListener('click', () => {
             const h = parseInt(document.getElementById('sync-hours').value) || 0;
