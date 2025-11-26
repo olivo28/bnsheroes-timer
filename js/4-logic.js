@@ -150,7 +150,7 @@ const Logic = {
      */
     async fetchLocaleData(locale) {
         try {
-            const response = await fetch(`${this.BACKEND_URL}/api/data/i18n/${locale}`);
+            const response = await fetch(`${this.BACKEND_URL}/api/data/i18n/${locale}`, { cache: 'no-cache' });
             if (!response.ok) throw new Error('Network response was not ok');
             return await response.json();
         } catch (error) {

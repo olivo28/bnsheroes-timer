@@ -61,7 +61,7 @@ import UI from './3-ui.js';
             const loadStartTime = Date.now();
 
             const fetchData = async (url) => {
-                const response = await fetch(url);
+                const response = await fetch(url, { cache: 'no-cache' });
                 if (!response.ok) {
                     throw new Error(`Error de red al cargar ${url}: ${response.status} ${response.statusText}`);
                 }
