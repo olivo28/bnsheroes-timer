@@ -43,6 +43,8 @@ const App = {
         lastRenderedWeeklyIds: '',
         lastShowSecondaryPanel: null,
         lastRenderedPrimaryTimers: '', 
+        currentAudio: null, // Para rastrear el audio que está sonando
+        currentAudioTimeout: null, // Para rastrear el temporizador de 10s
     },
 
     // Referencias a elementos del DOM
@@ -105,7 +107,8 @@ const App = {
     },
 
     // Otros recursos globales
-    alertSound: new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg'),
+        alertSound: new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg'),
+
 
     /**
      * Puebla el objeto App.dom con referencias a los elementos del DOM.

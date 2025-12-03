@@ -46,11 +46,16 @@ const Logic = {
             localStorage.setItem('pending_timezone_for_new_user', App.state.config.displayTimezone);
         }
 
-        // ESTA LÍNEA DEBE COINCIDIR EXACTAMENTE CON LA DEL PORTAL DE DISCORD
-        const REDIRECT_URI = this.BACKEND_URL + '/api/auth/discord/callback'; // Ej: http://localhost:3001/api/auth/discord/callback
+        const REDIRECT_URI = this.BACKEND_URL + '/api/auth/discord/callback';
         const scope = 'identify email';
 
-        const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${publicConfig.discordClientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${scope}`;
+        // --- CAMBIO AQUÍ: Capturamos el origen actual (ej. http://localhost:8080) ---
+        // Usamos encodeURIComponent para que sea seguro enviarlo en la URL
+        const state = encodeURIComponent(window.location.origin); 
+
+        // --- CAMBIO AQUÍ: Agregamos &state=${state} a la URL ---
+        const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${publicConfig.discordClientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${scope}&state=${state}`;
+        
         window.location.href = authUrl;
     },
 
@@ -735,6 +740,154 @@ const Logic = {
         imageUrl: heroData ? `assets/heroes_icon/${heroData.short_image}` : 'assets/wimp_default.jpg'
     };
 },
+
+async fetchReminders() {
+        const token = this.getSessionToken();
+        if (!token) return { reminders: [], maxReminders: 3, isSupporter: false };
+        try {
+            const res = await fetch(`${this.BACKEND_URL}/api/reminders`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            return await res.json();
+        } catch (e) { return { reminders: [], maxReminders: 3 }; }
+    },
+
+    async uploadSound(file) {
+        const token = this.getSessionToken();
+        const formData = new FormData();
+        formData.append('soundFile', file);
+        
+        const res = await fetch(`${this.BACKEND_URL}/api/reminders/upload-sound`, {
+            method: 'POST',
+            body: formData,
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await res.json(); // Retorna { filename: '...' }
+    },
+
+    async createReminder(data) {
+        const token = this.getSessionToken();
+        await fetch(`${this.BACKEND_URL}/api/reminders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(data)
+        });
+    },
+
+    async deleteReminder(id) {
+        const token = this.getSessionToken();
+        await fetch(`${this.BACKEND_URL}/api/reminders/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    },
+
+    async toggleReminder(id, enabled) {
+        const token = this.getSessionToken();
+        await fetch(`${this.BACKEND_URL}/api/reminders/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ enabled })
+        });
+    },
+
+    // --- FUNCIÓN DE CHECKEO (Para llamar en el loop principal) ---
+    checkCustomReminders(now) {
+        if (!App.state.userReminders) return;
+
+        // 1. Obtener hora y minutos asegurando 2 dígitos (ej: "09", "05")
+        // Usamos la hora local del dispositivo (o la ajustada por getCorrectedNow)
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const currentHM = `${h}:${m}`;
+
+        const currentSeconds = now.getSeconds();
+
+        // 2. Control de ejecución:
+        // Si el segundo es mayor a 5, no hacemos nada (para no spamear)
+        // Pero damos un margen de 5 segundos por si el navegador estaba lento
+        if (currentSeconds > 5) return; 
+
+        App.state.userReminders.forEach(rem => {
+            // Depuración: Descomenta esto si sigue fallando para ver qué compara
+            // console.log(`Comparando: Recordatorio(${rem.time}) vs Actual(${currentHM})`);
+
+            if (rem.enabled && rem.time === currentHM) {
+                // Crear una ID única para este disparo (ID + Fecha + Hora)
+                // Esto evita que suene múltiples veces en el mismo minuto
+                const triggerId = `rem_${rem.id}_${now.toDateString()}_${currentHM}`;
+                
+                // Si ya sonó en este minuto exacto, salir
+                if (App.state.alertsShownToday[triggerId]) return;
+
+                console.log(`⏰ ¡ALARMA DISPARADA! -> ${rem.label}`);
+                
+                // Marcar como mostrada ANTES de ejecutar para evitar condiciones de carrera
+                App.state.alertsShownToday[triggerId] = true;
+
+                this.triggerReminderAlert(rem);
+            }
+        });
+    },
+
+    playAudio(audioObjOrUrl) {
+        // 1. Detener anterior
+        if (App.state.currentAudio) {
+            App.state.currentAudio.pause();
+            App.state.currentAudio.currentTime = 0;
+        }
+        if (App.state.currentAudioTimeout) {
+            clearTimeout(App.state.currentAudioTimeout);
+        }
+
+        if (!audioObjOrUrl) return;
+
+        // 2. Preparar nuevo
+        let newAudio;
+        if (typeof audioObjOrUrl === 'string') {
+            // Es una URL (Custom)
+            newAudio = new Audio(audioObjOrUrl);
+        } else {
+            // Es el objeto default (App.alertSound)
+            // Clonamos para evitar errores si se llama muy seguido
+            newAudio = audioObjOrUrl.cloneNode(); 
+        }
+
+        App.state.currentAudio = newAudio;
+        newAudio.volume = 0.8;
+
+        // 3. Reproducir
+        newAudio.play().catch(e => console.warn("Audio play error:", e));
+
+        // 4. Parar a los 10s
+        App.state.currentAudioTimeout = setTimeout(() => {
+            newAudio.pause();
+            newAudio.currentTime = 0;
+        }, 10000);
+    },
+
+    triggerReminderAlert(reminder) {
+        // --- PARTE 1: AUDIO ---
+        try {
+            if (reminder.soundType === 'custom' && reminder.customSoundFilename) {
+                // Sonido Custom
+                const url = `${this.BACKEND_URL}/uploads/sounds/${reminder.customSoundFilename}`;
+                this.playAudio(url);
+            } else {
+                // Sonido Default (El único que hay ahora)
+                this.playAudio(App.alertSound);
+            }
+        } catch (e) {
+            console.error("Audio error:", e);
+        }
+
+        // --- PARTE 2: NOTIFICACIÓN ---
+        this.showFullAlert(
+            reminder.label, 
+            `It's time! (${reminder.time})`, 
+            'favicon.png'
+        );
+    },
 
 };
 

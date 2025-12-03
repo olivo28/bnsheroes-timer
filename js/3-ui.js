@@ -1303,6 +1303,7 @@ closeBossDetailsPanel: function() {
     },
 
     async openAccountModal() {
+        // Traducciones
         App.dom.accountModalOverlay.querySelectorAll('[data-lang-key]').forEach(el => {
             const key = el.dataset.langKey;
             const text = Utils.getText(key);
@@ -1316,29 +1317,120 @@ closeBossDetailsPanel: function() {
         logoutButton.style.display = 'flex';
 
         const existingLoginButton = document.getElementById('login-btn-modal');
-        if (existingLoginButton) {
-            existingLoginButton.remove();
-        }
+        if (existingLoginButton) existingLoginButton.remove();
 
         if (App.state.isLoggedIn && App.state.userInfo) {
-            const { global_name, avatarUrl } = App.state.userInfo;
-            myAccountSection.querySelector('.user-profile-avatar').src = avatarUrl;
-            myAccountSection.querySelector('.user-profile-name').textContent = global_name;
+            const user = App.state.userInfo;
+            console.log("MODAL USER INFO:", user); // DEBUG
 
+            // --- 1. AVATAR ---
+            let avatarUrl = 'assets/wimp_default.jpg'; // Default safe
+
+            if (user.id) {
+                if (user.avatar && user.avatar !== 'null') {
+                    avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+                } else {
+                    // Calculo default
+                    try {
+                        const defaultIndex = (BigInt(user.id) >> 22n) % 6n;
+                        avatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+                    } catch(e) { console.error("Error calculando avatar default:", e); }
+                }
+            }
+
+            const avatarImg = myAccountSection.querySelector('.user-profile-avatar');
+            if (avatarImg) {
+                avatarImg.src = avatarUrl;
+                avatarImg.onerror = () => { avatarImg.src = 'assets/wimp_default.jpg'; };
+            }
+
+            const nameEl = myAccountSection.querySelector('.user-profile-name');
+            if (nameEl) {
+                nameEl.textContent = user.global_name || user.username;
+                
+                // Verificar si es Supporter y aplicar color dorado
+                if (user.isSupporter) {
+                    nameEl.classList.add('is-supporter');
+                } else {
+                    nameEl.classList.remove('is-supporter');
+                }
+            }
+
+            // --- 2. BANNER Y COLOR ---
+            const bannerEl = myAccountSection.querySelector('.user-profile-banner');
+            if (bannerEl) {
+                if (user.banner && user.banner !== 'null') {
+                    const format = user.banner.startsWith('a_') ? 'gif' : 'png';
+                    const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=512`;
+                    bannerEl.style.backgroundImage = `url('${bannerUrl}')`;
+                    bannerEl.style.backgroundColor = 'transparent';
+                } else if (user.accentColor) {
+                    const hexColor = '#' + user.accentColor.toString(16).padStart(6, '0');
+                    bannerEl.style.backgroundImage = 'none';
+                    bannerEl.style.backgroundColor = hexColor;
+                } else {
+                    bannerEl.style.backgroundImage = 'none';
+                    bannerEl.style.backgroundColor = '#5865F2'; 
+                }
+            }
+
+            // --- 3. DECORACIÓN ---
+            const decoEl = myAccountSection.querySelector('.user-avatar-decoration');
+            if (decoEl) { 
+                if (user.avatarDecoration && user.avatarDecoration !== 'null') {
+                    const format = user.avatarDecoration.startsWith('a_') ? 'gif' : 'png';
+                    const decoUrl = `https://cdn.discordapp.com/avatar-decorations/${user.id}/${user.avatarDecoration}.${format}?size=256`;
+                    decoEl.src = decoUrl;
+                    decoEl.classList.remove('hidden');
+                    decoEl.onerror = () => decoEl.classList.add('hidden');
+                } else {
+                    decoEl.src = '';
+                    decoEl.classList.add('hidden');
+                }
+            }
+
+            // --- CARGAR PREFERENCIAS ---
             const prefs = App.state.config.notificationPrefs || {};
-            document.getElementById('push-daily-reset-toggle').checked = prefs.dailyReset ?? true;
-            document.getElementById('push-showdown-ticket-toggle').checked = prefs.showdownTicket ?? true;
-            document.getElementById('push-weekly-reset-toggle').checked = prefs.weeklyResetReminder?.enabled ?? true;
-            document.getElementById('push-weekly-days-input').value = prefs.weeklyResetReminder?.daysBefore ?? 2;
-            document.getElementById('push-event-dailies-toggle').checked = prefs.eventDailiesReminder?.enabled ?? true;
-            document.getElementById('push-event-hours-input').value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
+            // (Asegúrate de que estos IDs existen en tu HTML nuevo)
+            const dailyToggle = document.getElementById('push-daily-reset-toggle');
+            if(dailyToggle) dailyToggle.checked = prefs.dailyReset ?? true;
+            
+            const ticketToggle = document.getElementById('push-showdown-ticket-toggle');
+            if(ticketToggle) ticketToggle.checked = prefs.showdownTicket ?? true;
+            
+            const weeklyToggle = document.getElementById('push-weekly-reset-toggle');
+            if(weeklyToggle) weeklyToggle.checked = prefs.weeklyResetReminder?.enabled ?? true;
+            
+            const weeklyDays = document.getElementById('push-weekly-days-input');
+            if(weeklyDays) weeklyDays.value = prefs.weeklyResetReminder?.daysBefore ?? 2;
+            
+            const eventToggle = document.getElementById('push-event-dailies-toggle');
+            if(eventToggle) eventToggle.checked = prefs.eventDailiesReminder?.enabled ?? true;
+            
+            const eventHours = document.getElementById('push-event-hours-input');
+            if(eventHours) eventHours.value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
             
             this.renderActiveSubscriptions();
             this.switchAccountModalSection('my-account');
 
         } else {
-            myAccountSection.querySelector('.user-profile-avatar').src = 'assets/wimp_default.jpg';
-            myAccountSection.querySelector('.user-profile-name').textContent = Utils.getText('common.guest');
+            // Lógica Invitado
+            const avatarImg = myAccountSection.querySelector('.user-profile-avatar');
+            if(avatarImg) avatarImg.src = 'assets/wimp_default.jpg';
+            
+            const nameEl = myAccountSection.querySelector('.user-profile-name');
+            if(nameEl) {
+                nameEl.textContent = Utils.getText('common.guest');
+                nameEl.classList.remove('is-supporter'); // Limpiar por si acaso
+            }
+            const bannerEl = myAccountSection.querySelector('.user-profile-banner');
+            if(bannerEl) {
+                bannerEl.style.backgroundImage = 'none';
+                bannerEl.style.backgroundColor = '#5865F2';
+            }
+            
+            const decoEl = myAccountSection.querySelector('.user-avatar-decoration');
+            if(decoEl) decoEl.classList.add('hidden');
 
             logoutButton.style.display = 'none';
 
@@ -1351,7 +1443,8 @@ closeBossDetailsPanel: function() {
                 </button>
             `;
             footer.insertAdjacentHTML('beforeend', loginButtonHTML);
-            document.getElementById('login-btn-modal').addEventListener('click', () => Logic.redirectToDiscordLogin());
+            const loginBtn = document.getElementById('login-btn-modal');
+            if(loginBtn) loginBtn.addEventListener('click', () => Logic.redirectToDiscordLogin());
         }
 
         this.switchAccountModalSection('my-account');
@@ -1707,11 +1800,28 @@ closeBossDetailsPanel: function() {
         let actionButtonHTML = '';
 
         if (App.state.isLoggedIn && App.state.userInfo) {
-            const { global_name, avatarUrl } = App.state.userInfo;
+            const user = App.state.userInfo;
+            // DEBUG: Ver qué llega realmente
+            console.log("WIDGET INFO:", user);
+
+            let avatarSrc = 'assets/wimp_default.jpg'; // Valor por defecto seguro
+
+            if (user.id) {
+                if (user.avatar) {
+                    avatarSrc = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+                } else {
+                    // Fallback a avatar default de Discord si no tiene custom pero si ID
+                    try {
+                        const defaultIndex = (BigInt(user.id) >> 22n) % 6n;
+                        avatarSrc = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+                    } catch (e) { console.error(e); }
+                }
+            }
+
             userInfoHTML = `
                 <div class="user-info-static">
-                    <img src="${avatarUrl}" alt="User Avatar" class="user-avatar">
-                    <p class="user-name">${global_name || 'User'}</p>
+                    <img src="${avatarSrc}" alt="User Avatar" class="user-avatar" onerror="this.src='assets/wimp_default.jpg'">
+                    <p class="user-name">${user.global_name || user.username || 'User'}</p>
                 </div>
             `;
             actionButtonHTML = `
@@ -1736,13 +1846,15 @@ closeBossDetailsPanel: function() {
             ${actionButtonHTML}
         `;
         
-        document.getElementById('user-settings-btn').addEventListener('click', () => this.openAccountModal());
+        // Re-attach listeners
+        const settingsBtn = document.getElementById('user-settings-btn');
+        if (settingsBtn) settingsBtn.addEventListener('click', () => this.openAccountModal());
         
-        if (App.state.isLoggedIn) {
-            document.getElementById('logout-btn').addEventListener('click', () => Logic.logout());
-        } else {
-            document.getElementById('login-btn').addEventListener('click', () => Logic.redirectToDiscordLogin());
-        }
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) logoutBtn.addEventListener('click', () => Logic.logout());
+
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) loginBtn.addEventListener('click', () => Logic.redirectToDiscordLogin());
 
         this.applyLanguage();
     },
@@ -1764,6 +1876,276 @@ closeBossDetailsPanel: function() {
             statusBarSpan.style.color = 'var(--color-warning)';
         }
     },
+
+    renderRemindersList: async function() {
+        if (!App.state.isLoggedIn) return;
+        
+        const listContainer = document.getElementById('reminders-list');
+        const countEl = document.getElementById('reminders-count');
+        const limitEl = document.getElementById('reminders-limit');
+        const badgeEl = document.getElementById('supporter-badge');
+        
+        // Loader simple mientras carga
+        listContainer.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:10px auto;"></div>';
+
+        const data = await Logic.fetchReminders();
+        App.state.userReminders = data.reminders || [];
+        
+        countEl.textContent = data.reminders.length;
+        limitEl.textContent = data.maxReminders;
+        
+        // Mostrar Badge de Supporter
+        if (data.isSupporter) {
+            badgeEl.classList.remove('hidden');
+        } else {
+            badgeEl.classList.add('hidden');
+        }
+
+        // --- NUEVO: Mostrar información de límites debajo del contador ---
+        // Buscamos si ya existe el elemento de info, si no, lo creamos después del header
+        let limitInfoEl = document.getElementById('reminders-limit-info');
+        if (!limitInfoEl) {
+            limitInfoEl = document.createElement('p');
+            limitInfoEl.id = 'reminders-limit-info';
+            limitInfoEl.style.cssText = "font-size: 0.8em; color: var(--text-muted-color); margin: -10px 0 15px 0;";
+            const header = document.querySelector('.reminders-header');
+            if(header) header.parentNode.insertBefore(limitInfoEl, header.nextSibling);
+        }
+        limitInfoEl.textContent = Utils.getText('reminders.limitInfo');
+
+
+        listContainer.innerHTML = '';
+        
+        if (data.reminders.length === 0) {
+            listContainer.innerHTML = `<p style="color:var(--text-muted-color); text-align:center; font-style:italic;">No custom reminders set.</p>`;
+            return;
+        }
+
+        data.reminders.forEach(rem => {
+            let soundLabelKey = 'reminders.soundBeep';
+            
+            // Mapeo directo si la clave existe en el JSON
+            const keyMap = {
+                'alarm': 'reminders.soundAlarm',
+                'coin': 'reminders.soundCoin',
+                'chime': 'reminders.soundChime',
+                'digital': 'reminders.soundDigital',
+                'urgent': 'reminders.soundUrgent',
+                'reveille': 'reminders.soundReveille',
+                'whistle': 'reminders.soundWhistle',
+                'siren': 'reminders.soundSiren',
+                'custom': 'reminders.customSoundLabel'
+            };
+
+            if (keyMap[rem.soundType]) {
+                soundLabelKey = keyMap[rem.soundType];
+            }
+
+            const soundLabelText = Utils.getText(soundLabelKey);
+            
+            const div = document.createElement('div');
+            div.className = 'reminder-card';
+            div.innerHTML = `
+                <div class="reminder-info">
+                    <span class="reminder-time">${rem.time}</span>
+                    <span class="reminder-label">${rem.label}</span>
+                    <span style="font-size:0.75em; color:var(--text-muted-color); margin-top:2px;">🔔 ${soundLabelText}</span>
+                </div>
+                <div class="reminder-controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="reminder-toggle-chk" data-id="${rem.id}" ${rem.enabled ? 'checked' : ''}>
+                        <span class="checkbox-custom"></span>
+                    </label>
+                    <button class="btn-delete-reminder" data-id="${rem.id}" title="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20" style="pointer-events: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                    </button>
+                </div>
+            `;
+            listContainer.appendChild(div);
+        });
+        
+        // --- MODIFICADO: Usar Utils.confirm (Modal personalizado) ---
+        listContainer.querySelectorAll('.btn-delete-reminder').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const confirmed = await Utils.confirm('reminders.deleteTitle', 'reminders.deleteBody');
+                if(confirmed) {
+                    await Logic.deleteReminder(btn.dataset.id);
+                    this.renderRemindersList();
+                }
+            });
+        });
+
+        // Listeners para toggle (Igual que antes)
+        listContainer.querySelectorAll('.reminder-toggle-chk').forEach(chk => {
+            chk.addEventListener('change', async (e) => {
+                await Logic.toggleReminder(chk.dataset.id, chk.checked);
+                const r = App.state.userReminders.find(x => x.id == chk.dataset.id);
+                if(r) r.enabled = chk.checked;
+            });
+        });
+    },
+
+    setupReminderForm: function() {
+        const addBtn = document.getElementById('btn-add-reminder');
+        const formContainer = document.getElementById('reminder-form-container');
+        const saveBtn = document.getElementById('btn-save-reminder');
+        const cancelBtn = document.getElementById('btn-cancel-reminder');
+        const soundSelect = document.getElementById('new-reminder-sound-type');
+        const uploadTrigger = document.getElementById('btn-upload-trigger');
+        const fileInput = document.getElementById('new-reminder-file');
+        const fileNameDisp = document.getElementById('file-name-display');
+        const previewBtn = document.getElementById('btn-preview-sound');
+
+        if (!addBtn) return;
+
+        // 1. Llenar el Select con todas las opciones
+        soundSelect.innerHTML = '';
+        const soundOptions = [
+                { val: 'default', label: Utils.getText('reminders.soundDefault') }, // "Beep Predeterminado"
+                { val: 'custom', label: Utils.getText('reminders.soundCustom') }    // "Subir Personalizado..."
+            ];
+
+
+        soundOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.val;
+            option.textContent = opt.label;
+            soundSelect.appendChild(option);
+        });
+
+        uploadTrigger.textContent = Utils.getText('reminders.selectFileBtn');
+
+        // 2. Lógica del Botón de Previsualización (Play)
+        previewBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const selectedSound = soundSelect.value;
+                
+                if (selectedSound === 'custom') {
+                    if (fileInput.files && fileInput.files[0]) {
+                        const fileUrl = URL.createObjectURL(fileInput.files[0]);
+                        Logic.playAudio(fileUrl);
+                    } else {
+                        Utils.alert('reminders.errorTitle', 'reminders.errorFile');
+                    }
+                } else {
+                    // Reproducir el default
+                    Logic.playAudio(App.alertSound);
+                }
+            });
+
+
+        // 3. Abrir formulario
+        addBtn.addEventListener('click', () => {
+            const current = parseInt(document.getElementById('reminders-count').textContent);
+            const limit = parseInt(document.getElementById('reminders-limit').textContent);
+            
+            if (current >= limit) {
+                Utils.alert(
+                    Utils.getText('reminders.limitReached', {limit}), 
+                    Utils.getText('reminders.limitReachedBody')
+                );
+                return;
+            }
+            formContainer.classList.remove('hidden');
+            addBtn.classList.add('hidden');
+        });
+
+        // 4. Cancelar / Cerrar
+        cancelBtn.addEventListener('click', () => {
+            formContainer.classList.add('hidden');
+            addBtn.classList.remove('hidden');
+            // Resetear inputs al cerrar
+            document.getElementById('new-reminder-label').value = '';
+            document.getElementById('new-reminder-time').value = '';
+            fileInput.value = '';
+            fileNameDisp.textContent = '';
+            soundSelect.value = 'beep';
+            uploadTrigger.classList.add('hidden');
+            previewBtn.disabled = false;
+        });
+
+        // 5. Cambio en el selector de sonido
+        soundSelect.addEventListener('change', () => {
+            if (soundSelect.value === 'custom') {
+                uploadTrigger.classList.remove('hidden');
+                // Desactivar preview hasta que elijan archivo
+                previewBtn.disabled = true; 
+            } else {
+                uploadTrigger.classList.add('hidden');
+                previewBtn.disabled = false;
+                fileNameDisp.textContent = '';
+                fileInput.value = '';
+            }
+        });
+
+        // 6. Botón "Select File" falso que activa el input real
+        uploadTrigger.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisp.textContent = fileInput.files[0].name;
+                previewBtn.disabled = false; // Reactivar preview
+            }
+        });
+
+        // 7. Guardar Recordatorio
+        saveBtn.addEventListener('click', async () => {
+            const label = document.getElementById('new-reminder-label').value || 'Alarm';
+            const time = document.getElementById('new-reminder-time').value;
+            const soundType = soundSelect.value;
+            
+            if (!time) {
+                return Utils.alert('reminders.errorTitle', 'reminders.errorTime');
+            }
+
+            let customFilename = null;
+            if (soundType === 'custom') {
+                if (fileInput.files.length === 0) {
+                    return Utils.alert('reminders.errorTitle', 'reminders.errorFile');
+                }
+                
+                // Feedback visual de subida
+                const originalText = saveBtn.textContent;
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Uploading...';
+                
+                try {
+                    const uploadRes = await Logic.uploadSound(fileInput.files[0]);
+                    if (uploadRes && uploadRes.filename) {
+                        customFilename = uploadRes.filename;
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                } catch (e) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                    return Utils.alert('reminders.errorTitle', 'reminders.uploadFailed');
+                }
+                
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+
+            await Logic.createReminder({
+                label, time, soundType, customSoundFilename: customFilename
+            });
+
+            // Limpieza final
+            document.getElementById('new-reminder-label').value = '';
+            document.getElementById('new-reminder-time').value = '';
+            fileInput.value = '';
+            fileNameDisp.textContent = '';
+            soundSelect.value = 'beep'; 
+            uploadTrigger.classList.add('hidden');
+            previewBtn.disabled = false;
+
+            formContainer.classList.add('hidden');
+            addBtn.classList.remove('hidden');
+            this.renderRemindersList();
+        });
+    },
+
+
 
     applyLanguage: function () {
         if (!App.state.i18n || Object.keys(App.state.i18n).length === 0) return;

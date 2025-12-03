@@ -186,6 +186,10 @@ import UI from './3-ui.js';
             }
         }
 
+        if (document.getElementById('btn-add-reminder')) {
+        UI.setupReminderForm();
+    }
+
         UI.populateSelects();
         addEventListeners();
         UI.applyLanguage();
@@ -194,7 +198,12 @@ import UI from './3-ui.js';
         Logic.requestNotificationPermission();
 
         UI.updateAll();
-        setInterval(() => UI.updateAll(), 1000);
+        setInterval(() => {
+            UI.updateAll();
+            // CHEQUEAR RECORDATORIOS
+            const now = Logic.getCorrectedNow(); // O new Date() si quieres hora local del PC
+            Logic.checkCustomReminders(now);
+        }, 1000);
     }
 
 
@@ -372,24 +381,35 @@ import UI from './3-ui.js';
 
         if (App.dom.accountModalOverlay) {
             App.dom.accountModalOverlay.addEventListener('click', async (e) => {
+                // 1. Manejo de navegación del Sidebar (Pestañas)
                 const navItem = e.target.closest('.nav-item');
                 if (navItem) {
                     e.preventDefault();
                     const sectionId = navItem.dataset.section;
-                    const protectedSections = ['push-notifications'];
+                    
+                    // Agregamos 'reminders' a las secciones que requieren login
+                    const protectedSections = ['push-notifications', 'reminders'];
+                    
                     if (protectedSections.includes(sectionId) && !App.state.isLoggedIn) {
                         UI.openLoginRequiredModal();
                     } else {
                         UI.switchAccountModalSection(sectionId);
+                        
+                        // Si se hizo clic en Reminders, cargamos la lista desde la API
+                        if (sectionId === 'reminders') {
+                            UI.renderRemindersList();
+                        }
                     }
                     return;
                 }
 
+                // 2. Botón de nueva suscripción Push
                 if (e.target.closest('#account-subscribe-push-btn')) {
                     UI.handleAddNewSubscription();
                     return;
                 }
 
+                // 3. Botón de eliminar suscripción Push
                 const deleteButton = e.target.closest('.delete-subscription-btn');
                 if (deleteButton) {
                     const endpoint = deleteButton.dataset.endpoint;
@@ -401,6 +421,7 @@ import UI from './3-ui.js';
                     return;
                 }
 
+                // 4. Cerrar el modal (Botón X o clic en fondo)
                 if (e.target.closest('#close-account-modal-btn') || e.target === e.currentTarget) {
                     UI.closeAccountModal();
                 }

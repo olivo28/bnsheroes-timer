@@ -52,23 +52,18 @@
         <!-- El widget de usuario (#user-status) se moverá aquí con JavaScript -->
     </header>
 
-    <!-- INICIO DE LA CORRECCIÓN: Pantalla de carga -->
     <div id="loading-overlay">
         <div class="loading-content">
             <div class="spinner"></div>
             <div id="loading-message">Initializing...</div>
         </div>
     </div>
-    <!-- FIN DE LA CORRECCIÓN -->
 
-    <!-- ===== WIDGET DE USUARIO MOVIDO FUERA DEL CONTENIDO PRINCIPAL ===== -->
-    <div id="user-status">
-        <!-- El contenido de este div (avatar, nombre, botón) se genera dinámicamente con JavaScript -->
-    </div>
+    <!-- ===== WIDGET DE USUARIO ===== -->
+    <div id="user-status"></div>
 
-    <!-- INICIO DE LA CORRECCIÓN: Contenedor principal de la app, inicialmente oculto -->
+    <!-- INICIO DE LA APP -->
     <div class="app-wrapper hidden">
-        <!-- FIN DE LA CORRECCIÓN -->
         <div class="app-container">
             <div class="content-wrapper">
                 <div class="main-wrapper">
@@ -88,7 +83,6 @@
                                 <div id="current-time"></div>
                             </div>
                             <div class="top-bar-right">
-                                <!-- El widget de usuario ya no está aquí, solo el botón de configuración del panel -->
                                 <div id="settings-button">
                                     <svg xmlns="http://www.w3.org/2000/svg"
                                         class="icon icon-tabler icon-tabler-settings" width="28" height="28"
@@ -133,8 +127,9 @@
             <div id="weekly-details-panel"></div>
             <div id="boss-details-panel"></div>
         </div>
-    </div> <!-- Cierre del nuevo app-wrapper -->
+    </div> <!-- Cierre del app-wrapper -->
 
+    <!-- MODAL CONFIGURACIÓN GENERAL -->
     <div id="modal-overlay">
         <div id="settings-modal">
             <button id="close-settings-btn" class="modal-close-btn">&times;</button>
@@ -219,6 +214,7 @@
         </div>
     </div>
 
+    <!-- MODAL CUENTA DE USUARIO (FullScreen) -->
     <div id="account-modal-overlay">
         <div id="account-modal">
             <!-- Columna de Navegación (Barra Lateral) -->
@@ -226,16 +222,18 @@
                 <div class="account-sidebar-scroller">
                     <!-- NAV PRINCIPAL -->
                     <nav class="sidebar-nav">
-                        <!-- INICIO DE LA CORRECCIÓN: SE ELIMINA EL HEADER DUPLICADO DE AQUÍ -->
                         <div class="sidebar-header">
                             <h3 data-lang-key="account.userSettings"></h3>
                         </div>
-                        <!-- FIN DE LA CORRECCIÓN -->
                         <a href="#" class="nav-item active" data-section="my-account">
                             <span data-lang-key="account.nav.myAccount"></span>
                         </a>
                         <a href="#" class="nav-item" data-section="push-notifications">
                             <span data-lang-key="account.nav.pushNotifications"></span>
+                        </a>
+                        <!-- NUEVA PESTAÑA: RECORDATORIOS -->
+                        <a href="#" class="nav-item" data-section="reminders">
+                            <span data-lang-key="account.nav.reminders"></span>
                         </a>
                     </nav>
 
@@ -268,20 +266,23 @@
             <div class="account-content">
                 <div class="account-content-scroller">
 
-                    <!-- Sección 1: Mi Cuenta (Visible por defecto) -->
+                    <!-- Sección 1: Mi Cuenta -->
                     <div class="content-section active" id="section-my-account">
                         <h2 data-lang-key="account.nav.myAccount"></h2>
                         <div class="user-profile-card">
                             <div class="user-profile-banner"></div>
                             <div class="user-profile-info">
-                                <img src="" alt="User Avatar" class="user-profile-avatar">
+                                <!-- Wrapper nuevo para avatar + decoración -->
+                                <div class="user-avatar-wrapper">
+                                    <img src="" alt="User Avatar" class="user-profile-avatar">
+                                    <img src="" alt="" class="user-avatar-decoration hidden">
+                                </div>
                                 <span class="user-profile-name"></span>
                             </div>
                         </div>
-                        <!-- Más detalles de la cuenta pueden ir aquí -->
                     </div>
 
-                    <!-- Sección 2: Notificaciones Push (Oculta por defecto) -->
+                    <!-- Sección 2: Notificaciones Push -->
                     <div class="content-section" id="section-push-notifications">
                         <h2 data-lang-key="account.nav.pushNotifications"></h2>
                         <p class="settings-description" data-lang-key="account.pushDescription"></p>
@@ -323,9 +324,7 @@
                         <hr class="section-divider">
                         <h3 data-lang-key="account.activeSubscriptions"></h3>
                         <p class="settings-description" data-lang-key="pushSettings.bossesDesc"></p>
-                        <div id="active-subscriptions-list">
-                            <!-- La lista de suscripciones se genera aquí -->
-                        </div>
+                        <div id="active-subscriptions-list"></div>
 
                         <div class="save-section">
                             <button id="save-push-settings-btn" class="settings-btn"
@@ -333,6 +332,78 @@
                         </div>
                     </div>
 
+                    <!-- NUEVA SECCIÓN: RECORDATORIOS -->
+                    <div class="content-section" id="section-reminders">
+                        <h2 data-lang-key="reminders.title">Custom Reminders</h2>
+                        <p class="settings-description" data-lang-key="reminders.description">Create alarms for specific
+                            times.</p>
+
+                        <div class="reminders-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div class="reminders-usage" style="color: var(--text-muted-color);">
+                                <span id="reminders-count">0</span> / <span id="reminders-limit">3</span>
+                                <span>used</span>
+                                <span id="supporter-badge" class="hidden"
+                                    style="color: gold; margin-left:10px; font-weight: bold;"
+                                    data-lang-key="reminders.supporterBadge">★ Supporter</span>
+                            </div>
+                            <button id="btn-add-reminder" class="settings-btn small" data-lang-key="reminders.newBtn">+
+                                New</button>
+                        </div>
+
+                        <div id="reminders-list" class="reminders-list-container">
+                            <!-- JS inyectará los recordatorios aquí -->
+                        </div>
+
+                        <!-- FORMULARIO DE CREACIÓN (Oculto por defecto) -->
+                        <div id="reminder-form-container" class="hidden"
+                            style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <h3 style="color: var(--color-primary); margin-top: 0;" data-lang-key="reminders.formTitle">
+                                New Reminder</h3>
+                            <div class="settings-row-vertical">
+                                <input type="text" id="new-reminder-label" class="settings-input"
+                                    placeholder="Label (e.g. Clan Quest)">
+
+                                <div class="settings-row" style="margin-top: 10px;">
+                                    <label style="color: var(--text-muted-color);"
+                                        data-lang-key="reminders.timeLabel">Time:</label>
+                                    <input type="time" id="new-reminder-time" class="settings-input"
+                                        style="width: auto;">
+                                </div>
+
+                                <div class="sound-selection" style="margin-top: 15px;">
+                                    <label style="display:block; margin-bottom: 5px; color: var(--text-muted-color);"
+                                        data-lang-key="reminders.soundLabel">Notification Sound:</label>
+
+                                    <!-- Selector y Botón de Preview en la misma línea -->
+                                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                                        <select id="new-reminder-sound-type" class="settings-input"
+                                            style="flex-grow: 1;">
+                                            <!-- JS llenará esto -->
+                                        </select>
+                                        <button id="btn-preview-sound" class="settings-btn small" title="Preview Sound"
+                                            style="padding: 8px 12px;">▶</button>
+                                    </div>
+
+                                    <button id="btn-upload-trigger" class="settings-btn secondary-btn hidden"
+                                        style="width:100%" data-lang-key="reminders.selectFileBtn">Select File</button>
+                                    <input type="file" id="new-reminder-file" accept="audio/*" class="hidden">
+                                    <span id="file-name-display"
+                                        style="display:block; margin-top: 5px; font-size: 0.8em; color: var(--text-muted-color);"></span>
+                                </div>
+
+                                <div class="form-buttons"
+                                    style="margin-top: 20px; display:flex; gap:10px; justify-content: flex-end;">
+                                    <button id="btn-cancel-reminder" class="settings-btn secondary-btn"
+                                        data-lang-key="common.cancelButton">Cancel</button>
+                                    <button id="btn-save-reminder" class="settings-btn"
+                                        data-lang-key="common.saveButton">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección Apoyo -->
                     <div class="content-section" id="section-support-me">
                         <h2 data-lang-key="account.nav.supportMe"></h2>
                         <p class="support-text" data-lang-key="support.intro"></p>
@@ -390,6 +461,7 @@
                         </div>
                     </div>
 
+                    <!-- Sección Disclaimer -->
                     <div class="content-section" id="section-disclaimer">
                         <h2 data-lang-key="account.nav.disclaimer"></h2>
 
@@ -423,6 +495,7 @@
         </div>
     </div>
 
+    <!-- Otros Modales -->
     <div id="info-modal-overlay">
         <div id="info-modal">
             <h2 id="info-modal-title" data-lang-key="modals.showdownInfo.title"></h2>
@@ -489,54 +562,40 @@
             <div class="about-modal-content">
 
                 <div class="info-grid">
-                    <!-- Tarjeta de Información -->
                     <div class="info-card">
                         <h3 data-lang-key="timers.dailyResetName"></h3>
                         <p data-lang-key="timersInfo.dailyResetDesc"></p>
                     </div>
-                    <!-- Tarjeta de Información -->
                     <div class="info-card">
                         <h3 data-lang-key="timers.showdownName"></h3>
                         <p data-lang-key="timersInfo.showdownDesc"></p>
                     </div>
-                    <!-- Tarjeta de Información -->
                     <div class="info-card">
                         <h3 data-lang-key="timersInfo.bossesTitle"></h3>
                         <p data-lang-key="timersInfo.bossesDesc"></p>
                     </div>
-                    <!-- Tarjeta de Información -->
                     <div class="info-card">
                         <h3 data-lang-key="notifications.title"></h3>
                         <p data-lang-key="timersInfo.notificationsDesc"></p>
                     </div>
-
-                    <!-- --- INICIO DE LAS TARJETAS AÑADIDAS --- -->
-                    <!-- Tarjeta de Información -->
                     <div class="info-card">
                         <h3 data-lang-key="events.title"></h3>
                         <p data-lang-key="timersInfo.eventsDesc"></p>
                     </div>
-                    <!-- Tarjeta de Información -->
                     <div class="info-card">
                         <h3 data-lang-key="weekly.title"></h3>
                         <p data-lang-key="timersInfo.weeklyDesc"></p>
                     </div>
-                    <!-- --- FIN DE LAS TARJETAS AÑADIDAS --- -->
-
-                    <!-- Tarjeta de Información (ocupa dos columnas) -->
                     <div class="info-card full-width">
                         <h3 data-lang-key="banners.title"></h3>
                         <p data-lang-key="timersInfo.bannersDesc"></p>
                     </div>
                 </div>
 
-                <!-- Sección de contacto al final -->
                 <hr>
                 <div class="contact-section">
                     <h3 data-lang-key="about.contactTitle"></h3>
-                    <!-- INICIO DE LA LÍNEA A AÑADIR -->
                     <p data-lang-key="about.discordHandle"></p>
-                    <!-- FIN DE LA LÍNEA A AÑADIR -->
                     <p><span data-lang-key="about.discordServer"></span> <a id="about-discord-link"
                             href="https://discord.gg/4eKe49CkVS" target="_blank" rel="noopener noreferrer"
                             data-lang-key="about.discordLinkText"></a></p>

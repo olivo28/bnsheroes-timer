@@ -1993,42 +1993,101 @@ select.settings-input option {
     height: 24px;
 }
 
-
+/* ------------------------------------ */
 /* Estilos para la sección "Mi Cuenta" */
+
 .user-profile-card {
     border-radius: 8px;
     overflow: hidden;
-    background-color: var(--bg-color);
+    background-color: #111;
+    position: relative;
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
 }
 
 .user-profile-banner {
-    height: 120px;
+    height: 200px;
+    /* Altura estándar de banner */
+    width: 100%;
     background-color: var(--color-primary);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
+/* Contenedor inferior (Info) */
 .user-profile-info {
-    padding: 16px;
-    padding-left: 140px;
     position: relative;
+    /* Espaciado interno */
+    padding: 16px;
+    /* Padding izquierdo grande para dejar hueco al avatar */
+    padding-left: 130px;
+    /* Altura mínima para que quepa el avatar */
     min-height: 60px;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    /* Centra el nombre verticalmente */
+}
+
+/* Contenedor Avatar + Marco */
+.user-avatar-wrapper {
+    position: absolute;
+    /* Sube para pisar la línea del banner */
+    top: -50px;
+    left: 20px;
+    width: 90px;
+    height: 90px;
 }
 
 .user-profile-avatar {
-    width: 96px;
-    height: 96px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    border: 6px solid var(--bg-color);
-    position: absolute;
-    left: 20px;
-    top: -48px;
+    border: 6px solid #111;
+    /* Borde del color del fondo */
+    background-color: #111;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+    display: block;
 }
 
+.user-avatar-decoration {
+    position: absolute;
+    top: -15%;
+    left: -15%;
+    width: 130%;
+    height: 130%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Nombre de Usuario */
 .user-profile-name {
     font-size: 1.5em;
     font-weight: 700;
     color: #fff;
+    display: block;
+    /* Ajuste fino para alinear con la parte superior del texto si es muy largo */
+    line-height: 1.2;
+    margin-top: 5px;
 }
 
+/* Nombre Dorado para Supporters */
+.user-profile-name.is-supporter {
+    color: #FFD700;
+    /* Dorado */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    /* Brillo */
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+/* ------------------------------------ */
 /* Estilos para la sección "Disclaimer" */
 .disclaimer-subtitle {
     font-size: 1.1em;
@@ -4518,4 +4577,64 @@ select.settings-input option {
             aspect-ratio: 16 / 9;
         }
     }
+}
+
+.reminders-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.reminder-card {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reminder-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.reminder-time {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--color-normal);
+}
+
+.reminder-label {
+    color: var(--text-muted-color);
+    font-size: 0.9em;
+}
+
+.reminder-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.reminder-toggle {
+    transform: scale(1.2);
+}
+
+.btn-delete-reminder {
+    background: none;
+    border: none;
+    color: var(--color-danger);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-delete-reminder:hover {
+    opacity: 1;
+}
+
+.hidden {
+    display: none !important;
 }
