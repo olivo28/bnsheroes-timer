@@ -719,9 +719,35 @@ import UI from './3-ui.js';
         if ('serviceWorker' in navigator) {
             const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
             const serviceWorkerPath = isLocalhost ? '/serviceworker.js' : '/bnsheroes-timer/serviceworker.js';
-            navigator.serviceWorker.register(serviceWorkerPath)
-                .then(reg => console.log('SW registrado:', reg.scope))
-                .catch(err => console.error('Error al registrar SW:', err));
+            
+            navigator.serviceWorker.register(serviceWorkerPath).then(reg => {
+                console.log('SW registrado:', reg.scope);
+
+                // Si hay una actualización esperando, forzamos la actualización
+                if (reg.waiting) {
+                    updateReady(reg.waiting);
+                    return;
+                }
+
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Nueva versión detectada, forzamos recarga
+                            console.log('Nueva versión detectada. Recargando...');
+                            window.location.reload();
+                        }
+                    });
+                });
+            }).catch(err => console.error('Error al registrar SW:', err));
+            
+            // Recargar si el controller cambia (es decir, si el nuevo SW toma el control)
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
         }
 
         // 2. PROCESAR TOKEN DE LOGIN SI EXISTE EN LA URL
