@@ -481,6 +481,10 @@ import UI from './3-ui.js';
                     days: parseInt(document.getElementById('banner-reminder-days').value)
                 }
             };
+            const showdownTicketEnabled = document.getElementById('showdown-ticket-toggle').checked;
+            
+            if (!App.state.config.notificationPrefs) App.state.config.notificationPrefs = {};
+            App.state.config.notificationPrefs.showdownTicket = showdownTicketEnabled;
 
             const newConfig = {
                 language: App.dom.languageSelect.value,
@@ -499,6 +503,7 @@ import UI from './3-ui.js';
             const languageChanged = newConfig.language !== App.state.config.language;
             const timezoneChanged = newConfig.displayTimezone !== App.state.config.displayTimezone;
             const formatChanged = newConfig.use24HourFormat !== App.state.config.use24HourFormat;
+            
 
             if (languageChanged) {
                 try {

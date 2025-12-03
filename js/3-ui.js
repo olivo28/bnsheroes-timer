@@ -1284,12 +1284,14 @@ closeBossDetailsPanel: function() {
         App.dom.languageSelect.value = config.language;
 
         const reminders = config.reminderSettings || {};
+        const prefs = config.notificationPrefs || {};
         const eventDailies = reminders.eventDailies || { enabled: true, hours: 12 };
         const weekly = reminders.weekly || { enabled: true, days: 3 };
         const banner = reminders.banner || { enabled: true, days: 4 };
 
         document.getElementById('event-dailies-reminder-toggle').checked = eventDailies.enabled;
         document.getElementById('event-dailies-reminder-hours').value = eventDailies.hours;
+        document.getElementById('showdown-ticket-toggle').checked = prefs.showdownTicket !== false;
         document.getElementById('weekly-reminder-toggle').checked = weekly.enabled;
         document.getElementById('weekly-reminder-days').value = weekly.days;
         document.getElementById('banner-reminder-toggle').checked = banner.enabled;

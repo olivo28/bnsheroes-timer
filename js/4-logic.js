@@ -385,7 +385,12 @@ const Logic = {
         }
 
         const showdownAlertKey = `showdown-${showdownTicketTimer.targetDate.getTime()}`;
-        if (showdownTicketTimer.secondsLeft <= 0 && showdownTicketTimer.secondsLeft > -5 && !App.state.alertsShownToday[showdownAlertKey]) {
+        if (
+            config.notificationPrefs?.showdownTicket !== false && 
+            showdownTicketTimer.secondsLeft <= 0 && 
+            showdownTicketTimer.secondsLeft > -5 && 
+            !App.state.alertsShownToday[showdownAlertKey]
+        ) {
             this.showFullAlert(
                 Utils.getText('notifications.showdownReadyTitle'),
                 Utils.getText('notifications.showdownReadyBody'),
