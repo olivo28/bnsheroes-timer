@@ -4638,3 +4638,8 @@ select.settings-input option {
 .hidden {
     display: none !important;
 }
+
+.highlight-bracket {
+    color: var(--color-primary);
+    font-weight: bold;
+}

@@ -250,6 +250,16 @@ const Utils = {
     return parts.join(' ');
 },
 
+/**
+ * Formatea texto para renderizar HTML y resaltar texto entre corchetes.
+ * @param {string} text - El texto a formatear
+ * @returns {string} El texto formateado con HTML
+ */
+formatText(text) {
+    // Reemplaza texto entre corchetes [ejemplo] con un span con clase highlight-bracket
+    return text.replace(/\[([^\]]+)\]/g, '<span class="highlight-bracket">[$1]</span>');
+},
+
     /**
      * Determina el color del contador basado en el tiempo restante.
      */

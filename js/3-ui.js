@@ -2158,7 +2158,7 @@ closeBossDetailsPanel: function() {
         document.querySelectorAll('[data-lang-key]').forEach(el => {
             const key = el.dataset.langKey;
             const text = Utils.getText(key);
-            if (text !== key) el.textContent = text;
+                if (text !== key) el.innerHTML = Utils.formatText(text);
         });
 
         if (App.state.currentOpenEventId) {
