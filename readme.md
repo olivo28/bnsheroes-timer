@@ -8,7 +8,7 @@
 
 ### 🌟 Overview
 
-**BnS Heroes HUB/Timer** is the ultimate companion tool and Progressive Web App (PWA) designed for *Blade & Soul Heroes* players. It has evolved from a simple timer into a comprehensive ecosystem that acts as a central **HUB** for tracking timers and a powerful **Compendium** for team building and hero management.
+**BnS Heroes HUB** is the ultimate companion tool and Progressive Web App (PWA) designed for *Blade & Soul Heroes* players. It has evolved from a simple timer into a comprehensive ecosystem that acts as a central **HUB** for tracking timers and a powerful **Compendium** for team building and hero management.
 
 Built with a modular **Vanilla JS (ES6)** architecture and a robust **Node.js** backend, it features real-time synchronization, Discord-based authentication, server-side push notifications, and a sophisticated drag-and-drop team builder.
 
@@ -133,7 +133,7 @@ Developed by **@olivo28**.
 
 ### 🌟 Visión General
 
-**BnS Heroes HUB/Timer** es la herramienta definitiva y Aplicación Web Progresiva (PWA) diseñada para jugadores de *Blade & Soul Heroes*. Ha evolucionado de ser un simple temporizador a un ecosistema completo que funciona como un **HUB** central de rastreo y un poderoso **Compendio** para la gestión de héroes y construcción de equipos.
+**BnS Heroes HUB** es la herramienta definitiva y Aplicación Web Progresiva (PWA) diseñada para jugadores de *Blade & Soul Heroes*. Ha evolucionado de ser un simple temporizador a un ecosistema completo que funciona como un **HUB** central de rastreo y un poderoso **Compendio** para la gestión de héroes y construcción de equipos.
 
 Construido con una arquitectura modular en **Vanilla JS (ES6)** y un backend robusto en **Node.js**, cuenta con sincronización en tiempo real, autenticación vía Discord, notificaciones push del servidor y un constructor de equipos avanzado.
 
