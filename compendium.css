@@ -300,6 +300,18 @@ body.compendium-active {
     font-style: italic;
 }
 
+.filter-btn.text-filter-btn.rarity-text-3 {
+    color: var(--rarity3-color);
+}
+
+.filter-btn.text-filter-btn.rarity-text-2 {
+    color: var(--rarity2-color);
+}
+
+.filter-btn.text-filter-btn.rarity-text-1 {
+    color: var(--rarity1-color);
+}
+
 /* =========================================
    5. GRILLA DE HÉROES
    ========================================= */
@@ -796,6 +808,11 @@ body.compendium-active {
     .small-search {
         width: 100%;
     }
+
+    .mini-icon {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* --- MODAL SHARE TEAM --- */
@@ -892,45 +909,100 @@ body.compendium-active {
 /* --- VISTA: MIS EQUIPOS --- */
 .my-teams-header-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 15px;
+    padding-bottom: 20px;
+    width: 100%;
+    align-items: center;
+    /* Centra el título */
 }
 
 .view-title {
     margin: 0;
     color: var(--color-primary);
+    text-align: center;
 }
 
-.my-teams-controls {
+/* Contenedor principal de controles (Buscador + Filtros) */
+.my-teams-controls-container {
+    width: 100%;
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 15px;
     align-items: center;
+    /* Centra horizontalmente los hijos */
 }
 
-.small-search {
-    width: 250px;
-    /* Tamaño fijo para el buscador */
+/* Buscador */
+#my-teams-search {
+    width: 100%;
+    max-width: 500px;
+    /* Ancho máximo para que no se vea eterno en PC */
+    text-align: left;
 }
 
-/* Grilla de Equipos - Tarjetas más anchas */
+/* Fila de Filtros (Botones Tipo + Iconos Elemento) */
+.my-teams-filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    /* ¡ESTO CENTRA LOS FILTROS! */
+    width: 100%;
+}
+
+/* Grupo de botones específicos */
+.filter-group {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    /* Asegura que los botones internos se centren */
+}
+
+/* --- GRILLA Y MENSAJES DE ESTADO --- */
+
 .my-teams-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    /* Más ancho (antes 280) */
+    /* Ajuste automático de columnas */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+    width: 100%;
+    /* Altura mínima para que el centrado vertical del mensaje se vea bien */
+    min-height: 300px;
+    position: relative;
 }
+
+/* 
+   REGLA MÁGICA: Si dentro del grid hay un párrafo <p> (mensaje) 
+   o el div .loading-text, ignora las columnas y centra todo.
+*/
+#my-teams-grid>p,
+#my-teams-grid>.loading-text {
+    grid-column: 1 / -1;
+    /* Ocupa todo el ancho */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    color: var(--text-muted-color);
+    font-size: 1.1em;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* --- ESTILOS DE TARJETA DE EQUIPO --- */
 
 .team-card {
     background-color: var(--box-bg-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 20px;
-    /* Más padding */
     transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
     cursor: pointer;
     position: relative;
@@ -954,12 +1026,11 @@ body.compendium-active {
 .team-title {
     font-weight: bold;
     font-size: 1.3em;
-    /* Texto más grande */
     color: var(--text-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 70%;
+    max-width: 65%;
 }
 
 .team-type {
@@ -972,30 +1043,27 @@ body.compendium-active {
     font-weight: bold;
 }
 
-/* Preview de Héroes (GRANDE) */
+/* Preview de Héroes (Círculos) */
 .team-preview {
     display: flex;
     justify-content: center;
-    /* Centrado */
-    gap: 10px;
-    /* Más espacio entre círculos */
+    gap: 8px;
     background-color: rgba(0, 0, 0, 0.2);
-    /* Fondo sutil */
-    padding: 15px;
+    padding: 15px 10px;
     border-radius: 10px;
 }
 
 .preview-slot {
-    width: 60px;
-    /* Aumentado de 40px */
-    height: 60px;
-    /* Aumentado de 40px */
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background-color: #222;
     border: 2px solid var(--border-color);
     overflow: hidden;
     position: relative;
     transition: transform 0.2s;
+    flex-shrink: 0;
+    /* Evita que se aplasten */
 }
 
 .preview-slot:hover {
@@ -1003,7 +1071,6 @@ body.compendium-active {
     z-index: 2;
 }
 
-/* Borde especial para el líder */
 .preview-slot.leader {
     border-color: var(--color-warning);
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
@@ -1028,15 +1095,11 @@ body.compendium-active {
     font-family: monospace;
     font-size: 0.9em;
     color: var(--color-primary);
-    /* Color morado/primario */
     background-color: rgba(187, 134, 252, 0.1);
-    /* Fondo sutil */
     padding: 2px 6px;
     border-radius: 4px;
     border: 1px solid rgba(187, 134, 252, 0.2);
     font-weight: bold;
-    opacity: 1;
-    /* Quitar transparencia */
 }
 
 .card-actions {
@@ -1059,38 +1122,39 @@ body.compendium-active {
 
 .btn-share-team:hover {
     background-color: rgba(64, 196, 255, 0.1);
-    /* Azul suave */
     color: var(--color-normal);
     border-color: var(--color-normal);
 }
 
 .btn-delete-team {
-    background: none;
-    border: none;
-    color: var(--text-muted-color);
-    /* Discreto por defecto */
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    transition: all 0.2s;
     z-index: 5;
 }
 
 .btn-delete-team:hover {
     background-color: rgba(255, 82, 82, 0.1);
-    /* Rojo suave */
     color: var(--color-urgent);
     border-color: var(--color-urgent);
 }
 
-.loading-text {
+/* Botones de texto para Tipo de Equipo (Estilo pastilla) */
+#my-teams-type-filters .filter-btn {
+    width: auto !important;
+    /* Anular ancho fijo */
+    padding: 0 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    min-width: 80px;
     color: var(--text-muted-color);
-    text-align: center;
-    width: 100%;
-    padding: 40px;
-    font-size: 1.2em;
 }
 
+#my-teams-type-filters .filter-btn.active {
+    color: #1a1a1a;
+    /* Texto oscuro en activo */
+}
+
+/* Ajustes Responsivos para la Grilla */
 @media (max-width: 600px) {
     .my-teams-grid {
         grid-template-columns: 1fr;
@@ -1098,71 +1162,11 @@ body.compendium-active {
     }
 
     .preview-slot {
-        width: 45px;
-        /* Un poco menos en móvil */
-        height: 45px;
+        width: 42px;
+        height: 42px;
     }
 
-    .small-search {
-        width: 100%;
-    }
-}
-
-.my-teams-header-row {
-    display: flex;
-    flex-direction: column;
-    /* Apilar título y controles en móvil */
-    gap: 15px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
-}
-
-.my-teams-controls-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.my-teams-filters-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-/* Botones de texto para Tipo de Equipo */
-#my-teams-type-filters .filter-btn {
-    width: auto !important;
-    /* Sobrescribe el ancho fijo de 40px */
-    padding: 0 15px;
-    /* Espacio lateral para el texto */
-    font-size: 0.8em;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    /* Evita que el texto se rompa en dos líneas */
-    min-width: 60px;
-    /* Ancho mínimo para que se vean uniformes */
-    color: white;
-
-}
-
-/* Ajuste opcional para el contenedor si se ve muy apretado */
-#my-teams-type-filters {
-    padding: 5px;
-    gap: 5px;
-}
-
-/* Ajuste para escritorio */
-@media (min-width: 900px) {
-    .my-teams-controls-container {
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
-    .hero-search-input {
-        max-width: 100%;
+    .team-title {
+        max-width: 60%;
     }
 }
