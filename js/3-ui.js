@@ -1336,7 +1336,7 @@ closeBossDetailsPanel: function() {
                     try {
                         const defaultIndex = (BigInt(user.id) >> 22n) % 6n;
                         avatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
-                    } catch(e) { console.error("Error calculando avatar default:", e); }
+                    } catch (e) { console.error("Error calculando avatar default:", e); }
                 }
             }
 
@@ -1344,18 +1344,6 @@ closeBossDetailsPanel: function() {
             if (avatarImg) {
                 avatarImg.src = avatarUrl;
                 avatarImg.onerror = () => { avatarImg.src = 'assets/wimp_default.jpg'; };
-            }
-
-            const nameEl = myAccountSection.querySelector('.user-profile-name');
-            if (nameEl) {
-                nameEl.textContent = user.global_name || user.username;
-                
-                // Verificar si es Supporter y aplicar color dorado
-                if (user.isSupporter) {
-                    nameEl.classList.add('is-supporter');
-                } else {
-                    nameEl.classList.remove('is-supporter');
-                }
             }
 
             // --- 2. BANNER Y COLOR ---
@@ -1372,13 +1360,13 @@ closeBossDetailsPanel: function() {
                     bannerEl.style.backgroundColor = hexColor;
                 } else {
                     bannerEl.style.backgroundImage = 'none';
-                    bannerEl.style.backgroundColor = '#5865F2'; 
+                    bannerEl.style.backgroundColor = '#5865F2';
                 }
             }
 
             // --- 3. DECORACIÓN ---
             const decoEl = myAccountSection.querySelector('.user-avatar-decoration');
-            if (decoEl) { 
+            if (decoEl) {
                 if (user.avatarDecoration && user.avatarDecoration !== 'null') {
                     const format = user.avatarDecoration.startsWith('a_') ? 'gif' : 'png';
                     const decoUrl = `https://cdn.discordapp.com/avatar-decorations/${user.id}/${user.avatarDecoration}.${format}?size=256`;
@@ -1391,48 +1379,174 @@ closeBossDetailsPanel: function() {
                 }
             }
 
+            // --- NUEVO: FORMULARIO DE DATOS DE JUEGO E INYECCIÓN ---
+            
+            // A. INYECTAR EL HTML DEL FORMULARIO SI NO EXISTE
+            let profileForm = myAccountSection.querySelector('.profile-settings-form');
+            if (!profileForm) {
+                const formHTML = `
+                    <div class="profile-settings-form" style="margin-top: 20px;">
+                        <h3 style="color: var(--color-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">Game Data & Profile</h3>
+                        
+                        <div class="settings-row-vertical" style="margin-bottom: 15px;">
+                            <label class="settings-label">Custom Nickname <small>(Overrides Discord Name)</small></label>
+                            <input type="text" id="input-custom-nick" class="settings-input" placeholder="e.g. TheSlayer" value="${user.customNickname || ''}">
+                        </div>
+
+                        <div class="settings-grid-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+                            <div class="settings-col">
+                                <label class="settings-label">Server</label>
+                                <select id="input-game-server" class="settings-input">
+                                    <option value="">-- Select --</option>
+                                    <option value="NA" ${user.gameServer === 'NA' ? 'selected' : ''}>NA</option>
+                                    <option value="EU" ${user.gameServer === 'EU' ? 'selected' : ''}>EU</option>
+                                    <option value="ASIA" ${user.gameServer === 'ASIA' ? 'selected' : ''}>ASIA</option>
+                                </select>
+                            </div>
+                            <div class="settings-col">
+                                <label class="settings-label">Character {Clan}</label>
+                                <input type="text" id="input-char-name" class="settings-input" placeholder="Name {Clan}" value="${user.characterName || ''}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                const card = myAccountSection.querySelector('.user-profile-card');
+                if (card) card.insertAdjacentHTML('afterend', formHTML);
+            }
+
+            // B. LÓGICA DE ACTUALIZACIÓN VISUAL (TARJETA)
+            const updateCardVisuals = () => {
+                const nickInput = document.getElementById('input-custom-nick');
+                const serverInput = document.getElementById('input-game-server');
+                const charInput = document.getElementById('input-char-name');
+
+                const nameEl = myAccountSection.querySelector('.user-profile-name');
+                const infoContainer = myAccountSection.querySelector('.user-profile-info');
+                
+                // 1. Nombre (Prioridad: Custom > Discord)
+                const displayName = (nickInput && nickInput.value.trim()) ? nickInput.value.trim() : (user.global_name || user.username);
+                
+                // A. Actualizar nombre en la tarjeta del modal
+                if (nameEl) {
+                    nameEl.textContent = displayName;
+                    if (user.isSupporter) nameEl.classList.add('is-supporter');
+                    else nameEl.classList.remove('is-supporter');
+                }
+
+                // B. --- NUEVO: Actualizar nombre en el WIDGET SUPERIOR IZQUIERDO ---
+                const mainWidgetName = document.querySelector('#user-status .user-name');
+                if (mainWidgetName) {
+                    mainWidgetName.textContent = displayName;
+                }
+                // ------------------------------------------------------------------
+
+                // 2. Datos de Juego (Iconos debajo del nombre)
+                let metaDataEl = infoContainer.querySelector('.user-meta-data');
+                // ... (resto de la lógica de iconos sin cambios) ...
+                if (!metaDataEl) {
+                    metaDataEl = document.createElement('div');
+                    metaDataEl.className = 'user-meta-data';
+                    if(nameEl) nameEl.parentNode.insertBefore(metaDataEl, nameEl.nextSibling);
+                }
+
+                const serverVal = serverInput ? serverInput.value : (user.gameServer || '');
+                const charVal = charInput ? charInput.value : (user.characterName || '');
+
+                let metaHTML = '';
+                if (serverVal) metaHTML += `<span title="Server"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="meta-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S12 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S12 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg> ${serverVal}</span>`;
+                if (charVal) metaHTML += `<span title="Character"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="meta-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg> ${charVal}</span>`;
+
+                metaDataEl.innerHTML = metaHTML;
+            };
+
+            // C. FUNCIÓN DE DEBOUNCE PARA GUARDADO EN VIVO
+            let saveTimeout;
+            const handleLiveSave = () => {
+                // Actualizar visualmente al instante
+                updateCardVisuals();
+                
+                // Cancelar guardado pendiente
+                clearTimeout(saveTimeout);
+                
+                // Programar guardado en 1s
+                saveTimeout = setTimeout(async () => {
+                    const dataToSave = {
+                        customNickname: document.getElementById('input-custom-nick').value,
+                        gameServer: document.getElementById('input-game-server').value,
+                        characterName: document.getElementById('input-char-name').value
+                    };
+                    // Actualizar estado local
+                    Object.assign(App.state.userInfo, dataToSave);
+                    // Enviar al backend
+                    await Logic.saveUserPreferences(dataToSave);
+                    console.log("Datos de perfil guardados en vivo.");
+                }, 1000);
+            };
+
+            // D. ASIGNAR LISTENERS E INICIALIZAR
+            setTimeout(() => {
+                const inputs = ['input-custom-nick', 'input-game-server', 'input-char-name'];
+                inputs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.removeEventListener('input', handleLiveSave);
+                        el.addEventListener('input', handleLiveSave);
+                    }
+                });
+                // Pintado inicial
+                updateCardVisuals();
+            }, 0);
+
+
             // --- CARGAR PREFERENCIAS ---
             const prefs = App.state.config.notificationPrefs || {};
             // (Asegúrate de que estos IDs existen en tu HTML nuevo)
             const dailyToggle = document.getElementById('push-daily-reset-toggle');
-            if(dailyToggle) dailyToggle.checked = prefs.dailyReset ?? true;
-            
+            if (dailyToggle) dailyToggle.checked = prefs.dailyReset ?? true;
+
             const ticketToggle = document.getElementById('push-showdown-ticket-toggle');
-            if(ticketToggle) ticketToggle.checked = prefs.showdownTicket ?? true;
-            
+            if (ticketToggle) ticketToggle.checked = prefs.showdownTicket ?? true;
+
             const weeklyToggle = document.getElementById('push-weekly-reset-toggle');
-            if(weeklyToggle) weeklyToggle.checked = prefs.weeklyResetReminder?.enabled ?? true;
-            
+            if (weeklyToggle) weeklyToggle.checked = prefs.weeklyResetReminder?.enabled ?? true;
+
             const weeklyDays = document.getElementById('push-weekly-days-input');
-            if(weeklyDays) weeklyDays.value = prefs.weeklyResetReminder?.daysBefore ?? 2;
-            
+            if (weeklyDays) weeklyDays.value = prefs.weeklyResetReminder?.daysBefore ?? 2;
+
             const eventToggle = document.getElementById('push-event-dailies-toggle');
-            if(eventToggle) eventToggle.checked = prefs.eventDailiesReminder?.enabled ?? true;
-            
+            if (eventToggle) eventToggle.checked = prefs.eventDailiesReminder?.enabled ?? true;
+
             const eventHours = document.getElementById('push-event-hours-input');
-            if(eventHours) eventHours.value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
-            
+            if (eventHours) eventHours.value = prefs.eventDailiesReminder?.hoursBeforeReset ?? 4;
+
             this.renderActiveSubscriptions();
             this.switchAccountModalSection('my-account');
 
         } else {
             // Lógica Invitado
             const avatarImg = myAccountSection.querySelector('.user-profile-avatar');
-            if(avatarImg) avatarImg.src = 'assets/wimp_default.jpg';
-            
+            if (avatarImg) avatarImg.src = 'assets/wimp_default.jpg';
+
             const nameEl = myAccountSection.querySelector('.user-profile-name');
-            if(nameEl) {
+            if (nameEl) {
                 nameEl.textContent = Utils.getText('common.guest');
                 nameEl.classList.remove('is-supporter'); // Limpiar por si acaso
             }
             const bannerEl = myAccountSection.querySelector('.user-profile-banner');
-            if(bannerEl) {
+            if (bannerEl) {
                 bannerEl.style.backgroundImage = 'none';
                 bannerEl.style.backgroundColor = '#5865F2';
             }
-            
+
             const decoEl = myAccountSection.querySelector('.user-avatar-decoration');
-            if(decoEl) decoEl.classList.add('hidden');
+            if (decoEl) decoEl.classList.add('hidden');
+            
+            // Eliminar form y metadatos si existen (al cambiar de usuario a invitado sin recargar)
+            const profileForm = myAccountSection.querySelector('.profile-settings-form');
+            if (profileForm) profileForm.remove();
+            
+            const metaDataEl = myAccountSection.querySelector('.user-meta-data');
+            if (metaDataEl) metaDataEl.remove();
 
             logoutButton.style.display = 'none';
 
@@ -1446,7 +1560,7 @@ closeBossDetailsPanel: function() {
             `;
             footer.insertAdjacentHTML('beforeend', loginButtonHTML);
             const loginBtn = document.getElementById('login-btn-modal');
-            if(loginBtn) loginBtn.addEventListener('click', () => Logic.redirectToDiscordLogin());
+            if (loginBtn) loginBtn.addEventListener('click', () => Logic.redirectToDiscordLogin());
         }
 
         this.switchAccountModalSection('my-account');
@@ -1806,6 +1920,11 @@ closeBossDetailsPanel: function() {
             // DEBUG: Ver qué llega realmente
             console.log("WIDGET INFO:", user);
 
+            // --- LÓGICA DE NOMBRE (NUEVO) ---
+            const displayName = (user.customNickname && user.customNickname.trim()) 
+                ? user.customNickname 
+                : (user.global_name || user.username || 'User');
+
             let avatarSrc = 'assets/wimp_default.jpg'; // Valor por defecto seguro
 
             if (user.id) {
@@ -1823,7 +1942,7 @@ closeBossDetailsPanel: function() {
             userInfoHTML = `
                 <div class="user-info-static">
                     <img src="${avatarSrc}" alt="User Avatar" class="user-avatar" onerror="this.src='assets/wimp_default.jpg'">
-                    <p class="user-name">${user.global_name || user.username || 'User'}</p>
+                    <p class="user-name">${displayName}</p>
                 </div>
             `;
             actionButtonHTML = `
