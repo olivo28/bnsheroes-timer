@@ -6,6 +6,7 @@ import App from './2-state.js';
 import Utils from './1-utils.js';
 import Logic from './4-logic.js';
 import UI from './3-ui.js';
+import Router from './7-router.js';
 
 (function () {
 
@@ -176,6 +177,8 @@ import UI from './3-ui.js';
      */
     function initializeUI() {
         App.initializeDOM();
+
+        Router.init();
 
         if (App.state.isMobile) {
             setupMobileSwiper();

@@ -1,0 +1,157 @@
+<div class="compendium-layout">
+    <!-- BARRA LATERAL (Igual que antes) -->
+    <aside class="compendium-sidebar">
+        <div class="sidebar-menu">
+            <button class="sidebar-btn active" data-subview="heroes-list">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span data-lang-key="teamBuilder.tabHeroes">Heroes List</span>
+            </button>
+            <button class="sidebar-btn" data-subview="team-builder">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+                    </path>
+                </svg>
+                <span data-lang-key="teamBuilder.tabBuilder">Team Builder</span>
+            </button>
+            <button class="sidebar-btn" data-subview="my-teams">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span data-lang-key="teamBuilder.tabMyTeams">My Teams</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="compendium-content">
+
+        <!-- VISTA 1: LISTA DE HÉROES (Igual) -->
+        <div id="subview-heroes-list" class="subview active">
+            <div class="filters-panel">
+                <div class="search-row">
+                    <input type="text" id="hero-search" class="hero-search-input"
+                        data-lang-placeholder="compendium.searchPlaceholder" placeholder="Search...">
+                </div>
+                <div class="filter-toggles-row">
+                    <div class="filter-group" id="element-filters"></div>
+                    <div class="filter-group" id="role-filters"></div>
+                    <div class="filter-group" id="rarity-filters"></div>
+                </div>
+                <div class="heroes-count" id="heroes-count-label">...</div>
+            </div>
+            <div id="heroes-grid" class="heroes-grid"></div>
+            <div id="pagination-controls" class="pagination-controls"></div>
+        </div>
+
+        <!-- VISTA 2: TEAM BUILDER (Igual) -->
+        <div id="subview-team-builder" class="subview hidden">
+            <div class="builder-header">
+                <div class="builder-controls">
+                    <input type="text" id="team-name-input" class="team-name-input"
+                        data-lang-placeholder="teamBuilder.teamNamePlaceholder" placeholder="Name">
+                    <select id="team-type-select" class="team-type-select">
+                        <option value="field">Field</option>
+                        <option value="tactic">Tactical</option>
+                    </select>
+                </div>
+                <div class="builder-actions">
+                    <div class="share-code-group">
+                        <input type="text" id="team-share-code" data-lang-placeholder="teamBuilder.loadIdPlaceholder"
+                            placeholder="ID">
+                        <button id="btn-load-team" class="action-btn secondary"
+                            data-lang-key="teamBuilder.btnLoad">Load</button>
+                    </div>
+                    <button id="btn-save-team" class="action-btn primary"
+                        data-lang-key="teamBuilder.btnSave">Save</button>
+                    <button id="btn-clear-team" class="action-btn danger"
+                        data-lang-key="teamBuilder.btnClear">Clear</button>
+                </div>
+            </div>
+            <div class="team-slots-container">
+                <div class="team-slot leader-slot" data-slot="0">
+                    <div class="slot-label" data-lang-key="teamBuilder.leaderLabel">LEADER</div>
+                    <div class="slot-content placeholder"><span>+</span></div><button
+                        class="remove-hero-btn">&times;</button>
+                </div>
+                <div class="team-slot" data-slot="1">
+                    <div class="slot-label">2</div>
+                    <div class="slot-content placeholder"><span>+</span></div><button
+                        class="remove-hero-btn">&times;</button>
+                </div>
+                <div class="team-slot" data-slot="2">
+                    <div class="slot-label">3</div>
+                    <div class="slot-content placeholder"><span>+</span></div><button
+                        class="remove-hero-btn">&times;</button>
+                </div>
+                <div class="team-slot" data-slot="3">
+                    <div class="slot-label">4</div>
+                    <div class="slot-content placeholder"><span>+</span></div><button
+                        class="remove-hero-btn">&times;</button>
+                </div>
+                <div class="team-slot" data-slot="4">
+                    <div class="slot-label">5</div>
+                    <div class="slot-content placeholder"><span>+</span></div><button
+                        class="remove-hero-btn">&times;</button>
+                </div>
+            </div>
+            <hr class="builder-divider">
+            <h4 class="mini-grid-title" data-lang-key="teamBuilder.availableHeroes">Available Heroes</h4>
+            <div class="filters-panel mini-filters">
+                <div class="search-row">
+                    <input type="text" id="builder-hero-search" class="hero-search-input"
+                        data-lang-placeholder="teamBuilder.filterPlaceholder" placeholder="Filter...">
+                </div>
+                <div class="filter-toggles-row" id="builder-filter-row">
+                    <div class="filter-group" id="builder-element-filters"></div>
+                    <div class="filter-group" id="builder-role-filters"></div>
+                    <div class="filter-group" id="builder-rarity-filters"></div>
+                </div>
+            </div>
+            <div id="builder-heroes-grid" class="heroes-grid mini-grid"></div>
+        </div>
+
+        <!-- VISTA 3: MIS EQUIPOS (MODIFICADO) -->
+        <div id="subview-my-teams" class="subview hidden">
+            <div class="my-teams-header-row">
+                <h2 class="view-title" data-lang-key="teamBuilder.myTeamsTitle">Saved Teams</h2>
+
+                <div class="my-teams-controls-container">
+                    <!-- Buscador -->
+                    <input type="text" id="my-teams-search" class="hero-search-input"
+                        data-lang-placeholder="teamBuilder.filters.searchMyTeams" placeholder="Search...">
+
+                    <div class="my-teams-filters-row">
+                        <!-- Filtro Tipo Equipo (Botones) -->
+                        <div class="filter-group" id="my-teams-type-filters">
+                            <button class="filter-btn active" data-type="teamType" data-value="all"
+                                title="All Types">ALL</button>
+                            <button class="filter-btn" data-type="teamType" data-value="field"
+                                title="Field">FIELD</button>
+                            <button class="filter-btn" data-type="teamType" data-value="tactic"
+                                title="Tactical">TACTIC</button>
+                        </div>
+
+                        <!-- Filtro Elemento (Iconos) -->
+                        <div class="filter-group" id="my-teams-element-filters">
+                            <!-- Se llenará con JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="my-teams-grid" class="my-teams-grid"></div>
+            <div id="my-teams-pagination" class="pagination-controls"></div>
+        </div>
+
+    </main>
+</div>

@@ -4695,3 +4695,69 @@ select.settings-input option {
     font-weight: normal;
     margin-left: 5px;
 }
+
+/* --- NAVEGACIÓN PRINCIPAL (HUB / HEROES) --- */
+.main-nav-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding-top: 10px;
+    /* Espacio si el widget de usuario está arriba */
+}
+
+.main-nav {
+    display: flex;
+    background-color: var(--box-bg-color);
+    padding: 5px;
+    border-radius: 30px;
+    border: 1px solid var(--border-color);
+    gap: 5px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-muted-color);
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-link:hover {
+    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+    background-color: var(--color-primary);
+    color: #1a1a1a;
+    /* Texto oscuro para contraste */
+    box-shadow: 0 2px 10px rgba(187, 134, 252, 0.3);
+}
+
+@media (max-width: 900px) {
+    .main-nav-container {
+        margin-top: 60px;
+        /* Espacio para el header móvil fijo */
+    }
+}
+
+/* Asegurar que el body permita flex-direction column para acomodar el menú nuevo */
+body {
+    flex-direction: column;
+    /* justify-content: center; <--- Esto es lo que tiene tu CSS original */
+}
+
+/* El nav no debe encogerse */
+.main-nav-container {
+    flex-shrink: 0;
+}
+
+/* El contenedor de la app debe poder crecer si es necesario */
+.app-wrapper {
+    flex-shrink: 0;
+}

@@ -6,8 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BnS Heroes - HUB/Timer</title>
+
     <!-- CSS Externo -->
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="compendium.css">
+
     <!-- Librerías Externas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -53,7 +56,7 @@
 
 <body>
     <header id="mobile-header">
-        <!-- El widget de usuario (#user-status) se moverá aquí con JavaScript -->
+        <!-- El widget de usuario (#user-status) se moverá aquí con JavaScript en móvil -->
     </header>
 
     <div id="loading-overlay">
@@ -66,72 +69,105 @@
     <!-- ===== WIDGET DE USUARIO ===== -->
     <div id="user-status"></div>
 
-    <!-- INICIO DE LA APP -->
-    <div class="app-wrapper hidden">
-        <div class="app-container">
-            <div class="content-wrapper">
-                <div class="main-wrapper">
-                    <div class="primary-panel">
-                        <div class="top-bar">
-                            <div class="top-bar-left">
-                                <div class="time-format-container">
-                                    <span>12h</span>
-                                    <label class="time-format-switch">
-                                        <input type="checkbox" id="time-format-switch">
-                                        <span class="slider"></span>
-                                    </label>
-                                    <span>24h</span>
+    <!-- NAVEGACIÓN PRINCIPAL (PWA TABS) -->
+    <div class="main-nav-container">
+        <nav class="main-nav">
+            <!-- data-target apunta al ID del div de la vista -->
+            <a href="#" class="nav-link active" data-target="view-hub">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span data-lang-key="compendium.navHub">HUB</span>
+            </a>
+            <a href="#" class="nav-link" data-target="view-heroes">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span data-lang-key="compendium.navHeroes">Heroes</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- ================= VISTA 1: HUB ================= -->
+    <div id="view-hub" class="view-section">
+        <!-- Todo el contenido original del HUB va aquí dentro -->
+        <div class="app-wrapper"> <!-- Nota: La clase 'hidden' la gestiona main.js al cargar -->
+            <div class="app-container">
+                <div class="content-wrapper">
+                    <div class="main-wrapper">
+                        <div class="primary-panel">
+                            <div class="top-bar">
+                                <div class="top-bar-left">
+                                    <div class="time-format-container">
+                                        <span>12h</span>
+                                        <label class="time-format-switch">
+                                            <input type="checkbox" id="time-format-switch">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>24h</span>
+                                    </div>
+                                </div>
+                                <div class="top-bar-center">
+                                    <div id="current-time"></div>
+                                </div>
+                                <div class="top-bar-right">
+                                    <div id="settings-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="icon icon-tabler icon-tabler-settings" width="28" height="28"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="top-bar-center">
-                                <div id="current-time"></div>
-                            </div>
-                            <div class="top-bar-right">
-                                <div id="settings-button">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="icon icon-tabler icon-tabler-settings" width="28" height="28"
-                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path
-                                            d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
-                                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                            <div id="primary-timers-container"></div>
+                            <div id="status-bar">
+                                <span data-lang-key="notifications.alertsEnabled"></span>
+                                <nav class="footer-nav">
+                                    <a href="roadmap.html" data-lang-key="footer.roadmap">Roadmap</a>
+                                    <span>•</span>
+                                    <a href="https://github.com/olivo28/bnsheroes-timer" target="_blank"
+                                        rel="noopener noreferrer">GitHub</a>
+                                </nav>
+                                <div id="about-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                     </svg>
                                 </div>
                             </div>
                         </div>
-                        <div id="primary-timers-container"></div>
-                        <div id="status-bar">
-                            <span data-lang-key="notifications.alertsEnabled"></span>
-                            <nav class="footer-nav">
-                                <a href="roadmap.html" data-lang-key="footer.roadmap">Roadmap</a>
-                                <span>•</span>
-                                <a href="https://github.com/olivo28/bnsheroes-timer" target="_blank"
-                                    rel="noopener noreferrer">GitHub</a>
-                            </nav>
-                            <div id="about-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                </svg>
-                            </div>
+                        <div class="secondary-panel">
+                            <div id="events-container"></div>
+                            <div id="weekly-container"></div>
+                            <div id="sticky-ticket-container"></div>
+                            <div id="timers-container"></div>
                         </div>
                     </div>
-                    <div class="secondary-panel">
-                        <div id="events-container"></div>
-                        <div id="weekly-container"></div>
-                        <div id="sticky-ticket-container"></div>
-                        <div id="timers-container"></div>
-                    </div>
+                    <div id="banners-container"></div>
                 </div>
-                <div id="banners-container"></div>
+                <div id="event-details-panel"></div>
+                <div id="weekly-details-panel"></div>
+                <div id="boss-details-panel"></div>
             </div>
-            <div id="event-details-panel"></div>
-            <div id="weekly-details-panel"></div>
-            <div id="boss-details-panel"></div>
         </div>
-    </div> <!-- Cierre del app-wrapper -->
+    </div>
+
+    <!-- ================= VISTA 2: HÉROES (Contenedor vacío para AJAX) ================= -->
+    <div id="view-heroes" class="view-section hidden">
+        <!-- El contenido se cargará dinámicamente aquí desde 'views/compendium.html' usando JS -->
+    </div>
 
     <!-- MODAL CONFIGURACIÓN GENERAL -->
     <div id="modal-overlay">
@@ -242,7 +278,6 @@
                         <a href="#" class="nav-item" data-section="push-notifications">
                             <span data-lang-key="account.nav.pushNotifications"></span>
                         </a>
-                        <!-- NUEVA PESTAÑA: RECORDATORIOS -->
                         <a href="#" class="nav-item" data-section="reminders">
                             <span data-lang-key="account.nav.reminders"></span>
                         </a>
@@ -283,7 +318,6 @@
                         <div class="user-profile-card">
                             <div class="user-profile-banner"></div>
                             <div class="user-profile-info">
-                                <!-- Wrapper nuevo para avatar + decoración -->
                                 <div class="user-avatar-wrapper">
                                     <img src="" alt="User Avatar" class="user-profile-avatar">
                                     <img src="" alt="" class="user-avatar-decoration hidden">
@@ -362,9 +396,7 @@
                                 New</button>
                         </div>
 
-                        <div id="reminders-list" class="reminders-list-container">
-                            <!-- JS inyectará los recordatorios aquí -->
-                        </div>
+                        <div id="reminders-list" class="reminders-list-container"></div>
 
                         <!-- FORMULARIO DE CREACIÓN (Oculto por defecto) -->
                         <div id="reminder-form-container" class="hidden"
@@ -386,11 +418,9 @@
                                     <label style="display:block; margin-bottom: 5px; color: var(--text-muted-color);"
                                         data-lang-key="reminders.soundLabel">Notification Sound:</label>
 
-                                    <!-- Selector y Botón de Preview en la misma línea -->
                                     <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
                                         <select id="new-reminder-sound-type" class="settings-input"
                                             style="flex-grow: 1;">
-                                            <!-- JS llenará esto -->
                                         </select>
                                         <button id="btn-preview-sound" class="settings-btn small" title="Preview Sound"
                                             style="padding: 8px 12px;">▶</button>
@@ -507,6 +537,46 @@
     </div>
 
     <!-- Otros Modales -->
+
+    <div id="share-team-modal-overlay">
+        <div id="share-team-modal">
+            <h3 data-lang-key="teamBuilder.shareModal.title">Team Saved!</h3>
+            <p data-lang-key="teamBuilder.shareModal.description">Share your team with others using the code or link
+                below.</p>
+
+            <div class="share-group">
+                <label data-lang-key="teamBuilder.shareModal.codeLabel">Team Code:</label>
+                <div class="input-with-copy">
+                    <input type="text" id="share-team-id" readonly>
+                    <button id="copy-team-id-btn" class="copy-btn" title="Copy Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="share-group">
+                <label data-lang-key="teamBuilder.shareModal.linkLabel">Direct Link:</label>
+                <div class="input-with-copy">
+                    <input type="text" id="share-team-link" readonly>
+                    <button id="copy-team-link-btn" class="copy-btn" title="Copy Link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button id="close-share-modal-btn" class="settings-btn"
+                data-lang-key="teamBuilder.shareModal.btnClose">Close</button>
+        </div>
+    </div>
+
     <div id="info-modal-overlay">
         <div id="info-modal">
             <h2 id="info-modal-title" data-lang-key="modals.showdownInfo.title"></h2>
@@ -722,13 +792,6 @@
         </div>
     </div>
 
-    <!-- CARGA DE SCRIPTS COMO MÓDULOS -->
-    <script src="js/1-utils.js" type="module"></script>
-    <script src="js/2-state.js" type="module"></script>
-    <script src="js/3-ui.js" type="module"></script>
-    <script src="js/4-logic.js" type="module"></script>
-    <script src="js/5-main.js" type="module"></script>
-
     <div id="twitch-fab" class="hidden">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -737,6 +800,18 @@
         <span class="notification-dot"></span>
     </div>
 
+    <!-- CARGA DE SCRIPTS COMO MÓDULOS -->
+    <script src="js/1-utils.js" type="module"></script>
+    <script src="js/2-state.js" type="module"></script>
+    <script src="js/3-ui.js" type="module"></script>
+    <script src="js/4-logic.js" type="module"></script>
+
+    <!-- Módulos nuevos para la PWA/SPA -->
+    <script src="js/6-compendium.js" type="module"></script>
+    <script src="js/7-router.js" type="module"></script>
+
+    <!-- Main al final para iniciar todo -->
+    <script src="js/5-main.js" type="module"></script>
 
 </body>
 

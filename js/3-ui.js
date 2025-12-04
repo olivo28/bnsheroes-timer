@@ -1604,6 +1604,62 @@ closeBossDetailsPanel: function() {
         }
     },
 
+    openShareTeamModal: function(teamId) {
+        const overlay = document.getElementById('share-team-modal-overlay');
+        const idInput = document.getElementById('share-team-id');
+        const linkInput = document.getElementById('share-team-link');
+        const closeBtn = document.getElementById('close-share-modal-btn');
+        
+        // Generar URL dinámica basada en el entorno actual
+        const baseUrl = window.location.origin + window.location.pathname;
+        const fullLink = `${baseUrl}?teamId=${teamId}`;
+
+        idInput.value = teamId;
+        linkInput.value = fullLink;
+
+        // Configurar botones de copia
+        const setupCopy = (btnId, inputEl) => {
+            const btn = document.getElementById(btnId);
+            // Clonamos el botón para eliminar listeners anteriores y evitar duplicados
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            newBtn.addEventListener('click', () => {
+                inputEl.select();
+                navigator.clipboard.writeText(inputEl.value).then(() => {
+                    // Guardar HTML original (el icono SVG)
+                    const originalHtml = newBtn.innerHTML;
+                    
+                    // Cambiar texto a "Copiado!" (Traducido)
+                    newBtn.textContent = Utils.getText('teamBuilder.shareModal.copied');
+                    newBtn.style.backgroundColor = 'var(--color-success)';
+                    
+                    // Restaurar después de 2 segundos
+                    setTimeout(() => {
+                        newBtn.innerHTML = originalHtml;
+                        newBtn.style.backgroundColor = '';
+                    }, 2000);
+                });
+            });
+        };
+
+        setupCopy('copy-team-id-btn', idInput);
+        setupCopy('copy-team-link-btn', linkInput);
+
+        // Configurar cierre
+        const closeModal = () => overlay.classList.remove('visible');
+        closeBtn.onclick = closeModal;
+        overlay.onclick = (e) => { if(e.target === overlay) closeModal(); };
+
+        // Mostrar modal
+        overlay.classList.add('visible');
+    },
+    
+    closeShareTeamModal: function() {
+        const overlay = document.getElementById('share-team-modal-overlay');
+        overlay.classList.remove('visible');
+    },
+
     getDeviceIcon(os) {
         const osLower = (os || '').toLowerCase(); 
         if (osLower.includes('windows')) {
