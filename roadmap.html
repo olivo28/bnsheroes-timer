@@ -1,15 +1,29 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roadmap - BnS Heroes HUB/Timer</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="roadmap.css">
+    <link rel="icon" type="image/png" href="favicon.png">
 </head>
+
 <body>
+    <header style="padding: 20px; text-align: center;">
+        <a href="index.html" class="nav-link" style="display: inline-flex; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span style="margin-left: 8px;">Back to App</span>
+        </a>
+    </header>
     <main id="roadmap-container">
-        <!-- El contenido 100% completo se inyectará aquí -->
+        <!-- El contenido se inyectará aquí -->
     </main>
 
     <script>
@@ -19,158 +33,192 @@
 
             if (lang === 'en') {
                 content.header = `
-                    <div class="roadmap-header">
-                        <h1>Project Roadmap</h1>
-                        <p>Status and future of BnS Heroes HUB/Timer</p>
-                        <div class="language-switcher">
-                            <button onclick="switchLanguage('en')" class="active">English</button>
-                            <button onclick="switchLanguage('es')">Español</button>
-                        </div>
+                <div class="roadmap-header">
+                    <h1>Project Roadmap</h1>
+                    <p>Status and future of BnS Heroes HUB</p>
+                    <div class="language-switcher">
+                        <button onclick="switchLanguage('en')" class="active">English</button>
+                        <button onclick="switchLanguage('es')">Español</button>
                     </div>
-                    <hr>
-                `;
+                </div>
+                <hr>
+            `;
                 content.legend = `
-                    <div class="roadmap-legend">
-                        <div class="legend-item"><span class="status-planned"></span> Planned</div>
-                        <div class="legend-item"><span class="status-progress"></span> In Progress</div>
-                        <div class="legend-item"><span class="status-completed"></span> Completed</div>
-                        <div class="legend-item">💡 Idea</div>
-                    </div>
-                `;
+                <div class="roadmap-legend">
+                    <div class="legend-item"><span class="status-completed"></span> Completed</div>
+                    <div class="legend-item"><span class="status-progress"></span> In Progress</div>
+                    <div class="legend-item"><span class="status-planned"></span> Planned</div>
+                    <div class="legend-item">💡 Idea</div>
+                </div>
+            `;
                 content.sections = `
-                    <details class="roadmap-section">
-                        <summary><h2>1. Full Discord Integration</h2></summary>
-                        <div class="section-content">
-                            <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
-                            <p>The objective is to make all the tool's information accessible directly from Discord and allow the app to send automated notifications to community servers.</p>
-                            <h4>1.1. Dedicated Discord Bot (@BNS-Timer-Bot)</h4>
-                            <ul>
-                                <li><span class="status-planned"></span><strong>Core Functionality:</strong> Implement a bot that can query real-time data from the same API used by the web app.</li>
-                                <li><span class="status-planned"></span><strong>Slash Commands:</strong> Create user-friendly commands for quick lookups.</li>
-                                <li>💡 <strong>Hero Lookup:</strong> Add a <code>/hero &lt;name&gt;</code> command to search the hero database.</li>
-                            </ul>
-                            <h4>1.2. Webhook Notifications (App → Discord)</h4>
-                            <ul>
-                                <li><span class="status-planned"></span><strong>Automated Boss Alerts:</strong> Develop a backend service that sends a formatted message to a configured webhook channel minutes before a world boss spawns.</li>
-                                <li><span class="status-planned"></span><strong>Admin Management:</strong> Add a section in the Admin Panel to manage webhook URLs for different servers.</li>
-                            </ul>
-                        </div>
-                    </details>
-                    <details class="roadmap-section">
-                        <summary><h2>2. Intelligent LFG System</h2></summary>
-                        <div class="section-content">
-                             <p class="section-meta"><strong>Priority:</strong> Medium-High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
-                             <p>Instead of a manual LFG creator, this system will feature a bot that intelligently monitors an LFG channel, formats user messages, and notifies interested players.</p>
-                             <h4>2.1. User LFG Alerts</h4>
-                             <ul>
-                                <li><span class="status-planned"></span><strong>Web UI:</strong> Create a new section where users can select which dungeons/bosses they want to be notified about.</li>
-                                <li><span class="status-planned"></span><strong>Discord Commands:</strong> Implement commands for users to manage their alerts directly from Discord.</li>
-                            </ul>
-                        </div>
-                    </details>
-                    <details class="roadmap-section">
-                        <summary><h2>3. Admin Panel</h2></summary>
-                        <div class="section-content">
-                             <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
-                             <p>A secure web interface for managing all dynamic application content, eliminating the need for manual code or JSON file updates.</p>
-                             <h4>Content Management (CRUD):</h4>
-                             <ul>
-                                 <li><strong>Bosses:</strong> Add, edit, and toggle the active status of world bosses.</li>
-                                 <li><strong>Events:</strong> A comprehensive module to create and manage events.</li>
-                             </ul>
-                        </div>
-                    </details>
-                    <details class="roadmap-section">
-                        <summary><h2>4. Historical Archive & Hero Compendium</h2></summary>
-                        <div class="section-content">
-                            <p class="section-meta"><strong>Priority:</strong> Low | <strong>Status:</strong> <span class="status-idea"></span> Idea</p>
-                            <p>Allow users to browse past content and explore a full library of heroes.</p>
-                             <h4>Event & Banner Archive:</h4>
-                             <ul>
-                                 <li>Create a "Past Events" view.</li>
-                                 <li>Modify the API to serve archived content.</li>
-                             </ul>
-                        </div>
-                    </details>
-                `;
+                <div class="roadmap-section completed-section">
+                    <h2>🚀 Recently Completed (v2.0)</h2>
+                    <div class="section-content">
+                        <p>We have successfully launched the Compendium and User ecosystem!</p>
+                        <ul>
+                            <li><span class="status-completed"></span><strong>Hero Compendium:</strong> Full database with filters, instant search, and detailed hero views.</li>
+                            <li><span class="status-completed"></span><strong>Team Builder:</strong> Drag-and-drop interface, leader selection, and cloud saving.</li>
+                            <li><span class="status-completed"></span><strong>Team Sharing:</strong> Generate unique links/IDs to share teams with the community.</li>
+                            <li><span class="status-completed"></span><strong>User Profiles:</strong> Custom nicknames, server selection, and avatars.</li>
+                            <li><span class="status-completed"></span><strong>Custom Reminders:</strong> Upload your own sound files for personalized alarms.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <details class="roadmap-section">
+                    <summary><h2>1. Full Discord Integration</h2></summary>
+                    <div class="section-content">
+                        <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
+                        <p>The next major phase is to bridge the gap between the Web App and Discord servers.</p>
+                        <h4>1.1. Dedicated Discord Bot (@BNS-HUB-Bot)</h4>
+                        <ul>
+                            <li><span class="status-planned"></span><strong>Core Functionality:</strong> Implement a bot that queries real-time data from the web API.</li>
+                            <li><span class="status-planned"></span><strong>Smart Link Previews:</strong> Automatically generate visual Embeds when a Team URL is shared in chat.</li>
+                            <li><span class="status-planned"></span><strong>Slash Commands:</strong>
+                                <ul>
+                                    <li><code>/timers</code>: Displays upcoming world bosses.</li>
+                                    <li><code>/events</code>: Lists active events.</li>
+                                    <li><code>/weekly</code>: Shows weekly content summary.</li>
+                                    <li><code>/banner</code>: Shows current/upcoming banners.</li>
+                                    <li><code>/hero &lt;name&gt;</code>: Fetches hero stats and images.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <h4>1.2. Webhook Notifications</h4>
+                        <ul>
+                            <li><span class="status-planned"></span><strong>Automated Boss Alerts:</strong> Backend service to send formatted Discord Embeds to configured channels before a boss spawns.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="roadmap-section">
+                    <summary><h2>2. Intelligent LFG System</h2></summary>
+                    <div class="section-content">
+                         <p class="section-meta"><strong>Priority:</strong> Medium | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
+                         <p>An automated system to parse LFG messages and notify interested players.</p>
+                         <h4>2.1. User LFG Alerts</h4>
+                         <ul>
+                            <li><span class="status-planned"></span><strong>Web UI:</strong> New section in "My Account" to toggle notifications for specific dungeons.</li>
+                            <li><span class="status-planned"></span><strong>Discord Commands:</strong> Manage alerts via <code>/lfg notify add &lt;dungeon&gt;</code>.</li>
+                        </ul>
+                        <h4>2.2. Automated Parsing & Pinging</h4>
+                         <ul>
+                            <li><span class="status-planned"></span><strong>Smart Notification:</strong> The bot will read #lfg channels, identify keywords, and tag subscribed users.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="roadmap-section">
+                    <summary><h2>3. Admin Panel</h2></summary>
+                    <div class="section-content">
+                         <p class="section-meta"><strong>Priority:</strong> High | <strong>Status:</strong> <span class="status-planned"></span> Planned</p>
+                         <p>A secure web interface for managing dynamic content without code deployments.</p>
+                         <h4>Content Management (CRUD):</h4>
+                         <ul>
+                             <li><strong>Bosses:</strong> Manage spawn schedules and active status.</li>
+                             <li><strong>Events:</strong> Create events, missions, and rewards.</li>
+                             <li><strong>Heroes:</strong> Add new heroes to the database (updating the Compendium instantly).</li>
+                             <li><strong>Banners:</strong> Schedule future banners.</li>
+                         </ul>
+                    </div>
+                </details>
+            `;
             } else { // 'es'
                 content.header = `
-                    <div class="roadmap-header">
-                        <h1>Roadmap del Proyecto</h1>
-                        <p>Estado y futuro de BnS Heroes HUB/Timer</p>
-                        <div class="language-switcher">
-                            <button onclick="switchLanguage('en')">English</button>
-                            <button onclick="switchLanguage('es')" class="active">Español</button>
-                        </div>
+                <div class="roadmap-header">
+                    <h1>Roadmap del Proyecto</h1>
+                    <p>Estado y futuro de BnS Heroes HUB</p>
+                    <div class="language-switcher">
+                        <button onclick="switchLanguage('en')">English</button>
+                        <button onclick="switchLanguage('es')" class="active">Español</button>
                     </div>
-                    <hr>
-                `;
-                 content.legend = `
-                    <div class="roadmap-legend">
-                        <div class="legend-item"><span class="status-planned"></span> Pendiente</div>
-                        <div class="legend-item"><span class="status-progress"></span> En Progreso</div>
-                        <div class="legend-item"><span class="status-completed"></span> Completado</div>
-                        <div class="legend-item">💡 Idea</div>
-                    </div>
-                `;
+                </div>
+                <hr>
+            `;
+                content.legend = `
+                <div class="roadmap-legend">
+                    <div class="legend-item"><span class="status-completed"></span> Completado</div>
+                    <div class="legend-item"><span class="status-progress"></span> En Progreso</div>
+                    <div class="legend-item"><span class="status-planned"></span> Pendiente</div>
+                    <div class="legend-item">💡 Idea</div>
+                </div>
+            `;
                 content.sections = `
-                    <details class="roadmap-section">
-                        <summary><h2>1. Integración Completa con Discord</h2></summary>
-                        <div class="section-content">
-                            <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
-                            <p>El objetivo es hacer que toda la información de la herramienta sea accesible directamente desde Discord y permitir que la aplicación envíe notificaciones automatizadas a los servidores de la comunidad.</p>
-                            <h4>1.1. Bot de Discord Dedicado (@BNS-Timer-Bot)</h4>
-                            <ul>
-                                <li><span class="status-planned"></span><strong>Funcionalidad Principal:</strong> Implementar un bot que pueda consultar datos en tiempo real.</li>
-                                <li><span class="status-planned"></span><strong>Comandos de Barra (/):</strong> Crear comandos fáciles de usar para consultas rápidas.</li>
-                                <li>💡 <strong>Búsqueda de Héroes:</strong> Añadir un comando <code>/hero &lt;nombre&gt;</code> para buscar en la base de datos.</li>
-                            </ul>
-                            <h4>1.2. Notificaciones con Webhooks (App → Discord)</h4>
-                            <ul>
-                                <li><span class="status-planned"></span><strong>Alertas de Jefes Automatizadas:</strong> Desarrollar un servicio de backend que envíe un mensaje formateado a un canal.</li>
-                                <li><span class="status-planned"></span><strong>Gestión de Administrador:</strong> Añadir una sección para gestionar las URLs de los webhooks.</li>
-                            </ul>
-                        </div>
-                    </details>
-                    <details class="roadmap-section">
-                        <summary><h2>2. Sistema Inteligente de Búsqueda de Grupo (LFG)</h2></summary>
-                        <div class="section-content">
-                            <p class="section-meta"><strong>Prioridad:</strong> Media-Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
-                            <p>En lugar de un creador manual, un bot monitorizará un canal LFG, formateará los mensajes y notificará a los jugadores interesados.</p>
-                             <h4>2.1. Alertas LFG de Usuario</h4>
-                             <ul>
-                                <li><span class="status-planned"></span><strong>UI Web:</strong> Crear una sección para que los usuarios seleccionen de qué quieren recibir notificaciones.</li>
-                                <li><span class="status-planned"></span><strong>Comandos de Discord:</strong> Implementar comandos para gestionar sus alertas desde Discord.</li>
-                            </ul>
-                        </div>
-                    </details>
-                    <details class="roadmap-section">
-                        <summary><h2>3. Panel de Administración</h2></summary>
-                        <div class="section-content">
-                            <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
-                            <p>Una interfaz web segura para gestionar todo el contenido dinámico de la aplicación, eliminando la necesidad de actualizar código manualmente.</p>
-                             <h4>Gestión de Contenido (CRUD):</h4>
-                             <ul>
-                                 <li><strong>Jefes:</strong> Añadir, editar y cambiar el estado de los jefes mundiales.</li>
-                                 <li><strong>Eventos:</strong> Un módulo completo para crear y gestionar eventos.</li>
-                             </ul>
-                        </div>
-                    </details>
-                     <details class="roadmap-section">
-                        <summary><h2>4. Archivo Histórico y Compendio de Héroes</h2></summary>
-                        <div class="section-content">
-                            <p class="section-meta"><strong>Prioridad:</strong> Baja | <strong>Estado:</strong> <span class="status-idea"></span> Idea</p>
-                            <p>Permitir a los usuarios navegar por contenido pasado y explorar una biblioteca completa de héroes.</p>
-                            <h4>Archivo de Eventos y Banners:</h4>
-                            <ul>
-                                <li>Crear una vista de "Eventos Pasados".</li>
-                                <li>Modificar la API para que sirva contenido archivado.</li>
-                            </ul>
-                        </div>
-                    </details>
-                `;
+                <div class="roadmap-section completed-section">
+                    <h2>🚀 Recientemente Completado (v2.0)</h2>
+                    <div class="section-content">
+                        <p>¡Hemos lanzado exitosamente el ecosistema de Compendio y Usuarios!</p>
+                        <ul>
+                            <li><span class="status-completed"></span><strong>Compendio de Héroes:</strong> Base de datos completa con filtros, búsqueda instantánea y vistas detalladas.</li>
+                            <li><span class="status-completed"></span><strong>Constructor de Equipos:</strong> Interfaz "arrastrar y soltar", selección de líder y guardado en la nube.</li>
+                            <li><span class="status-completed"></span><strong>Compartir Equipos:</strong> Generación de enlaces/IDs únicos para compartir composiciones.</li>
+                            <li><span class="status-completed"></span><strong>Perfiles de Usuario:</strong> Apodos personalizados, selección de servidor y avatares.</li>
+                            <li><span class="status-completed"></span><strong>Recordatorios Personalizados:</strong> Subida de archivos de sonido propios para alarmas.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <details class="roadmap-section">
+                    <summary><h2>1. Integración Completa con Discord</h2></summary>
+                    <div class="section-content">
+                        <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
+                        <p>La próxima gran fase es conectar la Aplicación Web con los servidores de Discord.</p>
+                        <h4>1.1. Bot de Discord Dedicado (@BNS-HUB-Bot)</h4>
+                        <ul>
+                            <li><span class="status-planned"></span><strong>Funcionalidad Principal:</strong> Implementar un bot que pueda consultar datos en tiempo real.</li>
+                            <li><span class="status-planned"></span><strong>Previsualización de Enlaces:</strong> Generar Embeds visuales automáticamente cuando se comparta una URL de Equipo en el chat.</li>
+                            <li><span class="status-planned"></span><strong>Comandos de Barra (/):</strong>
+                                <ul>
+                                    <li><code>/timers</code>: Muestra los próximos jefes.</li>
+                                    <li><code>/events</code>: Lista eventos activos.</li>
+                                    <li><code>/weekly</code>: Resumen semanal.</li>
+                                    <li><code>/banner</code>: Banners actuales/próximos.</li>
+                                    <li><code>/hero &lt;nombre&gt;</code>: Muestra estadísticas e imágenes del Compendio.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <h4>1.2. Notificaciones Webhook</h4>
+                        <ul>
+                            <li><span class="status-planned"></span><strong>Alertas Automatizadas:</strong> Servicio backend para enviar mensajes formateados (Embeds) a canales configurados antes de un spawn.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="roadmap-section">
+                    <summary><h2>2. Sistema Inteligente de Búsqueda de Grupo (LFG)</h2></summary>
+                    <div class="section-content">
+                        <p class="section-meta"><strong>Prioridad:</strong> Media | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
+                        <p>Un sistema automatizado para leer mensajes de LFG y notificar a jugadores.</p>
+                         <h4>2.1. Alertas LFG de Usuario</h4>
+                         <ul>
+                            <li><span class="status-planned"></span><strong>UI Web:</strong> Nueva sección en "Mi Cuenta" para activar notificaciones de mazmorras específicas.</li>
+                            <li><span class="status-planned"></span><strong>Comandos Discord:</strong> Gestión mediante <code>/lfg notify add &lt;mazmorra&gt;</code>.</li>
+                        </ul>
+                        <h4>2.2. Análisis y Notificación</h4>
+                         <ul>
+                            <li><span class="status-planned"></span><strong>Notificación Inteligente:</strong> El bot leerá los canales #lfg, identificará palabras clave y etiquetará a los usuarios suscritos.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="roadmap-section">
+                    <summary><h2>3. Panel de Administración</h2></summary>
+                    <div class="section-content">
+                        <p class="section-meta"><strong>Prioridad:</strong> Alta | <strong>Estado:</strong> <span class="status-planned"></span> Pendiente</p>
+                        <p>Interfaz web segura para gestionar contenido sin tocar código.</p>
+                         <h4>Gestión de Contenido (CRUD):</h4>
+                         <ul>
+                             <li><strong>Jefes:</strong> Gestionar horarios y estado.</li>
+                             <li><strong>Eventos:</strong> Crear misiones y recompensas.</li>
+                             <li><strong>Héroes:</strong> Añadir nuevos héroes a la base de datos (actualizando el Compendio al instante).</li>
+                             <li><strong>Banners:</strong> Programar futuros banners.</li>
+                         </ul>
+                    </div>
+                </details>
+            `;
             }
-            
+
             roadmapContainer.innerHTML = `<div class="roadmap-wrapper">${content.header}${content.legend}<div class="roadmap-accordion">${content.sections}</div></div>`;
             initAccordion();
         }
@@ -188,6 +236,7 @@
                     }
                 });
             });
+            // Abre el primer elemento colapsable (que ahora es el segundo bloque, ya que el primero es el completado fijo)
             if (detailsElements.length > 0) {
                 detailsElements[0].open = true;
             }
@@ -198,4 +247,5 @@
         });
     </script>
 </body>
+
 </html>

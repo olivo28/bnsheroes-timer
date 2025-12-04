@@ -1,7 +1,7 @@
 'use strict';
 
-const CACHE_NAME_STATIC = 'bns-timer-static-v4.1';
-const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v4.1';
+const CACHE_NAME_STATIC = 'bns-timer-static-v4.2';
+const CACHE_NAME_DYNAMIC = 'bns-timer-dynamic-v4.2';
 const API_URL_PREFIX = 'https://bnsheroes.pcnetfs.moe/api/';
 
 // --- INICIO DE LA CORRECCIÓN UNIVERSAL ---
