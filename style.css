@@ -3432,7 +3432,7 @@ select.settings-input option {
 }
 
 .weekly-score-reward-points {
-    font-size: 0.9em;
+    font-size: 0.8em;
     font-weight: bold;
     color: var(--text-muted-color);
 }

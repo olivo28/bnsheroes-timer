@@ -1149,7 +1149,7 @@ closeBossDetailsPanel: function() {
                 </div>`;
 
                 if (boss.recommendedHeroes?.description) {
-                    contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${boss.recommendedHeroes.description[lang]}</p></div>`;
+                    contentHTML += `<div class="details-section weekly-recommended-heroes"><h3>${Utils.getText('weekly.recommendedHeroes')}</h3><div class="weekly-recommendation-box"><p>${Utils.formatText(boss.recommendedHeroes.description[lang])}</p></div>`;
                     if (boss.recommendedHeroes.heroesByTag) {
                         boss.recommendedHeroes.heroesByTag.forEach(tagGroup => {
                             contentHTML += `<div class="weekly-recommended-heroes-tag-group"><h5 class="weekly-recommended-heroes-tag">#${tagGroup.tag[lang]}</h5><div class="banner-heroes">`;
@@ -1197,7 +1197,7 @@ closeBossDetailsPanel: function() {
 
                 if (boss.tips?.length > 0) {
                     contentHTML += `<div class="details-section"><h3>${Utils.getText('weekly.tipsTitle')}</h3><ul class="weekly-tips-list">`;
-                    boss.tips.forEach(tip => { contentHTML += `<li>${tip[lang]}</li>`; });
+                    boss.tips.forEach(tip => { contentHTML += `<li>${Utils.formatText(tip[lang])}</li>`; });
                     contentHTML += `</ul></div>`;
                 }
                 
