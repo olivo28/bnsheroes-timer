@@ -673,53 +673,105 @@ body.compendium-active {
    ========================================= */
 @media (max-width: 900px) {
 
-    /* En móvil, el body se comporta normal, sin forzar flex-start global para no romper swiper */
+    /* 1. Ajuste del Body */
     body.compendium-active {
         padding-top: 10px !important;
+        padding-bottom: 100px !important;
+        /* Espacio extra abajo para que el menú no tape contenido */
     }
 
     .main-nav-container {
         margin-top: 10px;
     }
 
+    /* 2. Layout Vertical */
     .compendium-layout {
         flex-direction: column;
+        display: block;
     }
 
+    /* 3. BARRA FLOTANTE INFERIOR (FIX) */
     .compendium-sidebar {
-        width: 100%;
-        position: static;
-        margin-bottom: 15px;
+        position: fixed;
+        bottom: 20px;
+        /* Pegado abajo */
+        top: auto !important;
+        /* IMPORTANTE: Anula el top:20px del escritorio */
+        height: auto !important;
+        /* IMPORTANTE: Evita que se estire */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 350px;
+        background-color: rgba(35, 35, 35, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        padding: 5px;
+        margin: 0;
+        z-index: 1000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .sidebar-menu {
         flex-direction: row;
-        overflow-x: auto;
+        justify-content: space-between;
+        gap: 0;
     }
 
     .sidebar-btn {
         flex: 1;
+        flex-direction: column;
         justify-content: center;
+        gap: 4px;
+        padding: 10px 0;
+        border-radius: 40px;
         white-space: nowrap;
+        color: var(--text-muted-color);
     }
 
-    .heroes-grid {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 10px;
+    .sidebar-btn span {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
+    .sidebar-btn svg {
+        width: 20px;
+        height: 20px;
+        margin-bottom: 0;
+    }
+
+    .sidebar-btn.active {
+        background-color: var(--color-primary);
+        color: #121212;
+        box-shadow: 0 4px 15px rgba(187, 134, 252, 0.4);
+    }
+
+    /* Ocultar la lista de equipos del sidebar en móvil */
+    #my-teams-sidebar-section {
+        display: none;
+    }
+
+    /* 4. Ajustes de contenido */
     .compendium-wrapper {
         width: 100%;
         padding: 0 10px;
     }
 
-    .team-slots-container {
+    .heroes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 10px;
     }
 
+    /* Slots Team Builder */
+    .team-slots-container {
+        gap: 8px;
+    }
+
     .team-slot {
-        width: 100px;
-        height: 133px;
+        width: 90px;
+        height: 120px;
     }
 
     .team-slot .mini-icon {
@@ -728,7 +780,21 @@ body.compendium-active {
     }
 
     .card-name {
-        font-size: 0.8em;
+        font-size: 0.75em;
+    }
+
+    /* Mis Equipos */
+    .my-teams-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-slot {
+        width: 45px;
+        height: 45px;
+    }
+
+    .small-search {
+        width: 100%;
     }
 }
 

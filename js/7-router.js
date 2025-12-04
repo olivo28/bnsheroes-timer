@@ -55,7 +55,14 @@ const Router = {
             this.updateNavUI('view-heroes');
             this.switchView('view-heroes', { subView: 'team-builder' });
         }
-        // Caso 3: ?view=heroes -> Abre Lista de Héroes
+
+        // Caso 3: ?view=my-teams -> Abre Lista de Equipos
+        else if (params.get('view') === 'my-teams') {
+            this.updateNavUI('view-heroes');
+            this.switchView('view-heroes', { subView: 'my-teams' });
+        }
+
+        // Caso 4: ?view=heroes -> Abre Lista de Héroes
         else if (params.get('view') === 'heroes') {
             this.updateNavUI('view-heroes');
             this.switchView('view-heroes', { subView: 'heroes-list' });
