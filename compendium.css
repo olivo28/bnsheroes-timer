@@ -967,11 +967,11 @@ body.compendium-active {
 .my-teams-grid {
     display: grid;
     /* Ajuste automático de columnas */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 20px;
     width: 100%;
     /* Altura mínima para que el centrado vertical del mensaje se vea bien */
-    min-height: 300px;
+    min-height: auto;
     position: relative;
 }
 
