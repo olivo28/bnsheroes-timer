@@ -1386,26 +1386,39 @@ closeBossDetailsPanel: function() {
             if (!profileForm) {
                 const formHTML = `
                     <div class="profile-settings-form" style="margin-top: 20px;">
-                        <h3 style="color: var(--color-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">Game Data & Profile</h3>
+                        <h3 style="color: var(--color-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;" 
+                            data-lang-key="account.profile.title">
+                            ${Utils.getText('account.profile.title')}
+                        </h3>
                         
                         <div class="settings-row-vertical" style="margin-bottom: 15px;">
-                            <label class="settings-label">Custom Nickname <small>(Overrides Discord Name)</small></label>
-                            <input type="text" id="input-custom-nick" class="settings-input" placeholder="e.g. TheSlayer" value="${user.customNickname || ''}">
+                            <label class="settings-label">
+                                <span data-lang-key="account.profile.nicknameLabel">${Utils.getText('account.profile.nicknameLabel')}</span> 
+                                <small data-lang-key="account.profile.nicknameNote">${Utils.getText('account.profile.nicknameNote')}</small>
+                            </label>
+                            <input type="text" id="input-custom-nick" class="settings-input" 
+                                   data-lang-placeholder="account.profile.nicknamePlaceholder"
+                                   placeholder="${Utils.getText('account.profile.nicknamePlaceholder')}" 
+                                   value="${user.customNickname || ''}">
                         </div>
 
                         <div class="settings-grid-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
                             <div class="settings-col">
-                                <label class="settings-label">Server</label>
+                                <label class="settings-label" data-lang-key="account.profile.serverLabel">${Utils.getText('account.profile.serverLabel')}</label>
                                 <select id="input-game-server" class="settings-input">
-                                    <option value="">-- Select --</option>
+                                    <option value="" data-lang-key="account.profile.serverPlaceholder">${Utils.getText('account.profile.serverPlaceholder')}</option>
                                     <option value="NA" ${user.gameServer === 'NA' ? 'selected' : ''}>NA</option>
                                     <option value="EU" ${user.gameServer === 'EU' ? 'selected' : ''}>EU</option>
                                     <option value="ASIA" ${user.gameServer === 'ASIA' ? 'selected' : ''}>ASIA</option>
+
                                 </select>
                             </div>
                             <div class="settings-col">
-                                <label class="settings-label">Character {Clan}</label>
-                                <input type="text" id="input-char-name" class="settings-input" placeholder="Name {Clan}" value="${user.characterName || ''}">
+                                <label class="settings-label" data-lang-key="account.profile.charLabel">${Utils.getText('account.profile.charLabel')}</label>
+                                <input type="text" id="input-char-name" class="settings-input" 
+                                       data-lang-placeholder="account.profile.charPlaceholder"
+                                       placeholder="${Utils.getText('account.profile.charPlaceholder')}" 
+                                       value="${user.characterName || ''}">
                             </div>
                         </div>
                     </div>
@@ -1413,6 +1426,7 @@ closeBossDetailsPanel: function() {
                 const card = myAccountSection.querySelector('.user-profile-card');
                 if (card) card.insertAdjacentHTML('afterend', formHTML);
             }
+
 
             // B. LÓGICA DE ACTUALIZACIÓN VISUAL (TARJETA)
             const updateCardVisuals = () => {
@@ -2266,8 +2280,6 @@ closeBossDetailsPanel: function() {
         });
     },
 
-
-
     applyLanguage: function () {
         if (!App.state.i18n || Object.keys(App.state.i18n).length === 0) return;
 
@@ -2278,6 +2290,12 @@ closeBossDetailsPanel: function() {
             const key = el.dataset.langKey;
             const text = Utils.getText(key);
                 if (text !== key) el.innerHTML = Utils.formatText(text);
+        });
+
+        document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+            const key = el.dataset.langPlaceholder;
+            const text = Utils.getText(key);
+            if (text !== key) el.placeholder = text;
         });
 
         if (App.state.currentOpenEventId) {
