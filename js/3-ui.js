@@ -2018,6 +2018,7 @@ closeBossDetailsPanel: function() {
             actionButtonHTML = `
                 <button id="logout-btn" class="user-action-btn logout-icon" title="${Utils.getText('common.logout')}">${powerIconSVG}</button>
             `;
+            document.body.classList.remove('guest-user'); 
         } else {
             userInfoHTML = `
                 <div class="user-info-static">
@@ -2028,6 +2029,7 @@ closeBossDetailsPanel: function() {
             actionButtonHTML = `
                 <button id="login-btn" class="user-action-btn login-icon" title="${Utils.getText('common.login')}">${powerIconSVG}</button>
             `;
+            document.body.classList.add('guest-user');
         }
 
         userStatusDiv.innerHTML = `

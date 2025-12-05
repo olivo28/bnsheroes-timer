@@ -1,5 +1,5 @@
 <div class="compendium-layout">
-    <!-- BARRA LATERAL (Igual que antes) -->
+    <!-- BARRA LATERAL -->
     <aside class="compendium-sidebar">
         <div class="sidebar-menu">
             <button class="sidebar-btn active" data-subview="heroes-list">
@@ -35,7 +35,7 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="compendium-content">
 
-        <!-- VISTA 1: LISTA DE HÉROES (Igual) -->
+        <!-- VISTA 1: LISTA DE HÉROES -->
         <div id="subview-heroes-list" class="subview active">
             <div class="filters-panel">
                 <div class="search-row">
@@ -53,8 +53,9 @@
             <div id="pagination-controls" class="pagination-controls"></div>
         </div>
 
-        <!-- VISTA 2: TEAM BUILDER (Igual) -->
+        <!-- VISTA 2: TEAM BUILDER -->
         <div id="subview-team-builder" class="subview hidden">
+            <!-- Cabecera del Constructor -->
             <div class="builder-header">
                 <div class="builder-controls">
                     <input type="text" id="team-name-input" class="team-name-input"
@@ -77,33 +78,90 @@
                         data-lang-key="teamBuilder.btnClear">Clear</button>
                 </div>
             </div>
+
+            <!-- Slots Principales (0-4) -->
             <div class="team-slots-container">
                 <div class="team-slot leader-slot" data-slot="0">
                     <div class="slot-label" data-lang-key="teamBuilder.leaderLabel">LEADER</div>
-                    <div class="slot-content placeholder"><span>+</span></div><button
-                        class="remove-hero-btn">&times;</button>
+                    <div class="slot-content placeholder"><span>+</span></div>
+                    <button class="remove-hero-btn">&times;</button>
                 </div>
                 <div class="team-slot" data-slot="1">
                     <div class="slot-label">2</div>
-                    <div class="slot-content placeholder"><span>+</span></div><button
-                        class="remove-hero-btn">&times;</button>
+                    <div class="slot-content placeholder"><span>+</span></div>
+                    <button class="remove-hero-btn">&times;</button>
                 </div>
                 <div class="team-slot" data-slot="2">
                     <div class="slot-label">3</div>
-                    <div class="slot-content placeholder"><span>+</span></div><button
-                        class="remove-hero-btn">&times;</button>
+                    <div class="slot-content placeholder"><span>+</span></div>
+                    <button class="remove-hero-btn">&times;</button>
                 </div>
                 <div class="team-slot" data-slot="3">
                     <div class="slot-label">4</div>
-                    <div class="slot-content placeholder"><span>+</span></div><button
-                        class="remove-hero-btn">&times;</button>
+                    <div class="slot-content placeholder"><span>+</span></div>
+                    <button class="remove-hero-btn">&times;</button>
                 </div>
                 <div class="team-slot" data-slot="4">
                     <div class="slot-label">5</div>
-                    <div class="slot-content placeholder"><span>+</span></div><button
-                        class="remove-hero-btn">&times;</button>
+                    <div class="slot-content placeholder"><span>+</span></div>
+                    <button class="remove-hero-btn">&times;</button>
                 </div>
             </div>
+
+            <!-- Fila de Suplentes (Slots 5-6) - Oculto por defecto -->
+            <div id="subs-row" class="hidden">
+                <div style="text-align: center; margin: 15px 0 5px;">
+                    <span class="panel-subtitle-small" data-lang-key="teamBuilder.subsLabel">Suplentes</span>
+                </div>
+                <div class="team-slots-container subs-container">
+                    <div class="team-slot sub-slot" data-slot="5">
+                        <div class="slot-label">S1</div>
+                        <div class="slot-content placeholder"><span>+</span></div>
+                        <button class="remove-hero-btn">&times;</button>
+                    </div>
+                    <div class="team-slot sub-slot" data-slot="6">
+                        <div class="slot-label">S2</div>
+                        <div class="slot-content placeholder"><span>+</span></div>
+                        <button class="remove-hero-btn">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Notas con Pestañas -->
+            <div class="notes-section-container">
+                <hr class="builder-divider">
+
+                <!-- Cabecera: Título y Pestañas -->
+                <div class="notes-header-row">
+                    <label class="settings-label" data-lang-key="teamBuilder.notesLabel">Notas</label>
+                    <div class="notes-tabs">
+                        <button class="note-tab active" data-mode="write"
+                            data-lang-key="teamBuilder.tabWrite">Write</button>
+                        <button class="note-tab" data-mode="preview"
+                            data-lang-key="teamBuilder.tabPreview">Preview</button>
+                    </div>
+                </div>
+
+                <!-- Área de Escritura (Con Autocompletado) -->
+                <div id="note-write-area" class="notes-input-wrapper">
+                    <textarea id="team-notes-input" class="settings-input notes-textarea"
+                        data-lang-placeholder="teamBuilder.notesPlaceholder" placeholder="Notes..."
+                        autocomplete="off"></textarea>
+
+                    <ul id="notes-autocomplete-list" class="autocomplete-list hidden"></ul>
+
+                    <small class="markdown-hint"
+                        style="color:var(--text-muted-color); font-size:0.75em; display:block; text-align:right; margin-top:2px;"
+                        data-lang-key="teamBuilder.notesTip">
+                        Tip: Use [Name] to highlight text in gold.
+                    </small>
+                </div>
+
+                <!-- Área de Visualización (Preview / Solo Lectura) -->
+                <div id="note-preview-area" class="notes-display hidden"></div>
+            </div>
+
+            <!-- Héroes Disponibles (Mini Grid) -->
             <hr class="builder-divider">
             <h4 class="mini-grid-title" data-lang-key="teamBuilder.availableHeroes">Available Heroes</h4>
             <div class="filters-panel mini-filters">
@@ -120,18 +178,16 @@
             <div id="builder-heroes-grid" class="heroes-grid mini-grid"></div>
         </div>
 
-        <!-- VISTA 3: MIS EQUIPOS (MODIFICADO) -->
+        <!-- VISTA 3: MIS EQUIPOS -->
         <div id="subview-my-teams" class="subview hidden">
             <div class="my-teams-header-row">
                 <h2 class="view-title" data-lang-key="teamBuilder.myTeamsTitle">Saved Teams</h2>
 
                 <div class="my-teams-controls-container">
-                    <!-- Buscador -->
                     <input type="text" id="my-teams-search" class="hero-search-input"
                         data-lang-placeholder="teamBuilder.filters.searchMyTeams" placeholder="Search...">
 
                     <div class="my-teams-filters-row">
-                        <!-- Filtro Tipo Equipo (Botones) -->
                         <div class="filter-group" id="my-teams-type-filters">
                             <button class="filter-btn active" data-type="teamType" data-value="all"
                                 title="All Types">ALL</button>
@@ -140,11 +196,7 @@
                             <button class="filter-btn" data-type="teamType" data-value="tactic"
                                 title="Tactical">TACTIC</button>
                         </div>
-
-                        <!-- Filtro Elemento (Iconos) -->
-                        <div class="filter-group" id="my-teams-element-filters">
-                            <!-- Se llenará con JS -->
-                        </div>
+                        <div class="filter-group" id="my-teams-element-filters"></div>
                     </div>
                 </div>
             </div>

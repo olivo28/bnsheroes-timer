@@ -147,7 +147,18 @@ body.compendium-active {
     border-radius: 12px;
     padding: 10px;
     position: sticky;
-    top: 20px;
+
+    /* --- CAMBIO AQUÍ --- */
+    top: 85px;
+    /* Aumentado de 20px a 85px para que no choque con el widget de usuario */
+    /* ------------------- */
+
+    z-index: 100;
+    /* Aseguramos que tenga un nivel controlado */
+    max-height: calc(100vh - 100px);
+    /* Evita que sea más alta que la pantalla si tiene mucho contenido */
+    overflow-y: auto;
+    /* Permite scroll dentro del menú si es muy alto */
 }
 
 .compendium-content {
@@ -1169,4 +1180,253 @@ body.compendium-active {
     .team-title {
         max-width: 60%;
     }
+}
+
+/* =========================================
+   ESTILOS PARA TEAM BUILDER (SUBS, NOTAS, MODOS)
+   ========================================= */
+
+/* --- UTILIDADES --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- SUPLENTES (TACTICAL) --- */
+.subs-container {
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.sub-slot {
+    width: 100px;
+    height: 133px;
+    /* Un poco más pequeños que los principales */
+}
+
+.sub-slot .card-hero-img {
+    border-radius: 8px;
+}
+
+/* --- SECCIÓN DE NOTAS Y PESTAÑAS --- */
+.notes-section-container {
+    margin: 20px 0;
+    width: 100%;
+}
+
+/* Cabecera con Título y Pestañas */
+.notes-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 0;
+    /* Pegado al input */
+}
+
+/* Contenedor de Pestañas */
+.notes-tabs {
+    display: flex;
+    gap: 0;
+    background: #111;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    /* Se une con el input */
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+    margin-right: 2px;
+}
+
+.note-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-muted-color);
+    padding: 6px 15px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.note-tab:hover {
+    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.note-tab.active {
+    color: var(--color-primary);
+    background-color: rgba(187, 134, 252, 0.1);
+    border-bottom: 2px solid var(--color-primary);
+    font-weight: bold;
+}
+
+/* Input Wrapper (Escritura) */
+.notes-input-wrapper {
+    position: relative;
+    /* Necesario para el autocompletado */
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+    margin-bottom: 0;
+    font-family: inherit;
+    line-height: 1.5;
+    background-color: var(--bg-color);
+    border-top-left-radius: 0;
+    /* Cuadrado arriba si hay tabs a la izquierda */
+    border-top-right-radius: 4px;
+    /* Ajuste para que se vea integrado con las pestañas */
+}
+
+/* Área de Visualización (Preview / Lectura) */
+.notes-display {
+    min-height: 60px;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 8px 8px;
+    /* Redondeado solo abajo por defecto */
+    color: var(--text-color);
+    line-height: 1.6;
+    font-size: 0.95em;
+
+    /* CRUCIAL: Respeta los saltos de línea del usuario */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Texto Resaltado [Heroe] */
+.highlight-bracket {
+    color: #ffd700;
+    /* Dorado */
+    font-weight: bold;
+    background-color: rgba(255, 215, 0, 0.1);
+    padding: 0 4px;
+    border-radius: 4px;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+}
+
+/* --- AUTOCOMPLETADO --- */
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: var(--box-bg-color);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    z-index: 1000;
+    /* Encima de todo */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+.autocomplete-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background-color: var(--color-primary);
+    color: #121212;
+    /* Texto oscuro para contraste con fondo lila */
+}
+
+.autocomplete-item img {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+/* =========================================
+   ESTADOS DE PERMISOS (LOCKED / VIEW / GUEST)
+   ========================================= */
+
+/* --- 1. MODO BLOQUEADO (LOCKED) --- 
+   Se aplica al contenedor general cuando cargas un equipo ajeno. */
+
+.locked-mode .team-name-input,
+.locked-mode .team-type-select {
+    pointer-events: none;
+    opacity: 0.7;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: transparent;
+}
+
+.locked-mode .remove-hero-btn {
+    display: none !important;
+    /* No borrar héroes */
+}
+
+.locked-mode .team-slot {
+    pointer-events: none;
+    /* No arrastrar/soltar */
+    cursor: default;
+}
+
+.locked-mode #btn-save-team {
+    display: none;
+    /* No guardar cambios sobre equipo ajeno */
+}
+
+/* --- 2. MODO VISTA / SOLO LECTURA (VIEW MODE) --- 
+   Se aplica a la sección de notas cuando no eres el dueño. */
+
+/* Ocultar pestañas de edición */
+.view-mode .notes-tabs {
+    display: none !important;
+}
+
+/* Ocultar área de escritura */
+.view-mode #note-write-area {
+    display: none !important;
+}
+
+/* Mostrar siempre el preview y arreglar bordes */
+.view-mode #note-preview-area {
+    display: block !important;
+    border-radius: 8px;
+    /* Bordes redondos completos */
+    margin-top: 5px;
+    /* Separación del label */
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Un poco más oscuro */
+}
+
+/* --- 3. MODO INVITADO (GUEST) --- 
+   Se aplica si el usuario no ha iniciado sesión en la app. */
+
+body.guest-user .notes-tabs,
+body.guest-user #note-write-area {
+    display: none !important;
+}
+
+body.guest-user .notes-input-wrapper {
+    display: none !important;
+}
+
+/* Icono de héroe dentro de las notas */
+.note-hero-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: sub;
+    /* Alineación para que quede centrado con el texto */
+    margin-right: 4px;
+    /* Espacio entre icono y nombre */
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }

@@ -6,7 +6,6 @@ import UI from './3-ui.js';
 const Compendium = {
     // --- ESTADO GENERAL ---
     
-    // Filtros de la Vista Lista
     filters: {
         search: '',
         element: null,
@@ -14,7 +13,6 @@ const Compendium = {
         rarity: null
     },
     
-    // Paginación de la Vista Lista
     pagination: {
         currentPage: 1,
         itemsPerPage: 40,
@@ -26,21 +24,24 @@ const Compendium = {
     
     // Estado del Team Builder
     builder: {
-        currentTeam: [null, null, null, null, null], // 5 slots
-        currentTeamId: null,      // ID si estamos editando
-        selectedSlot: null,       // Slot activo para click-swap
-        filterSearch: '',         // Buscador propio
+        // Array de 7 espacios (0-4: Main, 5-6: Subs)
+        currentTeam: [null, null, null, null, null, null, null], 
+        currentTeamId: null,      
+        selectedSlot: null,       
+        filterSearch: '',         
+        currentNotes: '', 
+        autocompleteStartIndex: -1, 
         filters: { element: null, role: null, rarity: null } 
     },
 
     // Estado de Mis Equipos
     myTeams: {
-        allData: [],        // Todos los equipos crudos del API
-        filteredData: [],   // Equipos después de filtrar
+        allData: [],        
+        filteredData: [],   
         filters: { 
             search: '', 
-            type: 'all',      // 'all', 'field', 'tactic'
-            element: null     // 'fire', 'water', etc.
+            type: 'all',      
+            element: null     
         },
         pagination: { currentPage: 1, itemsPerPage: 12, totalItems: 0, totalPages: 0 }
     },
@@ -56,17 +57,14 @@ const Compendium = {
         
         console.log("Compendium: Initializing...");
         
-        // 1. Inicializar Vista "Lista de Héroes"
         this.renderFilters(); 
         this.setupListeners();
         this.applyFilters(); 
 
-        // 2. Inicializar Vista "Team Builder"
         this.renderBuilderFilters();
         this.setupBuilderListeners();
         this.renderBuilderGrid();
 
-        // 3. Inicializar Vista "Mis Equipos"
         this.renderMyTeamsFilters();
         this.setupMyTeamsListeners();
         
@@ -77,7 +75,6 @@ const Compendium = {
         }
     },
 
-    // --- MANEJO DE CONTEXTO (Deep Linking) ---
     handleContext: function(context) {
         if (!context) return;
 
@@ -93,54 +90,30 @@ const Compendium = {
         }
     },
 
-    // --- RESET DATA ---
     _resetData: function() {
-        // Lista
         this.filters = { search: '', element: null, role: null, rarity: null };
         this.pagination.currentPage = 1;
         const s1 = document.getElementById('hero-search'); if(s1) s1.value = '';
         this.renderFilters();
         this.applyFilters();
 
-        // Builder
-        this.builder.currentTeam = [null, null, null, null, null];
-        this.builder.currentTeamId = null;
-        this.builder.selectedSlot = null;
-        this.builder.filterSearch = '';
-        this.builder.filters = { element: null, role: null, rarity: null };
-        
-        const s2 = document.getElementById('builder-hero-search'); if(s2) s2.value = '';
-        const nInput = document.getElementById('team-name-input'); if(nInput) nInput.value = '';
-        const sInput = document.getElementById('team-share-code'); if(sInput) sInput.value = '';
+        this.clearTeam();
 
-        document.querySelectorAll('.team-slot').forEach(slot => {
-            slot.classList.remove('filled', 'selected');
-            slot.style.borderColor = '';
-            if(slot.dataset.slot === "0") slot.classList.add('leader-slot');
-            
-            const content = slot.querySelector('.slot-content');
-            content.className = 'slot-content placeholder';
-            content.innerHTML = '<span>+</span>';
-        });
-
-        // Reset Mis Equipos
         this.myTeams.filters = { search: '', type: 'all', element: null };
         this.myTeams.pagination.currentPage = 1;
         const mtSearch = document.getElementById('my-teams-search'); if(mtSearch) mtSearch.value = '';
         
         this.renderBuilderFilters();
         this.renderBuilderGrid();
-        this.renderMyTeamsFilters(); // Reset visual botones filtros mis equipos
+        this.renderMyTeamsFilters();
     },
 
-    // --- REINICIO TOTAL (Público) ---
     reset: function() {
         if (!this.isInitialized) return;
         this._resetData();
         this.switchSubView('heroes-list', false);
     },
 
-    // --- REFRESCAR (Idioma) ---
     refresh: function() {
         if (!this.isInitialized) return;
         
@@ -150,7 +123,6 @@ const Compendium = {
         this.renderBuilderGrid();
         this.renderMyTeamsFilters();
         
-        // Si estamos en Mis Equipos, refrescar textos/lista
         const myTeamsView = document.getElementById('subview-my-teams');
         if (myTeamsView && !myTeamsView.classList.contains('hidden')) {
             this.applyMyTeamsFilters();
@@ -161,9 +133,16 @@ const Compendium = {
             const text = Utils.getText(key);
             if (text !== key) el.placeholder = text;
         });
+
+        // Refrescar label de notas si existe
+        const label = document.getElementById('notes-preview-label');
+        if(label) {
+            const isViewMode = document.querySelector('.notes-section-container')?.classList.contains('view-mode');
+            const key = isViewMode ? 'teamBuilder.notesLabel' : 'teamBuilder.previewLabel';
+            label.textContent = Utils.getText(key);
+        }
     },
 
-    // --- NAVEGACIÓN LATERAL ---
     switchSubView: function(viewId, doReset = true) {
         if (doReset) this._resetData();
 
@@ -416,6 +395,7 @@ const Compendium = {
             });
         }
 
+        // --- Listeners de Slots ---
         const slots = document.querySelectorAll('.team-slot');
         slots.forEach(slot => {
             slot.addEventListener('click', (e) => {
@@ -434,6 +414,7 @@ const Compendium = {
             }
         });
 
+        // --- Listener de Búsqueda ---
         const builderSearch = document.getElementById('builder-hero-search');
         if(builderSearch) {
             builderSearch.addEventListener('input', (e) => {
@@ -442,6 +423,7 @@ const Compendium = {
             });
         }
 
+        // --- Listener Filtros ---
         const builderFilterRow = document.getElementById('builder-filter-row');
         if (builderFilterRow) {
             builderFilterRow.addEventListener('click', (e) => {
@@ -456,6 +438,80 @@ const Compendium = {
             });
         }
 
+        // --- Listener para Tipo de Equipo ---
+        const typeSelect = document.getElementById('team-type-select');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', () => {
+                this.toggleSubsVisibility();
+            });
+        }
+
+        // --- Listener Pestañas Notas ---
+        const tabButtons = document.querySelectorAll('.note-tab');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const mode = btn.dataset.mode;
+                const writeArea = document.getElementById('note-write-area');
+                const previewArea = document.getElementById('note-preview-area');
+
+                if (mode === 'write') {
+                    writeArea.classList.remove('hidden');
+                    previewArea.classList.add('hidden');
+                } else {
+                    // Modo Preview: Renderizar
+                    writeArea.classList.add('hidden');
+                    previewArea.classList.remove('hidden');
+                    this.renderNotesPreview();
+                }
+            });
+        });
+
+        // --- Listener Input Notas y Autocompletado ---
+        const notesInput = document.getElementById('team-notes-input');
+        const autocompleteList = document.getElementById('notes-autocomplete-list');
+
+        if (notesInput) {
+            notesInput.addEventListener('input', (e) => {
+                this.builder.currentNotes = e.target.value;
+                
+                // Autocompletado
+                const cursorPosition = notesInput.selectionStart;
+                const textUpToCursor = notesInput.value.substring(0, cursorPosition);
+                const lastBracket = textUpToCursor.lastIndexOf('[');
+                
+                if (lastBracket !== -1) {
+                    const query = textUpToCursor.substring(lastBracket + 1).toLowerCase();
+                    if (!query.includes(']')) {
+                        this.showHeroAutocomplete(query, lastBracket);
+                        return;
+                    }
+                }
+                
+                if (autocompleteList) autocompleteList.classList.add('hidden');
+            });
+
+            notesInput.addEventListener('keydown', (e) => {
+                if (autocompleteList && !autocompleteList.classList.contains('hidden')) {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+                        e.preventDefault();
+                        this.navigateAutocomplete(e.key);
+                    } else if (e.key === 'Escape') {
+                        autocompleteList.classList.add('hidden');
+                    }
+                }
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (autocompleteList && e.target !== notesInput && !autocompleteList.contains(e.target)) {
+                    autocompleteList.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- Botones de Acción ---
         const saveBtn = document.getElementById('btn-save-team');
         if (saveBtn) saveBtn.addEventListener('click', () => this.saveTeam());
         const clearBtn = document.getElementById('btn-clear-team');
@@ -466,6 +522,137 @@ const Compendium = {
             if(id) this.loadTeam(id);
         });
     },
+
+    // --- FUNCIONES DE SUBS Y NOTAS ---
+
+    toggleSubsVisibility: function() {
+        const typeSelect = document.getElementById('team-type-select');
+        const subsRow = document.getElementById('subs-row');
+        
+        if (typeSelect && subsRow) {
+            if (typeSelect.value === 'tactic') {
+                subsRow.classList.remove('hidden');
+            } else {
+                subsRow.classList.add('hidden');
+                this.removeHeroFromSlot(5);
+                this.removeHeroFromSlot(6);
+            }
+        }
+    },
+
+    renderNotesPreview: function() {
+        const previewEl = document.getElementById('note-preview-area');
+        if (!previewEl) return;
+        
+        let rawText = this.builder.currentNotes || '';
+        
+        // Escapar HTML para seguridad
+        const escapeHtml = (unsafe) => {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+        
+        let safeText = escapeHtml(rawText);
+
+        // Highlight de Héroes: [Nombre] -> Img + Dorado
+        let formatted = safeText.replace(/\[([^\]]+)\](?!\()/g, (match, heroName) => {
+            const heroData = Logic.findHeroByName(heroName);
+            let iconHtml = '';
+            
+            if (heroData) {
+                const imgPath = `assets/heroes_icon/${heroData.short_image}`;
+                iconHtml = `<img src="${imgPath}" class="note-hero-icon" alt="${heroName}" loading="lazy">`;
+            }
+            
+            return `${iconHtml}<span class="highlight-bracket">${heroName}</span>`;
+        });
+        
+        previewEl.innerHTML = formatted;
+    },
+
+    // --- FUNCIONES DE AUTOCOMPLETADO ---
+
+    showHeroAutocomplete: function(query, startIndex) {
+        const list = document.getElementById('notes-autocomplete-list');
+        if (!list) return;
+
+        const matches = (App.state.allHeroesData || []).filter(h => 
+            h.game_name.toLowerCase().startsWith(query)
+        ).slice(0, 5); 
+
+        if (matches.length === 0) {
+            list.classList.add('hidden');
+            return;
+        }
+
+        list.innerHTML = '';
+        matches.forEach((h, index) => {
+            const item = document.createElement('li');
+            item.className = 'autocomplete-item';
+            if (index === 0) item.classList.add('selected');
+            
+            item.innerHTML = `
+                <img src="assets/heroes_icon/${h.short_image}">
+                <span>${h.game_name}</span>
+            `;
+            
+            item.addEventListener('click', () => {
+                this.insertAutocomplete(h.game_name, startIndex);
+            });
+            
+            list.appendChild(item);
+        });
+
+        list.classList.remove('hidden');
+        this.builder.autocompleteStartIndex = startIndex; 
+    },
+
+    insertAutocomplete: function(heroName, startIndex) {
+        const input = document.getElementById('team-notes-input');
+        const list = document.getElementById('notes-autocomplete-list');
+        if (!input || !list) return;
+
+        const fullText = input.value;
+        const before = fullText.substring(0, startIndex);
+        const cursorStr = input.selectionStart;
+        const after = fullText.substring(cursorStr); 
+        
+        const newText = `${before}[${heroName}] ${after}`;
+        
+        input.value = newText;
+        this.builder.currentNotes = newText;
+        
+        list.classList.add('hidden');
+        input.focus();
+    },
+
+    navigateAutocomplete: function(key) {
+        const list = document.getElementById('notes-autocomplete-list');
+        const items = list.querySelectorAll('.autocomplete-item');
+        let activeIndex = -1;
+        
+        items.forEach((item, index) => {
+            if (item.classList.contains('selected')) activeIndex = index;
+            item.classList.remove('selected');
+        });
+
+        if (key === 'ArrowDown') {
+            activeIndex = (activeIndex + 1) % items.length;
+        } else if (key === 'ArrowUp') {
+            activeIndex = (activeIndex - 1 + items.length) % items.length;
+        } else if (key === 'Enter') {
+            if (activeIndex > -1) items[activeIndex].click();
+            return;
+        }
+
+        if (items[activeIndex]) items[activeIndex].classList.add('selected');
+    },
+
+    // --- RENDER DEL GRID Y SLOTS ---
 
     renderBuilderGrid: function() {
         const grid = document.getElementById('builder-heroes-grid');
@@ -547,6 +734,8 @@ const Compendium = {
         this.builder.currentTeam[index] = heroName;
 
         const slot = document.querySelector(`.team-slot[data-slot="${index}"]`);
+        if(!slot) return; 
+
         const content = slot.querySelector('.slot-content');
         
         slot.classList.add('filled');
@@ -578,9 +767,12 @@ const Compendium = {
     removeHeroFromSlot: function(index) {
         this.builder.currentTeam[index] = null;
         const slot = document.querySelector(`.team-slot[data-slot="${index}"]`);
+        if(!slot) return;
+
         slot.classList.remove('filled');
         slot.style.borderColor = ''; 
         if(index === 0) slot.classList.add('leader-slot'); 
+        
         const content = slot.querySelector('.slot-content');
         content.classList.add('placeholder');
         content.innerHTML = `<span>+</span>`;
@@ -590,6 +782,10 @@ const Compendium = {
     addHeroToFirstFreeSlot: function(heroName) {
         const freeIndex = this.builder.currentTeam.indexOf(null);
         if (freeIndex !== -1) {
+            const slotEl = document.querySelector(`.team-slot[data-slot="${freeIndex}"]`);
+            if(slotEl && slotEl.offsetParent === null) {
+                return;
+            }
             this.setHeroInSlot(freeIndex, heroName);
         }
     },
@@ -605,33 +801,19 @@ const Compendium = {
         }
     },
 
-    clearTeam: function() {
-        for(let i=0; i<5; i++) this.builder.currentTeam[i] = null;
-        document.querySelectorAll('.team-slot').forEach(slot => {
-            slot.classList.remove('filled');
-            slot.style.borderColor = '';
-            if(slot.dataset.slot === "0") slot.classList.add('leader-slot'); 
-            slot.querySelector('.slot-content').innerHTML = `<span>+</span>`;
-            slot.querySelector('.slot-content').classList.add('placeholder');
-        });
-        this.selectSlot(null);
-        this.builder.currentTeamId = null;
-        const nInput = document.getElementById('team-name-input'); if(nInput) nInput.value = '';
-        const sInput = document.getElementById('team-share-code'); if(sInput) sInput.value = '';
-        this.renderBuilderGrid();
-    },
-
-    // --- API CALLS ---
+    // --- API CALLS & CLEAR ---
 
     async saveTeam() {
         if (!App.state.isLoggedIn) return Utils.alert("Login Required", Utils.getText('teamBuilder.alerts.loginRequired'));
+        
         const name = document.getElementById('team-name-input').value || "My Team";
         const type = document.getElementById('team-type-select').value;
         const heroes = this.builder.currentTeam;
+        const notes = this.builder.currentNotes;
 
         if (heroes.every(h => h === null)) return Utils.alert("Empty Team", Utils.getText('teamBuilder.alerts.emptyTeam'));
 
-        const payload = { name, type, heroes };
+        const payload = { name, type, heroes, notes }; 
         let url = `${Logic.BACKEND_URL}/api/teams`;
         let method = 'POST';
 
@@ -654,7 +836,6 @@ const Compendium = {
             this.builder.currentTeamId = savedTeam.id;
             document.getElementById('team-share-code').value = savedTeam.id;
             
-            // Actualizar lista lateral si estamos viéndola
             if (document.getElementById('subview-my-teams')?.classList.contains('active')) {
                 this.renderMyTeams();
             }
@@ -675,33 +856,146 @@ const Compendium = {
             
             this.switchSubView('team-builder', false); 
             this.clearTeam(); 
-            this.builder.currentTeamId = team.id;
-            document.getElementById('team-name-input').value = team.name;
-            document.getElementById('team-type-select').value = team.type;
-            document.getElementById('team-share-code').value = team.id;
             
-            team.heroes.forEach((hName, idx) => {
-                if(hName) this.setHeroInSlot(idx, hName);
-            });
+            const builderContainer = document.getElementById('subview-team-builder');
+            const notesContainer = document.querySelector('.notes-section-container');
+            const writeArea = document.getElementById('note-write-area');
+            const previewArea = document.getElementById('note-preview-area');
+            const tabs = document.querySelectorAll('.note-tab');
 
+            // --- GESTIÓN DE PERMISOS ---
             const myId = App.state.userInfo ? App.state.userInfo.id : null;
-            if (myId !== team.ownerId) {
+            const isOwner = (myId === team.ownerId);
+            
+            this.builder.currentNotes = team.notes || '';
+            const notesInput = document.getElementById('team-notes-input');
+            if (notesInput) notesInput.value = this.builder.currentNotes;
+
+            if (isOwner) {
+                // DUEÑO
+                this.builder.currentTeamId = team.id;
+                
+                if (builderContainer) builderContainer.classList.remove('locked-mode');
+                if (notesContainer) {
+                    notesContainer.classList.remove('view-mode');
+                    notesContainer.classList.remove('hidden'); // Siempre visible para dueño
+                }
+
+                // Poner pestaña en Write
+                tabs.forEach(t => t.classList.remove('active'));
+                document.querySelector('.note-tab[data-mode="write"]')?.classList.add('active');
+                if(writeArea) writeArea.classList.remove('hidden');
+                if(previewArea) previewArea.classList.add('hidden');
+
+            } else {
+                // VISITANTE
                 this.builder.currentTeamId = null;
                 console.log(Utils.getText('teamBuilder.alerts.copyMode', {owner: team.ownerName || 'User'}));
+                
+                if (builderContainer) builderContainer.classList.add('locked-mode');
+                if (notesContainer) notesContainer.classList.add('view-mode');
+                
+                // Ocultar si está vacío
+                const hasNotes = this.builder.currentNotes && this.builder.currentNotes.trim().length > 0;
+                if (hasNotes) {
+                    if (notesContainer) notesContainer.classList.remove('hidden');
+                    this.renderNotesPreview(); // Forzar render
+                    if (previewArea) previewArea.classList.remove('hidden');
+                } else {
+                    if (notesContainer) notesContainer.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('team-name-input').value = team.name;
+            document.getElementById('team-share-code').value = team.id;
+
+            const typeSelect = document.getElementById('team-type-select');
+            if (typeSelect) {
+                typeSelect.value = team.type || 'field';
+                this.toggleSubsVisibility();
+            }
+            
+            if (Array.isArray(team.heroes)) {
+                team.heroes.forEach((hName, idx) => {
+                    if (hName) this.setHeroInSlot(idx, hName);
+                });
             }
             
             this.renderBuilderGrid();
+
         } catch (e) {
             console.error(e);
             Utils.alert("Error", Utils.getText('teamBuilder.alerts.loadError'));
         }
     },
 
+    clearTeam: function() {
+        for(let i=0; i<7; i++) this.builder.currentTeam[i] = null;
+        
+        document.querySelectorAll('.team-slot').forEach(slot => {
+            slot.classList.remove('filled', 'selected');
+            slot.style.borderColor = '';
+            if(slot.dataset.slot === "0") slot.classList.add('leader-slot'); 
+            slot.querySelector('.slot-content').innerHTML = `<span>+</span>`;
+            slot.querySelector('.slot-content').classList.add('placeholder');
+        });
+        
+        this.selectSlot(null);
+        this.builder.currentTeamId = null;
+        
+        const nInput = document.getElementById('team-name-input'); if(nInput) nInput.value = '';
+        const sInput = document.getElementById('team-share-code'); if(sInput) sInput.value = '';
+        
+        // Limpiar Notas
+        this.builder.currentNotes = '';
+        const notesInput = document.getElementById('team-notes-input');
+        if(notesInput) notesInput.value = '';
+        
+        const previewEl = document.getElementById('note-preview-area');
+        if(previewEl) previewEl.innerHTML = '';
+
+        // Reset UI Notas
+        const notesContainer = document.querySelector('.notes-section-container');
+        const writeArea = document.getElementById('note-write-area');
+        const previewArea = document.getElementById('note-preview-area');
+        const tabs = document.querySelectorAll('.note-tab');
+
+        if(notesContainer) {
+            notesContainer.classList.remove('view-mode');
+            
+            // Si es usuario -> Mostrar (para escribir)
+            // Si es guest -> Ocultar (para no ocupar espacio)
+            if (App.state.isLoggedIn) {
+                notesContainer.classList.remove('hidden');
+            } else {
+                notesContainer.classList.add('hidden');
+            }
+        }
+
+        if(writeArea && previewArea) {
+            writeArea.classList.remove('hidden');
+            previewArea.classList.add('hidden');
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelector('.note-tab[data-mode="write"]')?.classList.add('active');
+        }
+
+        // Reset Tipo & Bloqueo
+        const typeSelect = document.getElementById('team-type-select');
+        if(typeSelect) {
+            typeSelect.value = 'field';
+            this.toggleSubsVisibility();
+        }
+
+        const builderContainer = document.getElementById('subview-team-builder');
+        if (builderContainer) builderContainer.classList.remove('locked-mode');
+
+        this.renderBuilderGrid();
+    },
+
     // =========================================================
     // ============ SECCIÓN 3: MIS EQUIPOS =====================
     // =========================================================
 
-    // Configurar Listeners para Filtros de Mis Equipos
     setupMyTeamsListeners: function() {
         const searchInput = document.getElementById('my-teams-search');
         if(searchInput) {
@@ -712,19 +1006,17 @@ const Compendium = {
             });
         }
 
-        // Delegación para botones de filtro (Tipo y Elemento)
         const controlsContainer = document.querySelector('.my-teams-controls-container');
         if (controlsContainer) {
             controlsContainer.addEventListener('click', (e) => {
                 const btn = e.target.closest('.filter-btn');
                 if (!btn) return;
 
-                const filterType = btn.dataset.type; // 'teamType' o 'element'
+                const filterType = btn.dataset.type; 
                 const value = btn.dataset.value;
 
                 if (filterType === 'teamType') {
                     this.myTeams.filters.type = value;
-                    // Visual update
                     document.querySelectorAll('#my-teams-type-filters .filter-btn').forEach(b => {
                         b.classList.toggle('active', b.dataset.value === value);
                     });
@@ -734,7 +1026,7 @@ const Compendium = {
                     } else {
                         this.myTeams.filters.element = value;
                     }
-                    this.renderMyTeamsFilters(); // Re-render para visual active
+                    this.renderMyTeamsFilters(); 
                 }
 
                 this.myTeams.pagination.currentPage = 1;
@@ -743,7 +1035,6 @@ const Compendium = {
         }
     },
 
-    // Render inicial de los filtros (Botones)
     renderMyTeamsFilters: function() {
         const container = document.getElementById('my-teams-element-filters');
         if (!container) return;
@@ -761,7 +1052,6 @@ const Compendium = {
             container.appendChild(btn);
         });
 
-        // Actualizar textos de botones tipo
         const typeBtns = document.querySelectorAll('#my-teams-type-filters .filter-btn');
         typeBtns.forEach(btn => {
             const val = btn.dataset.value;
@@ -803,13 +1093,10 @@ const Compendium = {
         const { search, type, element } = this.myTeams.filters;
         
         this.myTeams.filteredData = this.myTeams.allData.filter(team => {
-            // 1. Filtro Tipo
             if (type !== 'all' && team.type !== type) return false;
 
-            // 2. Parsear héroes
             const heroList = (typeof team.heroes === 'string') ? JSON.parse(team.heroes) : team.heroes;
             
-            // 3. Filtro Elemento
             if (element) {
                 const hasElement = heroList.some(hName => {
                     if(!hName) return false;
@@ -819,10 +1106,8 @@ const Compendium = {
                 if (!hasElement) return false;
             }
 
-            // 4. Filtro Texto (Equipo o Héroe)
             if (search) {
                 if (team.name.toLowerCase().includes(search)) return true;
-                
                 const hasHeroName = heroList.some(hName => {
                     if(!hName) return false;
                     const hData = Logic.findHeroByName(hName);
@@ -834,7 +1119,6 @@ const Compendium = {
             return true;
         });
 
-        // Paginación
         this.myTeams.pagination.totalItems = this.myTeams.filteredData.length;
         this.myTeams.pagination.totalPages = Math.ceil(this.myTeams.pagination.totalItems / this.myTeams.pagination.itemsPerPage);
         
@@ -882,7 +1166,6 @@ const Compendium = {
                 }
             }
 
-            // HTML ACTUALIZADO: ID con estilo y Botón Share
             card.innerHTML = `
                 <div class="team-header">
                     <span class="team-title">${team.name}</span>
@@ -904,21 +1187,18 @@ const Compendium = {
                 </div>
             `;
 
-            // Listener: Cargar al hacer click en la tarjeta
             card.addEventListener('click', (e) => {
-                if (e.target.closest('.btn-card-action')) return; // Ignorar si click en botones
+                if (e.target.closest('.btn-card-action')) return; 
                 this.switchSubView('team-builder', true); 
                 this.loadTeam(team.id);
             });
 
-            // Listener: Botón Compartir (NUEVO)
             const shareBtn = card.querySelector('.btn-share-team');
             shareBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 UI.openShareTeamModal(team.id);
             });
 
-            // Listener: Botón Borrar
             const deleteBtn = card.querySelector('.btn-delete-team');
             deleteBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
